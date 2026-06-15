@@ -1,0 +1,9 @@
+Localidad;changepoint_prior_scale;seasonality_prior_scale;seasonality_mode;growth;MAE
+ATACAMA;0,02;0,2;additive;linear;21,54114061146496
+CARDONES;0,05;5,0;additive;linear;21,887829255803748
+CHARRUA;0,02;0,01;additive;linear;24,295745862374915
+CRUCERO;0,05;0,007;additive;linear;22,251429832009315
+P.AZUCAR;0,05;0,007;additive;linear;22,664239053643346
+P.MONTT;0,05;0,01;additive;linear;46,01000526461302
+QUILLOTA;0,02;1,0;additive;linear;23,766999687308626
+TARAPACA;0,05;0,01;additive;linear;23,090566609107434

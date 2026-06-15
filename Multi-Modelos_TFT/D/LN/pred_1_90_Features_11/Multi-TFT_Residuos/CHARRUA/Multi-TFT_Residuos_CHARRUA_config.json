@@ -1,0 +1,20 @@
+{
+    "barra": "CHARRUA",
+    "experimento": "Multi-TFT_Residuos",
+    "timestamp": "20260414_135845",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 16,
+        "heads": 4,
+        "dropout": 0.5,
+        "cont_size": 8,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.0001,
+        "patience": 15
+    },
+    "epochs_trained": 100,
+    "best_val_loss": 0.22295771539211273,
+    "model_path": "C:\\Users\\56977\\OneDrive\\Escritorio\\Tesis - copia\\Multi-Modelos_TFT\\D\\LN\\pred_1_90_Features_11\\Multi-TFT_Residuos\\CHARRUA\\Multi-TFT_Residuos_CHARRUA_best.ckpt"
+}

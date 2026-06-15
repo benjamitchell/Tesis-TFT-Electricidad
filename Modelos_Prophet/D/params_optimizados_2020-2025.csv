@@ -1,0 +1,9 @@
+Barra,changepoint_prior_scale,seasonality_prior_scale,seasonality_mode,growth,MAE
+ATACAMA,0.01,1.0,additive,linear,29.702929009810884
+CARDONES,0.01,1.0,additive,linear,30.012635054798295
+CHARRUA,0.01,0.1,additive,linear,34.53200648951717
+CRUCERO,0.01,0.1,additive,linear,29.292951197954732
+P.AZUCAR,0.01,0.1,additive,linear,30.261604489104013
+P.MONTT,0.01,0.5,additive,linear,68.53072006722606
+QUILLOTA,0.01,1.0,additive,linear,34.0197239958524
+TARAPACA,0.01,0.1,additive,linear,30.133456723032474

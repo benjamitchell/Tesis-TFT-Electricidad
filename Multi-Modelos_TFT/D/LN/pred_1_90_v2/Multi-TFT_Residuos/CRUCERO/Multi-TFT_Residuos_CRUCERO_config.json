@@ -1,0 +1,20 @@
+{
+    "barra": "CRUCERO",
+    "experimento": "Multi-TFT_Residuos_D",
+    "timestamp": "20260401_103348",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 16,
+        "heads": 4,
+        "dropout": 0.5,
+        "cont_size": 8,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.0001,
+        "patience": 10
+    },
+    "epochs_trained": 100,
+    "best_val_loss": 0.2434367835521698,
+    "model_path": "Multi-Modelos_TFT/D/LN/pred_1_90_v2\\Multi-TFT_Residuos\\CRUCERO\\Multi-TFT_Residuos_CRUCERO_best.ckpt"
+}
