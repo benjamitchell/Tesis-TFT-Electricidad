@@ -1,0 +1,50 @@
+{
+  "known_reals": [
+    "yhat",
+    "yhat_lower",
+    "yhat_upper",
+    "trend",
+    "yearly",
+    "weekly",
+    "temperatura",
+    "humedad",
+    "velocidad_viento",
+    "precipitacion",
+    "nubosidad",
+    "is_holiday",
+    "is_weekend",
+    "month_sin",
+    "month_cos",
+    "day_week_sin",
+    "day_week_cos",
+    "day_year_sin",
+    "day_year_cos"
+  ],
+  "unknown_reals_price": [
+    "y_real",
+    "y_lag1",
+    "y_lag7",
+    "rolling_mean_7",
+    "rolling_std_7"
+  ],
+  "unknown_reals_resid": [
+    "residuo",
+    "resid_lag1",
+    "resid_lag7",
+    "rolling_mean_resid_7",
+    "rolling_std_resid_7"
+  ],
+  "max_encoder_length": 90,
+  "max_prediction_length": 1,
+  "batch_size": 64,
+  "lista_barras": [
+    "ATACAMA",
+    "CARDONES",
+    "CHARRUA",
+    "CRUCERO",
+    "P.AZUCAR",
+    "P.MONTT",
+    "QUILLOTA",
+    "TARAPACA"
+  ]
+}

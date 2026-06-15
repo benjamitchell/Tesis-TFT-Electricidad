@@ -1,0 +1,58 @@
+{
+    "ATACAMA": {
+        "changepoint_prior_scale": 0.01,
+        "seasonality_prior_scale": 0.5,
+        "seasonality_mode": "multiplicative",
+        "growth": "linear",
+        "MAE": 30.74637710301613
+    },
+    "CARDONES": {
+        "changepoint_prior_scale": 0.01,
+        "seasonality_prior_scale": 0.5,
+        "seasonality_mode": "multiplicative",
+        "growth": "linear",
+        "MAE": 30.625539452813012
+    },
+    "CHARRUA": {
+        "changepoint_prior_scale": 0.01,
+        "seasonality_prior_scale": 3.0,
+        "seasonality_mode": "multiplicative",
+        "growth": "linear",
+        "MAE": 34.994659554045185
+    },
+    "CRUCERO": {
+        "changepoint_prior_scale": 0.01,
+        "seasonality_prior_scale": 0.5,
+        "seasonality_mode": "multiplicative",
+        "growth": "linear",
+        "MAE": 30.181392555156844
+    },
+    "P.AZUCAR": {
+        "changepoint_prior_scale": 0.01,
+        "seasonality_prior_scale": 0.3,
+        "seasonality_mode": "multiplicative",
+        "growth": "linear",
+        "MAE": 31.083558110295137
+    },
+    "P.MONTT": {
+        "changepoint_prior_scale": 0.01,
+        "seasonality_prior_scale": 1.0,
+        "seasonality_mode": "multiplicative",
+        "growth": "linear",
+        "MAE": 75.6747296901963
+    },
+    "QUILLOTA": {
+        "changepoint_prior_scale": 0.01,
+        "seasonality_prior_scale": 1.0,
+        "seasonality_mode": "multiplicative",
+        "growth": "linear",
+        "MAE": 33.78247814722543
+    },
+    "TARAPACA": {
+        "changepoint_prior_scale": 0.01,
+        "seasonality_prior_scale": 0.5,
+        "seasonality_mode": "multiplicative",
+        "growth": "linear",
+        "MAE": 30.92836449203864
+    }
+}

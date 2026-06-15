@@ -1,0 +1,20 @@
+{
+    "barra": "ATACAMA",
+    "experimento": "Multi-TFT_Precios",
+    "timestamp": "20260412_102727",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 16,
+        "heads": 4,
+        "dropout": 0.5,
+        "cont_size": 8,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.0001,
+        "patience": 15
+    },
+    "epochs_trained": 100,
+    "best_val_loss": 0.16074754297733307,
+    "model_path": "Multi-Modelos_TFT/D/LN/pred_1_90_Features_Prophet\\Multi-TFT_Precios\\ATACAMA\\Multi-TFT_Precios_ATACAMA_best.ckpt"
+}

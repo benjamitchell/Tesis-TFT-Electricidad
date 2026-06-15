@@ -1,0 +1,20 @@
+{
+    "barra": "CARDONES",
+    "experimento": "Multi-TFT_Residuos_D",
+    "timestamp": "20260309_010229",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 32,
+        "heads": 4,
+        "dropout": 0.3,
+        "cont_size": 16,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.0001,
+        "patience": 20
+    },
+    "epochs_trained": 100,
+    "best_val_loss": 0.2224961668252945,
+    "model_path": "Multi-Modelos_TFT_D_pred_1_120\\Multi-TFT_Residuos_D\\CARDONES\\Multi-TFT_Residuos_D_CARDONES_best.ckpt"
+}

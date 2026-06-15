@@ -1,0 +1,13 @@
+{
+    "fecha_entrenamiento": "2026-05-04 18:13:02",
+    "freq": "h",
+    "growth": "linear",
+    "techo": 1.5,
+    "params_base": {
+        "daily_seasonality": true,
+        "weekly_seasonality": true,
+        "yearly_seasonality": true
+    },
+    "num_barras": 8,
+    "carpeta_modelos": "Modelos_Prophet/h/modelos"
+}

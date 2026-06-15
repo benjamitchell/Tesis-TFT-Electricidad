@@ -1,0 +1,20 @@
+{
+    "barra": "CARDONES",
+    "experimento": "Multi-TFT_Precios_D",
+    "timestamp": "20260401_084635",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 16,
+        "heads": 4,
+        "dropout": 0.5,
+        "cont_size": 8,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.0001,
+        "patience": 10
+    },
+    "epochs_trained": 73,
+    "best_val_loss": 0.1638852059841156,
+    "model_path": "Multi-Modelos_TFT/D/LN/pred_1_90_v2\\Multi-TFT_Precios\\CARDONES\\Multi-TFT_Precios_CARDONES_best.ckpt"
+}

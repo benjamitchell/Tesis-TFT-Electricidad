@@ -1,0 +1,26 @@
+# Entornos virtuales
+venv_tesis/
+
+# Repos externos clonados (tienen su propio .git, se pueden re-clonar)
+DyT/
+AdaptiveConformalPredictionsTimeSeries/
+
+# Datos / modelos pesados (regenerables con los scripts)
+*.pkl
+*.ckpt
+
+# Logs de entrenamiento (TensorBoard)
+Logs_TFT/
+lightning_logs/
+
+# Cache de Python / Jupyter
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+
+# Config local de Claude
+.claude/
+
+# Resultados pesados regenerables
+predicciones_prophet.csv
+predicciones_prophet_horario_*.csv
