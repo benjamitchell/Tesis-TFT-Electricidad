@@ -112,9 +112,18 @@ def tft_model(dataset, barra, train_dl, val_dl,
                          enable_model_summary=mostrar_summary,
                          enable_progress_bar=verbose)
 
+    # Detectar si existe checkpoint previo para reanudar
+    ckpt_para_reanudar = None
+    if ruta_mejor_modelo and os.path.exists(ruta_mejor_modelo):
+        ckpt_para_reanudar = ruta_mejor_modelo
+        print(f"\nCheckpoint encontrado, reanudando desde: {ruta_mejor_modelo}")
+    else:
+        print(f"\nNo se encontró checkpoint previo, entrenando desde cero.")
+
     # Entrenamos
     print(f"\nIniciando entrenamiento: {nombre_experimento} - {barra}\n")
-    trainer.fit(model, train_dataloaders=train_dl, val_dataloaders=val_dl)
+    trainer.fit(model, train_dataloaders=train_dl, val_dataloaders=val_dl,
+                ckpt_path=ckpt_para_reanudar)
  
     # Guardamos configuración y detalles del entrenamiento
     if guardar_mejor or guardar_top_k > 0:

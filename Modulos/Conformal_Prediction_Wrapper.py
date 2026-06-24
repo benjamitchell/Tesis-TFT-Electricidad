@@ -1,11 +1,12 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 import traceback
 import time
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Ridge, QuantileRegressor
 
 import sys  
 sys.path.append(r'C:\Users\56977\OneDrive\Escritorio\AdaptiveConformalPredictionsTimeSeries') # Path al repo de mzaffran
@@ -575,6 +576,465 @@ def acp_online_implementation(resultados_stacking, barras, estrategia_barras,
     
     return df_tabla, dict_cp, dict_alphas, tiempos_ejecucion
 
+# ========================= CONFORMAL PREDICTION LOCALLY WEIGHTED SPLIT CP ======================
+
+def _get_mapping(mapping):
+    if mapping == 'LN':
+        return {"Prophet Solo": "Prophet_Solo",
+                "TFT_LN Precios Solo": "TFT_Precios_Solo",
+                "Prophet+TFT_LN Precios": "Prophet_TFT_Precios",
+                "TFT Residuos Solo": "TFT_Residuos_Solo",
+                "Prophet + Residuos (Directo)": "Prophet_Residuos_Directo",
+                "Prophet + Residuos (Opt)": "Prophet_Residuos_Opt",
+                "(Prophet + Residuos) + TFT_LN Precios": "Prophet_Residuos_Precios"}
+    if mapping == 'DyT':
+        return {"Prophet Solo": "Prophet_Solo",
+                "TFT_DyT Precios Solo": "TFT_Precios_Solo",
+                "Prophet+TFT_DyT Precios": "Prophet_TFT_Precios",
+                "TFT_DyT Residuos Solo": "TFT_Residuos_Solo",
+                "Prophet + Residuos (Directo)": "Prophet_Residuos_Directo",
+                "Prophet + Residuos (Opt)": "Prophet_Residuos_Opt",
+                "(Prophet + Residuos) + TFT_DyT Precios": "Prophet_Residuos_Precios"}
+    return mapping  # ya es dict
+
+
+def _estimar_sigma_h(errores_cal, horas_cal, min_muestras=30):
+    sigma_global = max(float(np.std(errores_cal)), 1e-6)
+    sigma_h = np.empty(24)
+    for h in range(24):
+        mask_h = horas_cal == h
+        if mask_h.sum() >= min_muestras:
+            s = float(np.std(errores_cal[mask_h]))
+            sigma_h[h] = s if s > 1e-6 else sigma_global
+        else:
+            sigma_h[h] = sigma_global
+    return sigma_h
+
+
+def lw_split_cp_from_calibration(y_cal, yhat_cal, fechas_cal,
+                                  y_test, yhat_test, fechas_test,
+                                  alpha=0.05, min_muestras_por_hora=30):
+    y_cal     = np.asarray(y_cal,     dtype=float)
+    yhat_cal  = np.asarray(yhat_cal,  dtype=float)
+    y_test    = np.asarray(y_test,    dtype=float)
+    yhat_test = np.asarray(yhat_test, dtype=float)
+
+    horas_cal  = pd.DatetimeIndex(fechas_cal).hour
+    horas_test = pd.DatetimeIndex(fechas_test).hour
+
+    mask_cal  = np.isfinite(y_cal)  & np.isfinite(yhat_cal)
+    mask_test = np.isfinite(y_test) & np.isfinite(yhat_test)
+    y_cal,    yhat_cal,  horas_cal  = y_cal[mask_cal],   yhat_cal[mask_cal],  horas_cal[mask_cal]
+    y_test_c, yhat_tc,   horas_tc   = y_test[mask_test], yhat_test[mask_test], horas_test[mask_test]
+
+    if len(y_cal) == 0:
+        return {"error": "No hay datos válidos en calibración (VAL)"}
+    if len(y_test_c) == 0:
+        return {"error": "No hay datos válidos en test (TEST)"}
+
+    errores_cal = np.abs(y_cal - yhat_cal)
+    sigma_h     = _estimar_sigma_h(errores_cal, horas_cal, min_muestras_por_hora)
+    scores_norm = errores_cal / sigma_h[horas_cal]
+
+    n       = len(scores_norm)
+    q_level = np.ceil((1 - alpha) * (n + 1)) / (n + 1)
+    q       = np.quantile(scores_norm, q_level, method="higher")
+
+    sigma_tc = sigma_h[horas_tc]
+    lower    = yhat_tc - q * sigma_tc
+    upper    = yhat_tc + q * sigma_tc
+
+    coverage = float(np.mean((y_test_c >= lower) & (y_test_c <= upper)))
+    width    = float(np.mean(upper - lower))
+    mae      = float(np.mean(np.abs(y_test_c - yhat_tc)))
+    rmse     = float(np.sqrt(np.mean((y_test_c - yhat_tc) ** 2)))
+
+    return {"lower": lower, "upper": upper,
+            "coverage": coverage, "expected_coverage": 1 - alpha,
+            "diff_coverage": float(abs(coverage - (1 - alpha))),
+            "width": width, "mae": mae, "rmse": rmse,
+            "q": float(q), "sigma_h": sigma_h,
+            "y_test": y_test_c, "y_pred": yhat_tc,
+            "horas_test": np.asarray(horas_tc),
+            "mask_test": mask_test}
+
+
+def lw_split_cp_implementation(resultados_stacking, df_mejores,
+                                alpha=0.05, min_muestras_por_hora=30,
+                                split_key="_datos_split",
+                                y_val_key="y_real_val", y_test_key="y_real_test",
+                                fechas_val_key="fechas_val", fechas_test_key="fechas_test",
+                                pred_val_key="prediccion_val", pred_test_key="prediccion_test",
+                                mapping='LN', verbose=True):
+
+    mapping = _get_mapping(mapping)
+    best_by_barra = df_mejores.set_index("Barra")["Mejor Estrategia"].to_dict()
+    cp_best = {}
+    rows    = []
+
+    for barra, data in resultados_stacking.items():
+        best_pretty = best_by_barra.get(barra)
+        if best_pretty is None:
+            if verbose:
+                print(f"[SKIP] {barra}: no aparece en df_mejores")
+            continue
+
+        best = mapping.get(best_pretty)
+        if best is None:
+            raise ValueError(f"{barra}: estrategia '{best_pretty}' no está en el mapping")
+        if best not in data:
+            raise ValueError(f"{barra}: '{best}' no existe en resultados_stacking")
+
+        res = lw_split_cp_from_calibration(
+            y_cal=data[split_key][y_val_key],
+            yhat_cal=data[best][pred_val_key],
+            fechas_cal=data[split_key][fechas_val_key],
+            y_test=data[split_key][y_test_key],
+            yhat_test=data[best][pred_test_key],
+            fechas_test=data[split_key][fechas_test_key],
+            alpha=alpha,
+            min_muestras_por_hora=min_muestras_por_hora,
+        )
+        cp_best[barra] = {"Estrategia": best_pretty, **res}
+
+        if verbose:
+            if "error" in res:
+                print(f"{barra:10s} | {best_pretty:30s} | ERROR: {res['error']}")
+            else:
+                picos = ", ".join(f"h{h}:{res['sigma_h'][h]:.2f}" for h in [7, 8, 19, 20, 21])
+                print(f"{barra:10s} | {best_pretty:30s} | coverage={res['coverage']:.3f} | "
+                      f"width={res['width']:.2f} | q={res['q']:.4f} | sigma[7,8,19-21]={picos}")
+
+        if "error" not in res:
+            rows.append({"Barra": barra, "Estrategia": best_pretty,
+                         "Coverage": res["coverage"],
+                         "Expected": res["expected_coverage"],
+                         "Coverage_Diff": res["diff_coverage"],
+                         "Width": res["width"],
+                         "MAE": res["mae"], "RMSE": res["rmse"],
+                         "q": res["q"], "N_test": len(res["y_test"])})
+
+    df_cp = pd.DataFrame(rows).sort_values("Barra").reset_index(drop=True)
+    return cp_best, df_cp
+
+
+# ========================= CONFORMAL PREDICTION LW-ACP ONLINE ======================
+
+def lw_acp_online_implementation(resultados_stacking, df_mejores,
+                                  alpha=0.05, gamma=0.01,
+                                  min_muestras_por_hora=30,
+                                  split_key="_datos_split",
+                                  y_val_key="y_real_val", y_test_key="y_real_test",
+                                  fechas_val_key="fechas_val", fechas_test_key="fechas_test",
+                                  pred_val_key="prediccion_val", pred_test_key="prediccion_test",
+                                  mapping='LN', verbose=True):
+
+    mapping   = _get_mapping(mapping)
+    best_by_barra = df_mejores.set_index("Barra")["Mejor Estrategia"].to_dict()
+    tabla      = []
+    dict_cp    = {}
+    dict_alphas = {}
+
+    for barra, data in resultados_stacking.items():
+        try:
+            best_pretty = best_by_barra.get(barra)
+            if best_pretty is None:
+                if verbose:
+                    print(f"[SKIP] {barra}: no aparece en df_mejores")
+                continue
+
+            best = mapping.get(best_pretty)
+            if best is None:
+                raise ValueError(f"estrategia '{best_pretty}' no está en el mapping")
+            if best not in data:
+                raise ValueError(f"'{best}' no existe en resultados_stacking[{barra}]")
+
+            y_val       = np.asarray(data[split_key][y_val_key],  dtype=float)
+            y_test      = np.asarray(data[split_key][y_test_key], dtype=float)
+            fechas_val  = data[split_key][fechas_val_key]
+            fechas_test = data[split_key][fechas_test_key]
+            yhat_val    = np.asarray(data[best][pred_val_key],  dtype=float)
+            yhat_test   = np.asarray(data[best][pred_test_key], dtype=float)
+
+            horas_val  = pd.DatetimeIndex(fechas_val).hour
+            horas_test = pd.DatetimeIndex(fechas_test).hour
+
+            # Estimar sigma_h desde calibración (VAL) — sin data leakage
+            errores_cal = np.abs(y_val - yhat_val)
+            sigma_h     = _estimar_sigma_h(errores_cal, horas_val, min_muestras_por_hora)
+            scores_cal  = errores_cal / sigma_h[horas_val]
+
+            # Loop ACP Online sobre score normalizado
+            n_test   = len(y_test)
+            lower    = np.empty(n_test)
+            upper    = np.empty(n_test)
+            alphas_t = np.empty(n_test)
+            errors_t = np.empty(n_test)
+            alpha_t  = alpha
+
+            n_cal = len(scores_cal)
+            for t in range(n_test):
+                q_level    = (1 - alpha_t) * (n_cal + 1) / n_cal
+                q_t        = np.quantile(scores_cal, min(q_level, 1.0), method='higher')
+                h_t        = horas_test[t]
+                lower[t]   = yhat_test[t] - q_t * sigma_h[h_t]
+                upper[t]   = yhat_test[t] + q_t * sigma_h[h_t]
+                err_t      = 1 - int((lower[t] <= y_test[t]) & (y_test[t] <= upper[t]))
+                errors_t[t] = err_t
+                alphas_t[t] = alpha_t
+                alpha_t    = np.clip(alpha_t + gamma * (alpha - err_t), 0.001, 0.999)
+
+            coverage   = float(np.mean((y_test >= lower) & (y_test <= upper)))
+            width      = float(np.mean(upper - lower))
+            mae        = float(np.mean(np.abs(y_test - yhat_test)))
+            rmse       = float(np.sqrt(np.mean((y_test - yhat_test) ** 2)))
+            alpha_mean = float(np.mean(alphas_t))
+            alpha_std  = float(np.std(alphas_t))
+            error_rate = float(np.mean(errors_t))
+
+            if verbose:
+                print(f"{barra:10s} | {best_pretty:30s} | coverage={coverage:.3f} | "
+                      f"width={width:.2f} | alpha_mean={alpha_mean:.4f}")
+
+            tabla.append({"Barra": barra, "Estrategia": best_pretty,
+                          "Coverage": coverage, "Expected": 1 - alpha,
+                          "Coverage_Diff": abs(coverage - (1 - alpha)),
+                          "Width": width, "MAE": mae, "RMSE": rmse,
+                          "N_test": n_test, "Gamma": gamma,
+                          "Alpha_Mean": alpha_mean, "Alpha_Std": alpha_std,
+                          "Error_Rate": error_rate})
+
+            dict_cp[barra] = {"y_test": y_test, "y_pred": yhat_test,
+                              "lower": lower, "upper": upper,
+                              "Estrategia": best_pretty,
+                              "coverage": coverage, "width": width,
+                              "mae": mae, "rmse": rmse,
+                              "sigma_h": sigma_h,
+                              "horas_test": np.asarray(horas_test)}
+
+            dict_alphas[barra] = {"alphas_t": alphas_t, "errors_t": errors_t}
+
+        except Exception as e:
+            print(f"  ERROR EN {barra}: {str(e)}")
+            traceback.print_exc()
+            continue
+
+    df_tabla = pd.DataFrame(tabla).sort_values("Barra").reset_index(drop=True)
+    return df_tabla, dict_cp, dict_alphas
+
+
+# ========================= CONFORMAL QUANTILE REGRESSION (CQR) ======================
+
+def cqr_implementation(resultados_stacking, df_mejores,
+                       alpha=0.05,
+                       n_folds=5,
+                       qr_l1=0.01,
+                       split_key="_datos_split",
+                       y_val_key="y_real_val", y_test_key="y_real_test",
+                       fechas_val_key="fechas_val", fechas_test_key="fechas_test",
+                       pred_val_key="prediccion_val", pred_test_key="prediccion_test",
+                       mapping='LN', verbose=True):
+    """
+    CQR: Conformalized Quantile Regression (Romano et al. 2019) con cross-conformal.
+
+    Features = [yhat, sin(2π·h/24), cos(2π·h/24)]  → captura heteroscedasticidad intradiaria.
+
+    Calibración via K-fold cross-conformal (sin shuffle, respeta orden temporal):
+      - Cada fold entrena QR en K-1 folds y calcula scores en el fold restante
+      - Se acumulan scores de todos los folds → q_cp más estable y sin desfase temporal
+      - QR final entrenado en val completo → mejor generalización al test
+
+    Esto evita el problema del split 70/30: el desfase de distribución temporal
+    entre la primera y segunda mitad de val inflaba q_cp artificialmente.
+    """
+    from sklearn.model_selection import KFold
+
+    mapping       = _get_mapping(mapping)
+    best_by_barra = df_mejores.set_index("Barra")["Mejor Estrategia"].to_dict()
+    tabla         = []
+    dict_cp       = {}
+
+    def _make_X(yhat, fechas):
+        h = pd.DatetimeIndex(fechas).hour
+        r = 2 * np.pi * h / 24
+        return np.column_stack([yhat, np.sin(r), np.cos(r)])
+
+    for barra, data in resultados_stacking.items():
+        try:
+            best_pretty = best_by_barra.get(barra)
+            if best_pretty is None:
+                if verbose:
+                    print(f"[SKIP] {barra}: no aparece en df_mejores")
+                continue
+
+            best = mapping.get(best_pretty)
+            if best is None:
+                raise ValueError(f"estrategia '{best_pretty}' no está en el mapping")
+            if best not in data:
+                raise ValueError(f"'{best}' no existe en resultados_stacking[{barra}]")
+
+            y_val       = np.asarray(data[split_key][y_val_key],  dtype=float)
+            y_test      = np.asarray(data[split_key][y_test_key], dtype=float)
+            fechas_val  = data[split_key][fechas_val_key]
+            fechas_test = data[split_key][fechas_test_key]
+            yhat_val    = np.asarray(data[best][pred_val_key],  dtype=float)
+            yhat_test   = np.asarray(data[best][pred_test_key], dtype=float)
+
+            X_val  = _make_X(yhat_val,  fechas_val)
+            X_test = _make_X(yhat_test, fechas_test)
+
+            # Paso 1: Cross-conformal — acumular scores de todos los folds
+            kf       = KFold(n_splits=n_folds, shuffle=False)
+            s_list   = []
+            for train_idx, calib_idx in kf.split(X_val):
+                qrl = QuantileRegressor(quantile=alpha / 2,     alpha=qr_l1, solver='highs')
+                qrh = QuantileRegressor(quantile=1 - alpha / 2, alpha=qr_l1, solver='highs')
+                qrl.fit(X_val[train_idx], y_val[train_idx])
+                qrh.fit(X_val[train_idx], y_val[train_idx])
+                s_fold = np.maximum(
+                    qrl.predict(X_val[calib_idx]) - y_val[calib_idx],
+                    y_val[calib_idx] - qrh.predict(X_val[calib_idx])
+                )
+                s_list.append(s_fold)
+
+            s_cal = np.concatenate(s_list)
+            n_c   = len(s_cal)
+            q_lev = np.ceil((1 - alpha) * (n_c + 1)) / (n_c + 1)
+            q_cp  = float(np.quantile(s_cal, q_lev, method='higher'))
+
+            # Paso 2: QR final entrenado en val completo
+            qr_low  = QuantileRegressor(quantile=alpha / 2,     alpha=qr_l1, solver='highs')
+            qr_high = QuantileRegressor(quantile=1 - alpha / 2, alpha=qr_l1, solver='highs')
+            qr_low.fit(X_val,  y_val)
+            qr_high.fit(X_val, y_val)
+
+            # Paso 3: Intervalos en test
+            lower = qr_low.predict(X_test)  - q_cp
+            upper = qr_high.predict(X_test) + q_cp
+            lower = np.maximum(lower, 0.0)
+
+            swap = lower > upper
+            if swap.any():
+                lower[swap], upper[swap] = upper[swap], lower[swap]
+
+            horas_test = pd.DatetimeIndex(fechas_test).hour
+            coverage   = float(np.mean((y_test >= lower) & (y_test <= upper)))
+            width      = float(np.mean(upper - lower))
+            mae        = float(np.mean(np.abs(y_test - yhat_test)))
+            rmse       = float(np.sqrt(np.mean((y_test - yhat_test) ** 2)))
+
+            if verbose:
+                print(f"{barra:10s} | {best_pretty:30s} | coverage={coverage:.3f} | "
+                      f"width={width:.2f} | q_cp={q_cp:.2f}")
+
+            tabla.append({"Barra": barra, "Estrategia": best_pretty,
+                          "Coverage": coverage, "Expected": 1 - alpha,
+                          "Coverage_Diff": abs(coverage - (1 - alpha)),
+                          "Width": width, "MAE": mae, "RMSE": rmse,
+                          "q_cp": q_cp, "N_test": len(y_test)})
+
+            dict_cp[barra] = {"y_test": y_test, "y_pred": yhat_test,
+                              "lower": lower, "upper": upper,
+                              "Estrategia": best_pretty,
+                              "coverage": coverage, "width": width,
+                              "mae": mae, "rmse": rmse,
+                              "q_cp": q_cp,
+                              "horas_test": np.asarray(horas_test)}
+
+        except Exception as e:
+            print(f"  ERROR EN {barra}: {str(e)}")
+            traceback.print_exc()
+            continue
+
+    df_tabla = pd.DataFrame(tabla).sort_values("Barra").reset_index(drop=True)
+    return df_tabla, dict_cp
+
+
+# ========================= FIGURA COMPARATIVA POR HORA ======================
+
+def plot_cp_por_hora(metodos, resultados_stacking, barra, alpha=0.05, figsize=(16, 7)):
+    """
+    Compara coverage y width por hora del día para múltiples métodos CP.
+
+    metodos : dict { nombre: cp_dict }
+        cp_dict : { barra: {'y_test', 'lower', 'upper', ...} }
+        Si el resultado tiene 'horas_test', se usa directamente.
+        Si tiene 'mask_test', se aplica sobre fechas_test del stacking.
+        Si no tiene ninguno, se asume alineación completa con fechas_test.
+    """
+    horas_full = pd.DatetimeIndex(
+        resultados_stacking[barra]['_datos_split']['fechas_test']
+    ).hour
+
+    colores  = ['#2196F3', '#4CAF50', '#FF9800', '#E91E63',
+                '#9C27B0', '#00BCD4', '#FF5722', '#607D8B']
+    marcadores = ['o', 's', '^', 'D', 'v', 'P', 'X', '*']
+
+    fig, axes = plt.subplots(1, 2, figsize=figsize)
+    fig.suptitle(f'Análisis por hora del día — {barra}', fontsize=14, fontweight='bold')
+
+    for (nombre, cp_dict), color, marker in zip(metodos.items(), colores, marcadores):
+        if barra not in cp_dict:
+            continue
+        res    = cp_dict[barra]
+        y_test = np.asarray(res['y_test'])
+        lower  = np.asarray(res['lower'])
+        upper  = np.asarray(res['upper'])
+
+        # Obtener array de horas alineado con y_test / lower / upper
+        if 'horas_test' in res:
+            horas = np.asarray(res['horas_test'])
+        elif 'mask_test' in res:
+            horas = horas_full[np.asarray(res['mask_test'])]
+        else:
+            horas = horas_full[:len(y_test)]
+
+        n = min(len(y_test), len(lower), len(upper), len(horas))
+        y_test, lower, upper, horas = y_test[:n], lower[:n], upper[:n], horas[:n]
+
+        cov_h   = []
+        width_h = []
+        for h in range(24):
+            mask_h = horas == h
+            if mask_h.sum() == 0:
+                cov_h.append(np.nan)
+                width_h.append(np.nan)
+            else:
+                cov_h.append(float(np.mean((y_test[mask_h] >= lower[mask_h]) &
+                                           (y_test[mask_h] <= upper[mask_h]))))
+                width_h.append(float(np.mean(upper[mask_h] - lower[mask_h])))
+
+        x = np.arange(24)
+        axes[0].plot(x, cov_h,   marker=marker, color=color, lw=2, label=nombre)
+        axes[1].plot(x, width_h, marker=marker, color=color, lw=2, label=nombre)
+
+    # Panel coverage
+    axes[0].axhline(1 - alpha, color='red', ls='--', lw=1.5,
+                    label=f'Objetivo ({1 - alpha:.0%})')
+    axes[0].set_xlabel('Hora del día', fontsize=11)
+    axes[0].set_ylabel('Coverage', fontsize=11)
+    axes[0].set_title('Coverage por hora', fontsize=12, fontweight='bold')
+    axes[0].set_xticks(range(24))
+    axes[0].legend(fontsize=9)
+    axes[0].grid(True, alpha=0.3)
+
+    # Panel width
+    axes[1].set_xlabel('Hora del día', fontsize=11)
+    axes[1].set_ylabel('Width (USD/MWh)', fontsize=11)
+    axes[1].set_title('Width promedio por hora', fontsize=12, fontweight='bold')
+    axes[1].set_xticks(range(24))
+    axes[1].legend(fontsize=9)
+    axes[1].grid(True, alpha=0.3)
+
+    # Sombrear horas de transición solar
+    for ax in axes:
+        for h in [7, 8, 19, 20, 21]:
+            ax.axvspan(h - 0.5, h + 0.5, alpha=0.10, color='gold', zorder=0)
+
+    plt.tight_layout()
+    plt.show()
+
+
 # ========================= Funciones extras ======================
 
 # Función para graficar los intervalos de conformal prediction de LN y DyT
@@ -706,3 +1166,287 @@ def plot_cp(lista_barras, cp_ln, cp_dyt, resultados_stacking_ln, resultados_stac
         else:
             plt.close(fig)
             print(f'[INFO] Ningún resultado para barra {barra}, gráfico no mostrado.')
+
+
+# ========================= COMPARATIVA GENERAL DE MÉTODOS CP ======================
+
+def comparativa_metodos_cp(todos_metodos, lista_barras, alpha=0.05):
+    """
+    Genera tablas y gráficas comparativas para múltiples métodos de CP.
+
+    Parámetros
+    ----------
+    todos_metodos : dict
+        Diccionario con la estructura:
+        {
+          'Nombre Método': {
+              'ln':     df_ln,     # DataFrame con columnas Barra, Coverage, Width, MAE, RMSE
+              'dyt':    df_dyt,
+              'cp_ln':  cp_ln,     # dict barra -> resultados (no usado en tablas, solo referencia)
+              'cp_dyt': cp_dyt,
+              'color':  '#RRGGBB',
+              'marker': 'o'
+          }, ...
+        }
+    lista_barras : list[str]
+        Barras a incluir en el análisis.
+    alpha : float
+        Nivel de significancia objetivo (default 0.05 → cobertura objetivo 95%).
+
+    Retorna
+    -------
+    df_tabla_general, df_tabla_por_barra : pd.DataFrame
+    """
+
+    from IPython.display import display
+
+    target_cov = 1 - alpha
+
+    # ── 1. TABLA GENERAL ──────────────────────────────────────────────────────
+    print("\n" + "="*150)
+    print("TABLA 1: COMPARATIVA GENERAL - TODOS LOS MÉTODOS CP")
+    print("="*150 + "\n")
+
+    tabla_general = []
+    for metodo_nombre, md in todos_metodos.items():
+        cov_ln   = md['ln']['Coverage'].mean()
+        cov_dyt  = md['dyt']['Coverage'].mean()
+        cov_prom = (cov_ln + cov_dyt) / 2
+
+        w_ln   = md['ln']['Width'].mean()
+        w_dyt  = md['dyt']['Width'].mean()
+        w_prom = (w_ln + w_dyt) / 2
+
+        mae_ln   = md['ln']['MAE'].mean()
+        mae_dyt  = md['dyt']['MAE'].mean()
+        mae_prom = (mae_ln + mae_dyt) / 2
+
+        rmse_ln   = md['ln']['RMSE'].mean()
+        rmse_dyt  = md['dyt']['RMSE'].mean()
+        rmse_prom = (rmse_ln + rmse_dyt) / 2
+
+        tabla_general.append({
+            'Método':             metodo_nombre,
+            'Coverage_LN':        f"{cov_ln:.4f}",
+            'Coverage_DyT':       f"{cov_dyt:.4f}",
+            'Coverage_Promedio':  f"{cov_prom:.4f}",
+            'Coverage_Error':     f"{abs(cov_prom - target_cov):.4f}",
+            'Width_LN':           f"{w_ln:.2f}",
+            'Width_DyT':          f"{w_dyt:.2f}",
+            'Width_Promedio':     f"{w_prom:.2f}",
+            'MAE_LN':             f"{mae_ln:.4f}",
+            'MAE_DyT':            f"{mae_dyt:.4f}",
+            'MAE_Promedio':       f"{mae_prom:.4f}",
+            'RMSE_Promedio':      f"{rmse_prom:.4f}",
+        })
+
+    df_tabla_general = pd.DataFrame(tabla_general)
+    display(df_tabla_general)
+
+    # ── 2. TABLA POR BARRA ────────────────────────────────────────────────────
+    print("\n" + "="*200)
+    print("TABLA 2: COMPARATIVA POR BARRA")
+    print("="*200 + "\n")
+
+    tabla_por_barra = []
+    for barra in lista_barras:
+        for metodo_nombre, md in todos_metodos.items():
+            df_ln  = md['ln']
+            df_dyt = md['dyt']
+
+            rows_ln  = df_ln[df_ln['Barra'] == barra]
+            rows_dyt = df_dyt[df_dyt['Barra'] == barra]
+            if rows_ln.empty or rows_dyt.empty:
+                continue
+
+            r_ln  = rows_ln.iloc[0]
+            r_dyt = rows_dyt.iloc[0]
+
+            cov_prom  = (r_ln['Coverage'] + r_dyt['Coverage']) / 2
+            w_prom    = (r_ln['Width']    + r_dyt['Width'])    / 2
+            mae_prom  = (r_ln['MAE']      + r_dyt['MAE'])      / 2
+            rmse_prom = (r_ln['RMSE']     + r_dyt['RMSE'])     / 2
+
+            tabla_por_barra.append({
+                'Barra':             barra,
+                'Método':            metodo_nombre,
+                'Coverage_LN':       f"{r_ln['Coverage']:.4f}",
+                'Coverage_DyT':      f"{r_dyt['Coverage']:.4f}",
+                'Coverage_Promedio': f"{cov_prom:.4f}",
+                'Width_Promedio':    f"{w_prom:.2f}",
+                'MAE_Promedio':      f"{mae_prom:.4f}",
+                'RMSE_Promedio':     f"{rmse_prom:.4f}",
+            })
+
+    df_tabla_por_barra = pd.DataFrame(tabla_por_barra)
+    display(df_tabla_por_barra)
+
+    # ── 3. RANKINGS ───────────────────────────────────────────────────────────
+    print("\n" + "="*150)
+    print("TABLA 3: RANKINGS - MEJOR MÉTODO POR MÉTRICA")
+    print("="*150 + "\n")
+
+    def _ranking_barra(metrica_fn, reverse=True):
+        rows = []
+        for barra in lista_barras:
+            scores = []
+            for metodo_nombre, md in todos_metodos.items():
+                r_ln  = md['ln'][md['ln']['Barra'] == barra]
+                r_dyt = md['dyt'][md['dyt']['Barra'] == barra]
+                if r_ln.empty or r_dyt.empty:
+                    continue
+                val = metrica_fn(r_ln.iloc[0], r_dyt.iloc[0])
+                scores.append((metodo_nombre, val))
+            scores.sort(key=lambda x: x[1], reverse=reverse)
+            row = {'Barra': barra}
+            labels = ['1er Lugar', '2do Lugar', '3er Lugar', '4to Lugar']
+            for i, (nombre, val) in enumerate(scores[:4]):
+                fmt = f"{nombre} ({val:.4f})"
+                row[labels[i]] = fmt
+            rows.append(row)
+        return pd.DataFrame(rows)
+
+    print("COVERAGE (más alto = mejor):")
+    df_rank_cov = _ranking_barra(
+        lambda ln, dyt: (ln['Coverage'] + dyt['Coverage']) / 2,
+        reverse=True
+    )
+    print(df_rank_cov.to_string(index=False))
+
+    print("\n\nWIDTH (más bajo = mejor):")
+    df_rank_w = _ranking_barra(
+        lambda ln, dyt: (ln['Width'] + dyt['Width']) / 2,
+        reverse=False
+    )
+    print(df_rank_w.to_string(index=False))
+
+    # ── 4. GRÁFICAS ───────────────────────────────────────────────────────────
+    print("\n\n" + "="*150)
+    print("CREANDO GRÁFICAS COMPARATIVAS...")
+    print("="*150)
+
+    n_cols = 2
+    n_rows = (len(lista_barras) + n_cols - 1) // n_cols
+
+    def _bar_chart(metrica_fn, ylabel, titulo_fig, fmt='.2f', hline=None):
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=(16, 5 * n_rows))
+        axes = np.array(axes).flatten()
+        fig.suptitle(titulo_fig, fontsize=16, fontweight='bold')
+
+        for idx, barra in enumerate(lista_barras):
+            ax = axes[idx]
+            vals, nombres, colores = [], [], []
+            for metodo_nombre, md in todos_metodos.items():
+                r_ln  = md['ln'][md['ln']['Barra'] == barra]
+                r_dyt = md['dyt'][md['dyt']['Barra'] == barra]
+                if r_ln.empty or r_dyt.empty:
+                    continue
+                vals.append(metrica_fn(r_ln.iloc[0], r_dyt.iloc[0]))
+                nombres.append(metodo_nombre)
+                colores.append(md['color'])
+
+            bars = ax.bar(nombres, vals, color=colores, alpha=0.7, edgecolor='black', linewidth=2)
+            if hline is not None:
+                ax.axhline(hline, color='red', linestyle='--', linewidth=2, label=f'Objetivo ({hline:.0%})')
+                ax.legend()
+            ax.set_ylabel(ylabel, fontsize=11, fontweight='bold')
+            ax.set_title(barra, fontsize=12, fontweight='bold')
+            ax.grid(axis='y', alpha=0.3)
+            ax.tick_params(axis='x', rotation=45)
+            for bar, val in zip(bars, vals):
+                label = f'{val:{fmt}}' if fmt != '.2%' else f'{val:.2%}'
+                ax.text(bar.get_x() + bar.get_width() / 2., bar.get_height(),
+                        label, ha='center', va='bottom', fontweight='bold', fontsize=9)
+
+        for j in range(len(lista_barras), len(axes)):
+            axes[j].set_visible(False)
+        plt.tight_layout()
+        plt.show()
+
+    _bar_chart(
+        lambda ln, dyt: (ln['Coverage'] + dyt['Coverage']) / 2,
+        'Coverage', f'Comparativa Coverage — {len(todos_metodos)} Métodos CP',
+        fmt='.2%', hline=target_cov
+    )
+    _bar_chart(
+        lambda ln, dyt: (ln['Width'] + dyt['Width']) / 2,
+        'Width (USD/MWh)', f'Comparativa Width — {len(todos_metodos)} Métodos CP',
+        fmt='.1f'
+    )
+    _bar_chart(
+        lambda ln, dyt: (ln['MAE'] + dyt['MAE']) / 2,
+        'MAE (USD/MWh)', f'Comparativa MAE — {len(todos_metodos)} Métodos CP',
+        fmt='.2f'
+    )
+
+    # Scatter Coverage vs Width
+    fig, ax = plt.subplots(figsize=(15, 9))
+    for metodo_nombre, md in todos_metodos.items():
+        coverages, widths = [], []
+        for barra in lista_barras:
+            r_ln  = md['ln'][md['ln']['Barra'] == barra]
+            r_dyt = md['dyt'][md['dyt']['Barra'] == barra]
+            if r_ln.empty or r_dyt.empty:
+                continue
+            coverages.append((r_ln.iloc[0]['Coverage'] + r_dyt.iloc[0]['Coverage']) / 2)
+            widths.append((r_ln.iloc[0]['Width'] + r_dyt.iloc[0]['Width']) / 2)
+        ax.scatter(widths, coverages, s=350, marker=md['marker'],
+                   label=metodo_nombre, color=md['color'], alpha=0.7,
+                   edgecolors='black', linewidth=2)
+        for i, barra in enumerate(lista_barras):
+            if i < len(widths):
+                ax.annotate(barra, (widths[i], coverages[i]), fontsize=8,
+                            ha='center', fontweight='bold')
+    ax.axhline(target_cov, color='red', linestyle='--', linewidth=2, alpha=0.5,
+               label=f'Objetivo Coverage ({target_cov:.0%})')
+    ax.set_xlabel('Width (USD/MWh)', fontsize=12, fontweight='bold')
+    ax.set_ylabel('Coverage', fontsize=12, fontweight='bold')
+    ax.set_title(f'Trade-off: Coverage vs Width — {len(todos_metodos)} Métodos CP',
+                 fontsize=14, fontweight='bold')
+    ax.grid(True, alpha=0.3)
+    ax.legend(fontsize=11)
+    plt.show()
+
+    # Heatmaps Coverage LN / DyT
+    fig, axes = plt.subplots(1, 2, figsize=(18, 6))
+    for ax, split in zip(axes, ['ln', 'dyt']):
+        data = []
+        for md in todos_metodos.values():
+            row = []
+            for barra in lista_barras:
+                r = md[split][md[split]['Barra'] == barra]
+                row.append(r.iloc[0]['Coverage'] if not r.empty else 0)
+            data.append(row)
+        sns.heatmap(data, annot=True, fmt='.4f', cmap='RdYlGn',
+                    center=target_cov, vmin=0.88, vmax=0.96,
+                    xticklabels=lista_barras,
+                    yticklabels=list(todos_metodos.keys()),
+                    ax=ax, cbar_kws={'label': 'Coverage'})
+        ax.set_title(f'Heatmap Coverage — {split.upper()} Strategy',
+                     fontsize=12, fontweight='bold')
+    plt.tight_layout()
+    plt.show()
+
+    # ── 5. RESUMEN EJECUTIVO ──────────────────────────────────────────────────
+    print("\n" + "="*180)
+    print("TABLA 4: RESUMEN EJECUTIVO")
+    print("="*180 + "\n")
+
+    resumen_rows = []
+    for i, row in df_tabla_general.iterrows():
+        resumen_rows.append({
+            'Método':            row['Método'],
+            'Coverage Promedio': row['Coverage_Promedio'],
+            'Coverage Error':    row['Coverage_Error'],
+            'Width Promedio':    f"{row['Width_Promedio']} USD/MWh",
+            'MAE Promedio':      f"{row['MAE_Promedio']} USD/MWh",
+            'RMSE Promedio':     f"{row['RMSE_Promedio']} USD/MWh",
+        })
+    df_resumen = pd.DataFrame(resumen_rows)
+    print(df_resumen.to_string(index=False))
+
+    print("\n" + "="*180)
+    print("COMPARATIVA COMPLETADA")
+    print("="*180)
+
+    return df_tabla_general, df_tabla_por_barra
