@@ -4,7 +4,12 @@
     "yearly",
     "weekly",
     "daily",
-    "is_holiday"
+    "is_holiday",
+    "es_horario_verano",
+    "hora_utc_sin",
+    "hora_utc_cos",
+    "elevacion_solar",
+    "cos_elevacion"
   ],
   "unknown_reals_price": [
     "y_real",

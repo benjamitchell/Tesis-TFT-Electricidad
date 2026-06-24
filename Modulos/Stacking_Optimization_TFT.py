@@ -383,7 +383,8 @@ def stacking_optimization(lista_barras,
                           linestyles=['-'],
                           colormap = 'cividis',
                           colores_personalizados=None,
-                          datos_evaluacion=None):
+                          datos_evaluacion=None,
+                          mostrar_grafico=True):
 
     resultados_stacking = {}
     tamanios_conjuntos = {}
@@ -726,13 +727,14 @@ def stacking_optimization(lista_barras,
     df_comparacion['R²'] = df_comparacion['R²'].round(4)
     
     # Visualizamos los resultados
-    grafico_lineas(df_comparacion, 
-                   modo='estrategias', 
-                   metricas=metricas_grafico, 
-                   nombre_modelo=nombre_modelo,
-                   linestyles=linestyles, 
-                   colormap = colormap, 
-                   colores_personalizados=colores_personalizados)
+    if mostrar_grafico:
+        grafico_lineas(df_comparacion,
+                       modo='estrategias',
+                       metricas=metricas_grafico,
+                       nombre_modelo=nombre_modelo,
+                       linestyles=linestyles,
+                       colormap = colormap,
+                       colores_personalizados=colores_personalizados)
 
     # Tabla resumen de las mejores estrategias por barra
     print("\n" + "="*80)
@@ -741,20 +743,20 @@ def stacking_optimization(lista_barras,
     print("="*80 + "\n")
     
     datos_mejores = []
-    
+
     for barra in lista_barras:
-        
-        mejor_mae_test = np.inf
+
+        mejor_score_test = np.inf
         mejor_info = None
-        
+
         for key, resultado in resultados_stacking[barra].items():
             if key.startswith('_'):
                 continue
-            
-            mae_test = resultado['metricas_test']['MAE']
-            
-            if mae_test < mejor_mae_test:
-                mejor_mae_test = mae_test
+
+            score_test = resultado['metricas_test'][metrica_optimizacion]
+
+            if score_test < mejor_score_test:
+                mejor_score_test = score_test
                 mejor_info = {
                     'barra': barra,
                     'estrategia': resultado['nombre'],
@@ -1512,23 +1514,23 @@ def graficar_stacking(resultados_stacking, lista_barras,
     # ── Tabla de mejores estrategias ───────────────────────────────────────────
     mejores = []
     for barra in lista_barras:
-        mejor_mae = np.inf
+        mejor_score = np.inf
         mejor_resultado = None
         for key, resultado in resultados_stacking[barra].items():
             if key.startswith('_') or key == 'TFT_Residuos_Solo':
                 continue
-            mae_test = resultado['metricas_test']['MAE']
-            if mae_test < mejor_mae:
-                mejor_mae = mae_test
+            score_test = resultado['metricas_test'][metrica_mejor]
+            if score_test < mejor_score:
+                mejor_score = score_test
                 mejor_resultado = resultado
 
         pesos_str = ('No aplica' if mejor_resultado['pesos'] is None
                      else ', '.join([f'{k}={v:.3f}' for k, v in mejor_resultado['pesos'].items()]))
 
-        mae_prophet_test = resultados_stacking[barra]['Prophet_Solo']['metricas_test']['MAE']
-        mae_tft_test     = resultados_stacking[barra]['TFT_Precios_Solo']['metricas_test']['MAE']
-        mejora_prophet = ((mae_prophet_test - mejor_mae) / mae_prophet_test * 100) if mae_prophet_test > 0 else 0
-        mejora_tft     = ((mae_tft_test - mejor_mae) / mae_tft_test * 100) if mae_tft_test > 0 else 0
+        score_prophet_test = resultados_stacking[barra]['Prophet_Solo']['metricas_test'][metrica_mejor]
+        score_tft_test     = resultados_stacking[barra]['TFT_Precios_Solo']['metricas_test'][metrica_mejor]
+        mejora_prophet = ((score_prophet_test - mejor_score) / score_prophet_test * 100) if score_prophet_test > 0 else 0
+        mejora_tft     = ((score_tft_test - mejor_score) / score_tft_test * 100) if score_tft_test > 0 else 0
 
         mejores.append({
             'Barra': barra,
@@ -1836,3 +1838,113 @@ def grafico_zoom_ultimos_dias(resultados_stacking,
 
 #grafico_metricas_test(df_stacking_ln, nombre_modelo='TFT_LN')
 #grafico_zoom_ultimos_dias(resultados_stacking_ln, nombre_modelo='TFT_LN', n_dias=30)
+
+
+# ======================== ANÁLISIS DE DISTRIBUCIÓN DE ERRORES ==============================
+
+def error_distribucion(resultados_stacking, lista_barras, titulo_modelo=''):
+    n_cols = 2
+    n_rows = (len(lista_barras) + n_cols - 1) // n_cols
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(14, 3.5 * n_rows))
+    axes = axes.flatten()
+
+    filas_tabla = []
+
+    for idx, barra in enumerate(lista_barras):
+        ax = axes[idx]
+
+        datos = resultados_stacking[barra]
+        y_val = np.array(datos['_datos_split']['y_real_val'])
+
+        estrategias = [k for k in datos if not k.startswith('_')]
+        maes = {
+            est: np.abs(y_val - np.array(datos[est]['prediccion_val'])).mean()
+            for est in estrategias
+        }
+        mejor_estrategia = min(maes, key=maes.get)
+
+        errores = np.abs(y_val - np.array(datos[mejor_estrategia]['prediccion_val']))
+
+        mae = errores.mean()
+        p90 = np.percentile(errores, 90)
+        p95 = np.percentile(errores, 95)
+        p99 = np.percentile(errores, 99)
+        maximo = errores.max()
+
+        filas_tabla.append({
+            "Barra":      barra,
+            "Estrategia": mejor_estrategia,
+            "MAE":        mae,
+            "P90":        p90,
+            "P95":        p95,
+            "P99":        p99,
+            "Máximo":     maximo
+        })
+
+        ax.hist(errores, bins=100, edgecolor='none', color='steelblue', alpha=0.8)
+        ax.axvline(mae, color='red',    linestyle='--', label=f'MAE = {mae:.1f}')
+        ax.axvline(p90, color='orange', linestyle='--', label=f'P90 = {p90:.1f}')
+        ax.axvline(p95, color='purple', linestyle='--', label=f'P95 = {p95:.1f}')
+        ax.set_xlabel('Error absoluto (USD/MWh)', fontsize=9)
+        ax.set_ylabel('Frecuencia', fontsize=9)
+        ax.set_title(f'{barra}  [{mejor_estrategia}]', fontsize=10, fontweight='bold')
+        ax.legend(fontsize=8)
+
+    for j in range(idx + 1, len(axes)):
+        axes[j].set_visible(False)
+
+    sufijo = f' — {titulo_modelo}' if titulo_modelo else ''
+    plt.suptitle(f'Distribución de errores absolutos — mejor estrategia por barra (validación){sufijo}',
+                 fontsize=13, fontweight='bold')
+    plt.tight_layout()
+    plt.show()
+
+    df_errores = pd.DataFrame(filas_tabla).round(2)
+    try:
+        from IPython.display import display
+        display(df_errores)
+    except Exception:
+        print(df_errores.to_string(index=False))
+    return df_errores
+
+
+def analizar_errores_barra(resultados_stacking, barra, estrategia, top_n=10, ventana_horas=48):
+    y_val = np.array(resultados_stacking[barra]['_datos_split']['y_real_val'])
+    yhat_val = np.array(resultados_stacking[barra][estrategia]['prediccion_val'])
+    timestamps_val = resultados_stacking[barra]['_datos_split']['fechas_val']
+
+    errores = np.abs(y_val - yhat_val)
+
+    df = pd.DataFrame({
+        'timestamp': timestamps_val,
+        'y_real':    y_val,
+        'y_pred':    yhat_val,
+        'error_abs': errores
+    }).sort_values('error_abs', ascending=False)
+
+    try:
+        from IPython.display import display
+        print(f"\nTop {top_n} errores más grandes — {barra} [{estrategia}]")
+        display(df.head(top_n))
+    except Exception:
+        print(df.head(top_n).to_string())
+
+    ts_series = pd.Series(timestamps_val)
+    for rank, (idx, row) in enumerate(df.head(top_n).iterrows(), start=1):
+        t = row['timestamp']
+        mascara = (ts_series >= t - pd.Timedelta(hours=ventana_horas)) & \
+                  (ts_series <= t + pd.Timedelta(hours=ventana_horas))
+
+        plt.figure(figsize=(12, 4))
+        plt.plot(ts_series[mascara], y_val[mascara],
+                 label='Real', color='blue')
+        plt.plot(ts_series[mascara], yhat_val[mascara],
+                 label='Predicción', color='red', linestyle='--')
+        plt.axvline(t, color='orange', linestyle=':',
+                    label=f'Error: {row["error_abs"]:.1f}')
+        plt.title(f'{barra} [{estrategia}] — Error #{rank}: {t}')
+        plt.legend()
+        plt.tight_layout()
+        plt.show()
+
+    return df
