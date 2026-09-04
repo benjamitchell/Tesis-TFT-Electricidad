@@ -1,0 +1,202 @@
+{
+  "LN": {
+    "ATACAMA": {
+      "mejor_estrategia": "Prophet_Residuos_Precios",
+      "nombre": "(Prophet + Residuos) + TFT_LN Precios",
+      "pesos": {
+        "w_prophet_residuos": 0.6225,
+        "w_tft_precios": 0.37749999999999995
+      },
+      "mae_test": 7.095910509413586,
+      "mae_prophet_solo": 19.8592071458179,
+      "mae_tft_solo": 6.945447204196329,
+      "delta_prophet_pct": 64.26891336944489,
+      "delta_tft_pct": -2.166358778544159
+    },
+    "CARDONES": {
+      "mejor_estrategia": "Prophet_Residuos_Precios",
+      "nombre": "(Prophet + Residuos) + TFT_LN Precios",
+      "pesos": {
+        "w_prophet_residuos": 0.5980000000000001,
+        "w_tft_precios": 0.4019999999999999
+      },
+      "mae_test": 6.725662109793062,
+      "mae_prophet_solo": 21.454125300200385,
+      "mae_tft_solo": 7.015884281672406,
+      "delta_prophet_pct": 68.65096098916584,
+      "delta_tft_pct": 4.136644223700951
+    },
+    "CHARRUA": {
+      "mejor_estrategia": "Prophet_Residuos_Precios",
+      "nombre": "(Prophet + Residuos) + TFT_LN Precios",
+      "pesos": {
+        "w_prophet_residuos": 0.42650000000000005,
+        "w_tft_precios": 0.5734999999999999
+      },
+      "mae_test": 8.317433005424624,
+      "mae_prophet_solo": 25.34668669407294,
+      "mae_tft_solo": 8.524442517861425,
+      "delta_prophet_pct": 67.18532443386549,
+      "delta_tft_pct": 2.428422879303259
+    },
+    "CRUCERO": {
+      "mejor_estrategia": "Prophet_Residuos_Precios",
+      "nombre": "(Prophet + Residuos) + TFT_LN Precios",
+      "pesos": {
+        "w_prophet_residuos": 0.549,
+        "w_tft_precios": 0.45099999999999996
+      },
+      "mae_test": 6.859548845664269,
+      "mae_prophet_solo": 23.07279474432512,
+      "mae_tft_solo": 7.062445052140705,
+      "delta_prophet_pct": 70.26996979916612,
+      "delta_tft_pct": 2.872888992105315
+    },
+    "P.AZUCAR": {
+      "mejor_estrategia": "Prophet_Residuos_Precios",
+      "nombre": "(Prophet + Residuos) + TFT_LN Precios",
+      "pesos": {
+        "w_prophet_residuos": 0.20600000000000002,
+        "w_tft_precios": 0.794
+      },
+      "mae_test": 7.047318080392738,
+      "mae_prophet_solo": 23.100297820241384,
+      "mae_tft_solo": 7.1735784427204266,
+      "delta_prophet_pct": 69.49252284436955,
+      "delta_tft_pct": 1.7600750216346217
+    },
+    "P.MONTT": {
+      "mejor_estrategia": "TFT_Precios_Solo",
+      "nombre": "TFT_LN Precios Solo",
+      "pesos": null,
+      "mae_test": 13.938711123818644,
+      "mae_prophet_solo": 48.15334868273868,
+      "mae_tft_solo": 13.938711123818644,
+      "delta_prophet_pct": 71.05349574822988,
+      "delta_tft_pct": 0.0
+    },
+    "QUILLOTA": {
+      "mejor_estrategia": "Prophet_Residuos_Precios",
+      "nombre": "(Prophet + Residuos) + TFT_LN Precios",
+      "pesos": {
+        "w_prophet_residuos": 0.402,
+        "w_tft_precios": 0.598
+      },
+      "mae_test": 8.6152579064949,
+      "mae_prophet_solo": 24.282822912146877,
+      "mae_tft_solo": 8.7024351286687,
+      "delta_prophet_pct": 64.52118463465246,
+      "delta_tft_pct": 1.0017566449488289
+    },
+    "TARAPACA": {
+      "mejor_estrategia": "Prophet_Residuos_Precios",
+      "nombre": "(Prophet + Residuos) + TFT_LN Precios",
+      "pesos": {
+        "w_prophet_residuos": 0.42650000000000005,
+        "w_tft_precios": 0.5734999999999999
+      },
+      "mae_test": 7.056976696931756,
+      "mae_prophet_solo": 23.184746075620296,
+      "mae_tft_solo": 7.140591521742373,
+      "delta_prophet_pct": 69.56198409974196,
+      "delta_tft_pct": 1.170978966602674
+    }
+  },
+  "DyT": {
+    "ATACAMA": {
+      "mejor_estrategia": "TFT_Precios_Solo",
+      "nombre": "TFT_DyT Precios Solo",
+      "pesos": null,
+      "mae_test": 7.246839224097528,
+      "mae_prophet_solo": 19.8592071458179,
+      "mae_tft_solo": 7.246839224097528,
+      "delta_prophet_pct": 63.508919712217114,
+      "delta_tft_pct": 0.0
+    },
+    "CARDONES": {
+      "mejor_estrategia": "Prophet_Residuos_Precios",
+      "nombre": "(Prophet + Residuos) + TFT_DyT Precios",
+      "pesos": {
+        "w_prophet_residuos": 0.549,
+        "w_tft_precios": 0.45099999999999996
+      },
+      "mae_test": 7.177821022032989,
+      "mae_prophet_solo": 21.454125300200385,
+      "mae_tft_solo": 7.105699132320305,
+      "delta_prophet_pct": 66.5433993621453,
+      "delta_tft_pct": -1.0149865392504072
+    },
+    "CHARRUA": {
+      "mejor_estrategia": "Prophet_Residuos_Precios",
+      "nombre": "(Prophet + Residuos) + TFT_DyT Precios",
+      "pesos": {
+        "w_prophet_residuos": 0.42650000000000005,
+        "w_tft_precios": 0.5734999999999999
+      },
+      "mae_test": 8.450591814758448,
+      "mae_prophet_solo": 25.34668669407294,
+      "mae_tft_solo": 8.730586260733302,
+      "delta_prophet_pct": 66.65997447021533,
+      "delta_tft_pct": 3.2070520536995004
+    },
+    "CRUCERO": {
+      "mejor_estrategia": "TFT_Precios_Solo",
+      "nombre": "TFT_DyT Precios Solo",
+      "pesos": null,
+      "mae_test": 7.214803307533954,
+      "mae_prophet_solo": 23.07279474432512,
+      "mae_tft_solo": 7.214803307533954,
+      "delta_prophet_pct": 68.73025835195594,
+      "delta_tft_pct": 0.0
+    },
+    "P.AZUCAR": {
+      "mejor_estrategia": "Prophet_Residuos_Precios",
+      "nombre": "(Prophet + Residuos) + TFT_DyT Precios",
+      "pesos": {
+        "w_prophet_residuos": 0.7205,
+        "w_tft_precios": 0.27949999999999997
+      },
+      "mae_test": 7.080266611806182,
+      "mae_prophet_solo": 23.100297820241384,
+      "mae_tft_solo": 7.31128090450924,
+      "delta_prophet_pct": 69.34989034815744,
+      "delta_tft_pct": 3.159696580124284
+    },
+    "P.MONTT": {
+      "mejor_estrategia": "Prophet_Residuos_Precios",
+      "nombre": "(Prophet + Residuos) + TFT_DyT Precios",
+      "pesos": {
+        "w_prophet_residuos": 0.42500000000000004,
+        "w_tft_precios": 0.575
+      },
+      "mae_test": 13.710946888050096,
+      "mae_prophet_solo": 48.15334868273868,
+      "mae_tft_solo": 13.965015826278306,
+      "delta_prophet_pct": 71.52649345659111,
+      "delta_tft_pct": 1.8193243845103444
+    },
+    "QUILLOTA": {
+      "mejor_estrategia": "Prophet_Residuos_Precios",
+      "nombre": "(Prophet + Residuos) + TFT_DyT Precios",
+      "pesos": {
+        "w_prophet_residuos": 0.35300000000000004,
+        "w_tft_precios": 0.647
+      },
+      "mae_test": 8.891382566576766,
+      "mae_prophet_solo": 24.282822912146877,
+      "mae_tft_solo": 9.020478172660821,
+      "delta_prophet_pct": 63.38406535868994,
+      "delta_tft_pct": 1.431139276799284
+    },
+    "TARAPACA": {
+      "mejor_estrategia": "TFT_Precios_Solo",
+      "nombre": "TFT_DyT Precios Solo",
+      "pesos": null,
+      "mae_test": 7.498235443549204,
+      "mae_prophet_solo": 23.184746075620296,
+      "mae_tft_solo": 7.498235443549204,
+      "delta_prophet_pct": 67.65875537695061,
+      "delta_tft_pct": 0.0
+    }
+  }
+}

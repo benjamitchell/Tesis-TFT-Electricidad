@@ -112,7 +112,7 @@ La estrategia adoptada en este trabajo consiste en entrenar un modelo independie
 
 \section{Prophet}
 
-Prophet es un modelo de forecasting se series temporales desarrollado por Taylor y Letham (2018) en Meta \cite{Prophet}, diseñado para producir predicciones interpretables en series con patrones estacionales fuertes, missing values y cambios de tendencia abruptos. A diferencia de los modelos estadisticos clásicos como ARIMA y sus variantes, Prophet no requiere que la serie sea estacionaria ni impone supuestos sobre la estructura de autocorrelación de los residuos. Su diseño está orientado a la estimación automática de componentes interpretables, lo que lo hace especialmente adecuado como componente de descomposición en arquitecturas híbridas.
+Prophet es un modelo de \textit{forecasting} de series temporales desarrollado por Taylor y Letham (2018) en Meta \cite{Prophet}, diseñado para producir predicciones interpretables en series con patrones estacionales fuertes, valores faltantes (\textit{missing values}) y cambios de tendencia abruptos. A diferencia de los modelos estadísticos clásicos como ARIMA y sus variantes, Prophet no requiere que la serie sea estacionaria ni impone supuestos sobre la estructura de autocorrelación de los residuos. Su diseño está orientado a la estimación automática de componentes interpretables, lo que lo hace especialmente adecuado como componente de descomposición en arquitecturas híbridas.
 
 Prophet formula el problema de forecasting como la estimación de un modelo aditivo de la forma:
 
@@ -127,7 +127,7 @@ donde $T(t)$ es la componente de tendencia, $S(t)$ es la componente de estaciona
 Prophet ofrece dos especificaciones para la componente de tendencia $T(t)$. La primera es un \textit{modelo de crecimiento logístico}, adecuado para trabajar con series que tienen un capacidad máxima o saturación:
 
 \begin{equation}
-T(t) = \frac{C}{1 + e^{(-k(t - m))}}
+T(t) = \frac{C}{1 + e^{-k(t - m)}}
 \end{equation}
 
 donde $C$ es la capacidad de saturación, $k$ es la tasa de crecimiento y $m$ es el punto de inflexión. La segunda, y más utilizada en series de precios, es un \textit{modelo lineal por tramos} (\textit{piecewise linear}):
