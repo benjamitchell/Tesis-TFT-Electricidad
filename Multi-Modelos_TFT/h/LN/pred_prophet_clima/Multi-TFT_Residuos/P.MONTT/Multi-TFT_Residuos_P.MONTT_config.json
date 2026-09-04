@@ -1,0 +1,20 @@
+{
+ "barra": "P.MONTT",
+ "experimento": "Multi-TFT_Residuos",
+ "timestamp": "20260730_175606",
+ "tft_config": {
+  "lr": 0.001,
+  "hidden_size": 32,
+  "heads": 4,
+  "dropout": 0.2,
+  "cont_size": 8,
+  "patience_lr": 5
+ },
+ "early_stop_config": {
+  "min_delta": 0.001,
+  "patience": 15
+ },
+ "epochs_trained": 80,
+ "best_val_loss": 0.1948453187942505,
+ "model_path": "Multi-Modelos_TFT/h/LN/pred_prophet_clima/Multi-TFT_Residuos/P.MONTT/Multi-TFT_Residuos_P.MONTT_best.ckpt"
+}

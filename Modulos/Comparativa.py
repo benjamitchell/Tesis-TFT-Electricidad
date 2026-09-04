@@ -2,6 +2,93 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from IPython.display import display
+from scipy.stats import norm
+
+
+def _dm_desde_diferencia(d, h=1, max_lag=None):
+    """Núcleo del test de Diebold-Mariano dada la diferencia de pérdidas d_t = L(e_a) - L(e_b),
+    con varianza de largo plazo estimada vía Newey-West (Bartlett)."""
+    d = np.asarray(d, dtype=float)
+    d = d[np.isfinite(d)]
+    n = len(d)
+
+    if max_lag is None:
+        max_lag = h + 1
+
+    d_mean = float(np.mean(d))
+    d_centrado = d - d_mean
+
+    gamma_0 = np.mean(d_centrado ** 2)
+    s = gamma_0
+    for k in range(1, max_lag + 1):
+        gamma_k = np.mean(d_centrado[k:] * d_centrado[:-k])
+        peso = 1 - k / (max_lag + 1)  # ponderación de Bartlett
+        s += 2 * peso * gamma_k
+
+    var_d_mean = s / n
+    dm_stat = d_mean / np.sqrt(var_d_mean)
+    p_value = 2 * (1 - norm.cdf(abs(dm_stat)))
+
+    return {'DM': float(dm_stat), 'p_value': float(p_value), 'd_mean': d_mean,
+            'max_lag': max_lag, 'n': n}
+
+
+def diebold_mariano(y_real, y_pred_a, y_pred_b, h=1, loss='mae', max_lag=None):
+    """
+    Test de Diebold-Mariano (1995) para comparar la exactitud predictiva de dos
+    modelos sobre la misma serie, con varianza de largo plazo estimada vía
+    Newey-West (Bartlett) para tolerar autocorrelación en la diferencia de
+    pérdidas -- a diferencia de Wilcoxon, que asume observaciones independientes
+    y no es válido sobre errores horarios serialmente correlacionados.
+
+    Parámetros
+    ----------
+    y_real, y_pred_a, y_pred_b : array-like
+        Serie real y las dos predicciones a comparar, mismo orden temporal.
+    h : int
+        Horizonte de pronóstico en pasos (por defecto 1, el usado en este trabajo).
+    loss : 'mae' | 'mse'
+        Función de pérdida sobre la que se calcula la diferencia d_t.
+    max_lag : int | None
+        Truncamiento de Newey-West. Si None, se usa h+1 (Diebold y Mariano, 1995,
+        recomiendan al menos h-1; h+1 da un margen adicional).
+
+    Retorna
+    -------
+    dict con 'DM' (estadístico), 'p_value' (dos colas), 'd_mean' (diferencia de
+    pérdida promedio, negativo favorece a `y_pred_a`), 'max_lag' usado, 'n'.
+    """
+    y_real = np.asarray(y_real, dtype=float)
+    a = np.asarray(y_pred_a, dtype=float)
+    b = np.asarray(y_pred_b, dtype=float)
+
+    mask = np.isfinite(y_real) & np.isfinite(a) & np.isfinite(b)
+    y_real, a, b = y_real[mask], a[mask], b[mask]
+
+    if loss == 'mae':
+        d = np.abs(y_real - a) - np.abs(y_real - b)
+    elif loss == 'mse':
+        d = (y_real - a) ** 2 - (y_real - b) ** 2
+    else:
+        raise ValueError("loss debe ser 'mae' o 'mse'")
+
+    return _dm_desde_diferencia(d, h=h, max_lag=max_lag)
+
+
+def diebold_mariano_desde_errores(err_a, err_b, h=1, max_lag=None):
+    """
+    Variante de `diebold_mariano` para cuando ya se cuenta con las series de error
+    absoluto (o cuadrático) de cada modelo por separado -- por ejemplo, al comparar
+    predicciones que provienen de *pipelines* distintos (P+C vía Stacking vs.\ S+C
+    directo) donde reconstruir un y_real común no es directo, pero ambas series de
+    error ya están alineadas por fecha.
+    """
+    err_a = np.asarray(err_a, dtype=float)
+    err_b = np.asarray(err_b, dtype=float)
+    mask = np.isfinite(err_a) & np.isfinite(err_b)
+    d = err_a[mask] - err_b[mask]
+    return _dm_desde_diferencia(d, h=h, max_lag=max_lag)
+
 
 def analisis_comparativo(
     metricas_ln,

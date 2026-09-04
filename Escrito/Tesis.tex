@@ -1,0 +1,400 @@
+\chapter{Introducción}
+
+\section{Mercado eléctrico}
+
+El Sistema Eléctrico Nacional (SEN) de Chile ha experimentado una transformación estructural sin precedentes durante la última década. La unificación del Sistema Interconectado del Norte Grande (SING) y el Sistema Interconectado Central (SIC) en 2017 consolidó una red única que, al cierre de 2024, alcanzó una capacidad instalada de 36.778 MW \cite{CEN2024}. Dentro de este crecimiento, las Energías Renovables No Convencionales (ERNC) alcanzaron por primera vez el 50,3\% (18.522MW) de la capacidad instalada, lideradas por la energía solar con un 23\% y la eólica con un 14\%. En términos de generación, las ERNC aportaron el 40,4\% de los 85.519 GWh producidos durante 2024, lo que representa un aumento del 10,9\% respecto al año anterior \cite{CEN2024}. Esta expansión sitúa a Chile como uno de los sistemas eléctricos con mayor penetración renovable de América Latina, con una trayectoria de crecimiento que en cinco años (2019 - 2024) llevó la participación ERNC del 20\% al 40\% de la generación total \cite{LaTercera}.
+
+Sin embargo, esta transición energética ha introducido una volatilidad estructural en la operación del sistema que no tiene precedentes en la historia del sector energético chileno. La intermitencia inherente a las fuentes solares y eólicas, combinada con una capacidad instalada solar que ya supera los 11.000 MW, suficiente para cubrir prácticamente la totalidad de la demanda del SEN, que oscila entre 10.700 y 12.200 MW, genera episodios recurrentes de sobreoferta \cite{LaTerceraPerdidas}. La consecuencia directa es la caída del costo marginal a valores cercanos a cero durante el bloque solar en zonas de alta concentración renovable, seguida de alzas abruptas en horarios de menor generación o en períodos de déficit hídrico \cite{REVE}. Este fenómeno se manifiesta concretamente en los vertimientos o curtailments. En 2024 se perdieron 5.908,71 GWh de energía eólica y solar, un aumento del 149\% respecto a los 2.375,86 GWh de 2023, equivalentes al 17\% de toda la generación renovable disponible \cite{LaTerceraPerdidas}. En el mes más crítico del año, noviembre, las plantas solares operaron menos de la mitad de su tiempo potencial por exceso de oferta.
+
+La volatilidad resultante del costo marginal, principal señal de precio en el mercado spot del SEN, tiene implicancias directas sobre la viabilidad financiera de los agentes del mercado, la programación del despacho eléctrico y el diseño de contratos de suministro de mediano y largo plazo. A diferencia de mercados con matrices estables, el SEN combina tres fuentes de incertidumbre simultáneas: la variabilidad climática que afecta tanto a la generación solar y eólica como a los embalses hidroeléctricos, los cambios estructurales derivados de la incorporación continua de nueva capacidad renovable, con tasas de crecimiento superiores al 22\% anual frente a un crecimiento de la demanda de apenas el 2\%, y las congestiones en la red de transmisión que desacoplan los precios entre zonas del sistema \cite{Humphreys}. Esta combinación hace del forecasting del precio spot en el SEN un problema de predicción de series temporales especialmente complejo, que demanda enfoques metodológicos capaces de capturar tanto la estacionalidad múltiple como las no-linealidades y los quiebres estructurales propios de un mercado en plena transición, esto motiva una revisión detallada de los modelos disponibles en la literatura.
+
+\section{Modelos actuales}
+
+La predicción del precio en mercados eléctricos ha sido abordada históricamente mediante modelos estadísticos clásicos como ARIMA y sus variantes estacionales, los cuales asumen estacionariedad y linealidad en las series temporales \cite{weron}. Si bien estos modelos ofrecen interpretabilidad y eficiencia computacional, su capacidad predictiva se ve limitada en mercados con alta penetración renovable como el SEN, donde la serie de costos marginales exhibe heterocedasticidad, quiebres estructurales asociados a la incorporación continua de nueva capacidad instalada, y patrones de estacionalidad múltiple determinados simultáneamente por ciclos horarios, diarios y estacionales \cite{weron}. Adicionalmente, estos modelos no capturan el comportamiento no lineal de la serie durante episodios de sobreoferta renovable, donde el costo marginal puede colapsar a cero o exhibir alzas abruptas en cuestión de horas, comportamiento que los modelos lineales son estructuralmente incapaces de representar.
+
+En respuesta a estas limitaciones, la literatura ha explorado modelos de aprendizaje profundo con mayor expresividad. En particular, el \textit{Temporal Fusion Transformer} (TFT), propuesto por Lim et al. (2021) \cite{TFT}, representa un avance significativo al combinar capas recurrentes para el procesamiento local de dependencias de corto plazo con mecanismos de auto-atención interpretables para dependencias de largo alcance \cite{TFT}. A diferencia de los Transformers comunes \cite{Vaswani2017Attention}, el TFT incorpora encoders de covariables estáticas, selección de variables mediante redes de selección con compuertas, y salidas probabilísticas mediante regresión cuantílica, lo que lo hace especialmente adecuado para contextos de forecasting multihorizonte con múltiples variables exógenas, como las que caracterizan al mercado eléctrico chileno. Sin embargo, el TFT opera típicamente sobre la serie cruda sin descomponer explícitamente tendencia y estacionalidad, lo que puede dificultar su adaptación en presencia de cambios estructurales graduales como los que experimenta el SEN durante su acelerada transición energética.
+
+Un aspecto técnico relevante en el diseño de arquitecturas Transformer para series temporales es el rol de las capas de normalización. La normalización de capas, \textit{Layer Normalization} (LayerNorm), ha sido considerada un componente esencial en prácticamente todas las arquitecturas Transformer desde su introducción \cite{Vaswani2017Attention}. Sin embargo, Zhu et al. (2025) \cite{Zhu2025Transformers} demuestran que es posible prescindir de estas capas mediante la introducción de \textit{Dynamic Tanh} (DyT), cuya operación central se define como $\text{DyT}(x) = \tanh(\alpha x)
+$, donde $\alpha$ es un parámetro escalar aprendible que regula el escalado de la entrada antes de aplicar la función de activación. En la implementación completa, esta operación se complementa con una transformación afín posterior $\gamma \cdot \text{DyT}(x) + \beta$, donde $\beta$ y $\gamma$ son parámetros vectoriales aprendibles equivalentes a los que LayerNorm ya incorpora en su etapa de reescalado, no son parte de la operación DyT en sí, sino el mecanismo estándar que permite a la capa restaurar la escala original de las activaciones. La propuesta se inspira en la observación empírica de que las capas LayerNorm en Transformers entrenados producen mapeos entrada-salida con forma de $S$, cuyo comportamiento puede ser replicado eficientemente por la función tanh escalada. Los autores validan que los Transformers con DyT igualan o superan el rendimiento de sus contrapartes normalizadas en tareas diversas, sin requerir ajuste de hiperparámetros. La comparación entre TFT con LayerNorm y TFT con DyT constituye, por tanto, una interrogante abierta y metodológicamente relevante en el contexto de forecasting de series temporales energéticas, dado que las propiedades de estabilización del gradiente y la velocidad de convergencia pueden diferir significativamente en series con alta variabilidad y episodios de spike como las del SEN.
+
+Los modelos híbridos representan una alternativa prometedora al combinar las fortalezas complementarias de enfoques distintos. Prophet, desarrollado por Taylor y Letham (2018) \cite{Prophet} ofrece una descomposición explícita de tendencia, estacionalidad múltiple y efectos de calendario mediante un modelo aditivo, resultando especialmente adecuado para series con patrones estacionales fuertes, valores faltantes y cambios de tendencia abruptos \cite{Prophet}. La combinación de Prophet con el TFT permitiría, en principio, aprovechar la estructura interpretable de la descomposición temporal para capturar la componente sistemática de la serie, mientras el TFT modela las dependencias no lineales. No obstante, la literatura sobre modelos híbridos para mercados eléctricos latinoamericanos es escasa, y los estudios existentes raramente incorporan mecanismos formales de ensamblaje, como \textit{Stacking Optimization}, ni abordan la cuantificación de incertidumbre con garantías estadísticas. Las predicciones puntuales, predominantes en la literatura de forecasting eléctrico, son insuficientes para la toma de decisiones bajo riesgo en mercados con la volatilidad estructural observada en el SEN, lo que motiva la incorporación de \textit{Conformal Prediction} (CP) como mecanismo de cuantificación de incertidumbre con cobertura garantizada sin supuestos distribucionales \cite{ConformalPrediction}.
+
+\section{Propuesta}
+
+En este contexto, la presente tesis propone un modelo híbrido de aprendizaje automático para la predicción del costo marginal en el mercado eléctrico chileno, diseñado para abordar de manera conjunta las limitaciones identificadas en los enfoques existentes. El modelo integra Prophet para la descomposición explícita de tendencia y estacionalidad múltiple, con dos variantes del TFT, una con LayerNorm y otra con DyT, para la captura de dependencias temporales no lineales de largo alcance. Los modelos base se ensamblan mediante \textit{Stacking Optimization}, un esquema de combinación que aprende los pesos óptimos de cada componente a partir de sus errores de predicción en un conjunto de validación, superando las limitaciones del promediado simple. Finalmente, la incertidumbre de las predicciones se cuantifica mediante \textit{Conformal Prediction}, un marco de inferencia estadística que garantiza intervalos de cobertura válidos con probabilidad preestablecida y sin imponer supuestos sobre la distribución de los errores \cite{ConformalPrediction}. El modelo es evaluado sobre datos históricos del SEN, con el objetivo de evaluar si la integración estructurada de estos componentes permite superar el desempeño de los modelos individuales y proveer predicciones con incertidumbre cuantificada y estadísticamente válida. Las principales contribuciones esperadas para este trabajo son: 
+\begin{itemize}
+    \item[(i)] La primera aplicación de un modelo híbrido Prophet-TFT con ensamblaje formal al mercado eléctrico chileno, 
+
+    \item[(ii)] la comparación empírica de LayerNorm y Dynamic Tanh en un contexto de forecasting energético, y
+
+    \item[(iii)] la incorporación de Conformal Prediction como mecanismo de incertidumbre con garantías de cobertura en el SEN.
+\end{itemize}
+ 
+\section{Objetivos}
+
+\subsection{Objetivo General}
+
+El objetivo general del proyecto es desarrollar y evaluar un modelo híbrido de aprendizaje automático que combine Prophet, Temporal Fusion Transformer y Conformal Prediction para la predicción del costo marginal en el mercado eléctrico chileno, incorporando cuantificación de incertidumbre con garantías estadísticas de cobertura.
+
+\subsection{Objetivos Específicos}
+
+\begin{enumerate}
+    \item Caracterizar el comportamiento histórico del costo marginal en el Sistema Eléctrico Nacional, identificando sus patrones de estacionalidad, tendencia y volatilidad estructural asociados a la penetración de energías renovables no convencionales.
+
+    \item Diseñar e implementar la arquitectura del modelo híbrido, integrando Prophet como componente de descomposición temporal con dos variantes del TFT, con LayerNorm y con Dynamic Tanh, como modelos de captura de dependencias no lineales.
+
+    \item Desarrollar un esquema de ensamblaje mediante Stacking Optimization que combine los modelos base de forma óptima, aprendiendo los pesos de combinación a partir del desempeño en un conjunto de validación.
+    
+    \item Implementar Conformal Prediction como mecanismo de cuantificación de incertidumbre y validar empíricamente la cobertura de los intervalos de predicción resultantes.
+    
+    \item Evaluar el desempeño del modelo propuesto frente a baselines establecidos, utilizando métricas de error puntual y probabilístico.
+\end{enumerate}
+
+\section{Esta sección de organización la hago al final, pero es más o menos así:}
+
+El presente documento se organiza de la siguiente manera. El Capítulo 2 introduce el marco teórico, presentando los fundamentos de Prophet, el Temporal Fusion Transformer, Stacking Optimization y Conformal Prediction. El Capítulo 3 revisa la literatura relevante en forecasting de precios eléctricos, modelos híbridos y cuantificación de incertidumbre, identificando las brechas que motivan este trabajo. El Capítulo 4 describe el mercado eléctrico chileno, las fuentes de datos utilizadas y el proceso de preprocesamiento. El Capítulo 5 detalla la metodología propuesta, incluyendo el diseño de la arquitectura híbrida, el esquema de ensamblaje y la implementación de Conformal Prediction. El Capítulo 6 presenta los experimentos realizados, las métricas de evaluación y los resultados obtenidos. El Capítulo 7 discute los hallazgos en el contexto del mercado eléctrico chileno y las limitaciones del modelo. Finalmente, el Capítulo 8 sintetiza las contribuciones del trabajo y propone líneas de investigación futura.
+
+ \chapter{Marco Teórico}
+
+\section{Series Temporales}
+
+Una serie temporal es una secuencia de observaciones $\{y_t\}_{t=1}^{T}$ indexadas en el tiempo, donde el orden de las observaciones es la parte esencial. A diferencia de los datos de corte transversal, en una serie temporal la dependencia entre observaciones consecutivas constituye la principal fuente de información para las predicciones. 
+
+Formalmente, se asume que cada observación $y_t$ es una realización de una variable aleatoria $Y_t$, y el conjunto $\{Y_t\}_{t \in \mathbb{Z}}$ define un proceso estocástico. El objetivo del forecasting es estimar la distribución condicional:
+$$p(Y_{t+h} \mid \mathcal{F}_t),$$
+donde $h \geq 1$ es el horizonte de predicción y $\mathcal{F}_t = \sigma(Y_t, Y_{t-1}, ...)$ es la filtración generada por la historia del proceso hasta el tiempo $t$. En la práctica, la mayoría de los modelos de forecasting estiman únicamente la media condicional $\mathbb{E}[Y_{t+h} \mid \mathcal{F}_t]$, produciendo predicciones puntuales. Sin embargo, para la toma de decisiones bajo incertidumbre, como la programación del despacho eléctrico o valorización de contratos en el SEN, es necesario tener garantías estadísticas con respecto a las predicciones.
+
+\subsection{Estacionariedad}
+
+Un proceso estocástico $\{Y_t\}$ se denomina estrictamente estacionario si su distribución conjunta es invariante ante traslaciones temporales, es decir, si para todo $k \in \mathbb{Z}$ y todo conjunto finito de índices $\{t_1, \ldots, t_n\}$ se cumple que:
+
+\begin{equation}
+    (Y_{t_1}, \ldots, Y_{t_n}) \overset{d}{=} (Y_{t_1+k}, \ldots, Y_{t_n+k})
+\end{equation}
+
+La estacionariedad es una propiedad estructural de un proceso estocástico que describe la invarianza de sus características estadísticas en el tiempo. En la práctica se trabaja con la noción más débil de \textit{estacionariedad en covarianza} o \textit{estacionariedad débil}, que exige únicamente que:
+
+\begin{align*}
+    \mathbb{E}[Y_t] &= \mu \quad \forall\, t\geq 0 \\
+    \text{Cov}(Y_t, Y_{t+k}) &= \gamma(k) \quad \forall\, t, k \geq 0
+\end{align*}
+
+La estacionariedad es un supuesto central en los modelos estadísticos clásicos como ARIMA, cuya validez depende de que la serie no muestre tendencias ni cambios estructurales en su nivel de varianza. En mercados eléctricos con alta penetración renovable, es frecuente observar no estacionariedad de múltiples orígenes: tendencias de largo plazo asociadas a cambios estructurales en la matriz energética, heterocedasticidad vinculada a episodios de sobreoferta, y quiebres abruptos por eventos hidrológicos o de congestión.
+
+Un proceso no estacionario que puede volverse estacionario mediante diferenciación de orden $d$ se denomina integrado de orden $d$, denotado $I(d)$. La verificación formal de este supuesto se realiza mediante pruebas de raíz unitaria. La prueba \textit{Augmented Dickey-Fuller} (ADF) contrasta la hipótesis nula de raíz unitaria contra la alternativa de estacionariedad, mientras que la prueba \textit{KPSS} invierte el rol de las hipótesis, contrastando estacionariedad como hipótesis nula. El uso conjunto de ambas pruebas permite una caracterización más robusta de la estructura de la serie.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{imagenes/Posibles img/Ruido Blanco.png}
+        \caption{Serie Estacionaria ($\mu$ y $\sigma$ constantes)}
+        \label{fig:estacionaria}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{imagenes/Posibles img/Paseo Aleatorio.png}
+        \caption{Serie No Estacionaria($\mu$ y $\sigma$ variables)}
+        \label{fig:no_estacionaria}
+    \end{subfigure}
+    \caption{Ejemplificación de una serie estacionaria y una no estacionarias.}
+    \label{fig:comparacion_series}
+\end{figure}
+
+\subsection{Estacionalidad múltiple}
+
+Una serie temporal exhibe estacionalidad cuando presenta patrones que se repiten con una periodicidad fija $m$. En el contexto de series temporales de precios eléctricos, es habitual observar estacionalidad en múltiples escalas simultáneamente: un patrón diario de periodo $m_1=24$ horas, asociado al ciclo de demanda residencial e industrial, un patrón semanal de periodo $m_2=168$ horas, determinado por la diferencia entre días hábiles y fines de semana, y un patrón anual de periodo $m_3=8760$ horas, vinculado a la variación estacional de la radiación solar y la hidrología.
+
+La manera natural de modelar esta estructura es mediante una descomposición aditiva:
+
+\begin{equation}
+    y_t = T_t + \sum_{j=1}^{J} S_t^{(j)} + \varepsilon_t\quad,
+\end{equation}
+
+donde $T_t$ es la componente de tendencia, $S_t^{(j)}$ es la $j$-ésima componente estacional de periodo $m_j$ y $\varepsilon_t \sim \mathcal{N}(0, \sigma^2)$ es el término de error. La idea de este modelo radica en el supuesto de que las fuentes de variación son conceptualmente separables y aditivas: la tendencia captura la dinámica de largo plazo del mercado, cada componente estacional captura un ciclo recurrente de distinta escala, y el residuo recoge la variabilidad no estructurada.
+
+En el contexto de series temporales, una componente estacional $S_t^{(j)}$ de periodo $m$ es por definición una función periódica, por lo que puede representarse mediante una serie de Fourier truncada de orden $K_j$:
+
+\begin{equation}
+    S_t^{(j)} = \sum_{k=1}^{K_j} \left[ a_k^{(j)} \cos\left(\frac{2\pi k t}{m_j}\right) + b_k^{(j)} \sin\left(\frac{2\pi k t}{m_j}\right) \right]
+\end{equation}
+
+donde los coeficientes $\{a_k^{(j)}, b_k^{(j)}\}$ son parámetros estimables. Esta representación viene de la teoría clásica de señales, donde cualquier función periódica de periodo $m$ que sea integrable puede aproximarse mediante sumas de senos y cosenos de frecuencias múltiplos de $\frac{1}{m}$.
+
+Esta representación tiene tres ventajas que la hacen adecuada para su estimación mediante optimización:es diferenciable, lo que permite la optimización por descenso de gradiente, es flexible, pues puede aproximar estacionalidades de cualquier forma y no solo senoidales, y parsimoniosa, lo que permite capturar patrones complejos con pocos coeficientes. El orden $K_j$ controla la suavidad de la estacionalidad estimada: valores pequeños de $K_j$ producen componentes suaves, mientras que valores grandes permiten capturar formas más irregulares.
+
+\subsection{Procesos no estacionarios y transformaciones}
+
+Cuando una serie presenta tendencia, varianza no constante o cambios estructurales, es necesario aplicar transformaciones previas al entrenamiento para estabilizar sus propiedades estadísticas y mejorar la convergencia de los modelos. La transformación más utilizada en el contexto de modelos de aprendizaje profundo es la \textit{estandarización} o \textit{normalización z-score}, que transforma cada observación según:
+
+\begin{equation}
+    \tilde{y}_t = \frac{y_t - \hat{\mu}}{\hat{\sigma}}
+\end{equation}
+
+donde $\hat{\mu}$ y $\hat{\sigma}$ son la media y desviación estándar estimadas exclusivamente sobre el conjunto de entrenamiento. Esta transformación garantiza que la serie transformada tenga media cero y varianza unitaria, lo que estabiliza el gradiente durante el entrenamiento y hace que los parámetros del modelo sean comparables entre distintas barras y horizontes. Es fundamental que los parámetros $\hat{\mu}$ y $\hat{\sigma}$ se estimen solo sobre el conjunto de entrenamiento y se apliquen sin reestimación al conjunto de validación y prueba, evitando así la filtración de información futura o \textit{data leakage}. 
+
+Otras transformaciones comunes incluyen la diferenciación de orden $d$:
+
+\begin{equation}
+    \Delta^d y_t = (1 - B)^d y_t
+\end{equation}
+
+donde $B$ es el operador de rezago $By_t = y_{t-1}$, que elimina tendencias polinomiales de grado $d$, y la transformación logarítmica $\tilde{y}_t = \log(y_t)$, que estabiliza la varianza en series con heterocedasticidad multiplicativa. En este trabajo se adopta la estandarización z-score como transformación principal, aplicada de manera independiente a cada barra del SEN mediante \texttt{StandardScaler}.
+
+\subsection{Horizonte de predicción y estrategia de forecasting multihorizonte}
+
+El horizonte de predicción $h$ determina cuántos pasos adelante se desea predecir. En mercados eléctricos, el horizonte más relevante operacionalmente es el \textit{day-ahead}, es decir, $h=24$ horas, que corresponde al ciclo de programación del despacho en el SEN. En este trabajo se adopta un horizonte de $h=1$ hora, lo que corresponde a la predicción del costo marginal de la hora inmediata siguiente dado una ventana de predicción de longitud $L$. Formalmente, el problema de predicción se define como estimar:
+
+\begin{equation}
+    \hat{y}_{t+1} = f\left(y_{t-L+1:t},\, \mathbf{x}_{t-L+1:t+1}\right)
+\end{equation}
+
+donde $L$ es la longitud de la ventana de contexto y $\mathbf{x}_t$ denota el vector de covariables exógenas conocidas en el tiempo $t$, como temperatura, demanda o generación, y $f$ es el modelo de forecasting.
+
+Aunque en este trabajo se considera $h=1$, vale la pena situar este caso dentro del marco general de estrategias de forecasting multihorizonte, dado que el TFT fue diseñado para el caso general $h \geq 1$. Las tres estrategias principales son: la estrategia \textit{recursiva}, que aplica iterativamente el modelo de un paso para generar predicciones de múltiples horizontes usando predicciones previas como entrada; la estrategia \textit{directa}, que entrena un modelo independiente para cada horizonte $h$, y la estrategia MIMO (\textit{Multiple Input Multiple Output}), que predice simultáneamente todos los horizontes con un único modelo, capturando las dependencias entre ellos. El TFT adopta la estrategia MIMO, lo que lo hace naturalmente extensible a horizontes mayores si el alcance del trabajo lo permite.
+
+\subsection{Forecasting multivariado y estructura de barras}
+
+En este trabajo el problema de forecasting no se limita a una única serie, sino que se extiende a $B = 8$ barras del SEN, cada una con su propia serie de costos marginales horarios$\{y_t^{(b)}\}_{t=1}^{T} \, \text{con} \quad b=1, ...,8$. Este escenario define un problema de forecasting multivariado, donde las series pueden presentar dependencias cruzadas, por ejemplo, barras eléctricamente contiguas tienden a exhibir costos marginales correlacionados, salvo en episodios de congestión de transmisión, donde los precios se desacoplan, generando heterogeneidad estructural entre barras. 
+
+Formalmente, la correlación entre dos barras $b$ y $b'$ puede cuantificarse mediante la función de correlación cruzada:
+\begin{equation}
+    \rho^{(b,b')}(k) = \frac{\text{Cov}(Y_t^{(b)}, Y_{t+k}^{(b')})}{\sqrt{\text{Var}(Y_t^{(b)})\,\text{Var}(Y_t^{(b')})}}
+\end{equation}
+
+Un enfoque que explota esta estructura es el \textit{forecasting con dependencias espaciales}, donde la predicción para la barra $b$ incorpora información de las barras vecinas. Sin embargo, este enfoque requiere modelar explícitamente la topología de la red eléctrica y puede introducir complejidad adicional cuando las congestiones generan desacoplamientos no estacionarios entre barras.
+
+La estrategia adoptada en este trabajo consiste en entrenar un modelo independiente por barra, lo cual simplifica el problema a costa de ignorar las dependencias cruzadas. Esta decisión se justifica por dos razones: las congestiones de transmisión en el SEN introducen heterogeneidad estructural entre barras que dificultaría el entrenamiento conjunto, y los modelos independientes son más interpretables y permiten identificar con claridad el comportamiento especifico de cada barra. La incorporación de dependencias espaciales mediante correlación cruzada queda propuesta como una extensión natural de este trabajo para investigación futura.
+
+\section{Prophet}
+
+Prophet es un modelo de forecasting se series temporales desarrollado por Taylor y Letham (2018) en Meta \cite{Prophet}, diseñado para producir predicciones interpretables en series con patrones estacionales fuertes, missing values y cambios de tendencia abruptos. A diferencia de los modelos estadisticos clásicos como ARIMA y sus variantes, Prophet no requiere que la serie sea estacionaria ni impone supuestos sobre la estructura de autocorrelación de los residuos. Su diseño está orientado a la estimación automática de componentes interpretables, lo que lo hace especialmente adecuado como componente de descomposición en arquitecturas híbridas.
+
+Prophet formula el problema de forecasting como la estimación de un modelo aditivo de la forma:
+
+\begin{equation}
+\hat{y}_t^{Prophet} = T(t) + S(t) + H(t) + \varepsilon_t
+\end{equation}
+
+donde $T(t)$ es la componente de tendencia, $S(t)$ es la componente de estacionalidad, $H(t)$ captura el efecto de días festivos y eventos especiales, y $\varepsilon_t \sim \mathcal{N}(0, \sigma^2)$ es el término de error. Cada componente se estima de manera independiente, lo que otorga al modelo su interpretabilidad característica. La estimación de los parámetros se realiza mediante inferencia bayesiana con el software Stan, lo que permite incorporar incertidumbre en las predicciones de manera natural.
+
+\subsection{Componente de tendencia}
+
+Prophet ofrece dos especificaciones para la componente de tendencia $T(t)$. La primera es un \textit{modelo de crecimiento logístico}, adecuado para trabajar con series que tienen un capacidad máxima o saturación:
+
+\begin{equation}
+T(t) = \frac{C}{1 + e^{(-k(t - m))}}
+\end{equation}
+
+donde $C$ es la capacidad de saturación, $k$ es la tasa de crecimiento y $m$ es el punto de inflexión. La segunda, y más utilizada en series de precios, es un \textit{modelo lineal por tramos} (\textit{piecewise linear}):
+
+\begin{equation}
+T(t) = (k + \mathbf{a}(t)^\top \boldsymbol{\delta})t + (m + \mathbf{a}(t)^\top \boldsymbol{\gamma})
+\end{equation}
+
+donde $k$ es la tasa de crecimiento global, $\boldsymbol{\delta} \in \mathbb{R}^S$ es el vector de cambios de pendiente en cada uno de los $S$ puntos de quiebre, $\mathbf{a}(t) \in \{0,1\}^S$ es un vector indicador que activa los cambios acumulados hasta el tiempo $t$, y $\boldsymbol{\gamma}$ ajusta el intercepto para garantizar continuidad en los puntos de quiebre. Los puntos de quiebre pueden especificarse manualmente o detectarse automáticamente por el modelo, lo que le permite adaptarse a cambios estructurales graduales como los que experimenta el costo marginal del SEN ante la incorporación continua de capacidad renovable.
+
+La detección automática de los puntos de quiebre se realiza colocando una distribución a priori dispersa sobre los ajustes de pendiente $\boldsymbol{\delta} \sim \text{Laplace}(0, \tau)$, donde $\tau > 0$ controla la flexibilidad del modelo. Un prior disperso permite que Prophet proponga un gran número de puntos de quiebre candidatos, típicamente uno por mes en una historia de varios años, pero penaliza aquellos ajustes que no son necesarios para explicar los datos. Cuando $\tau \to 0$, el modelo reduce a una tendencia lineal o logística simple sin quiebres. Este mecanismo de regularización es especialmente relevante para las series de costos marginales del SEN, donde los cambios estructurales son graduales y difíciles de datar con precisión \cite{Prophet}.
+
+\subsection{Componente de estacionalidad}
+
+La componente estacional $S(t)$ se modela mediante series de Fourier, siguiendo la representación introducida en la Sección 2.1. Para cada escala estacional de periodo $m_j$, Prophet define:
+
+\begin{equation}
+S(t) = \sum_{j=1}^{J}\sum_{k=1}^{K_j} \left[ a_k^{(j)} \cos\left(\frac{2\pi k t}{m_j}\right) + b_k^{(j)} \sin\left(\frac{2\pi k t}{m_j}\right) \right]
+\end{equation}
+
+donde los coeficientes $a_k^{(j)}, b_k^{(j)}$ son parámetros del modelo estimados durante el ajuste. El orden $K_j$ controla la flexibilidad de cada componente estacional: Prophet usa por defecto $K=10$ para la estacionalidad anual y $K=3$ para la semanal, valores que pueden ajustarse según la complejidad de los patrones observados. En este trabajo se consideran las estacionalidades diaria ($m_1 = 24$), semanal ($m_2 = 168$) y anual ($m_3 = 8760$), capturando los tres ciclos recurrentes identificados en la Sección 2.1.
+
+\subsection{Componente de festividades y eventos especiales}
+
+La componente $H(t)$ modela el efecto de días festivos y eventos especiales que producen desviaciones sistemáticas en la serie, no capturables por la estacionalidad regular. Prophet representa este efecto como:
+
+\begin{equation}
+H(t) = \mathbf{Z}(t)\boldsymbol{\kappa}
+\end{equation}
+
+donde $\mathbf{Z}(t) \in \{0,1\}^{L}$ es un vector indicador que activa el evento correspondiente al tiempo $t$, y $\boldsymbol{\kappa} \in \mathbb{R}^{L}$ es el vector de efectos estimados para cada uno de los $L$ eventos definidos. En este trabajo se incorporan los feriados nacionales del calendario chileno, dado que el consumo eléctrico y el despacho del SEN exhiben patrones sistemáticamente distintos en días festivos respecto a días hábiles.
+
+\subsection{Estimación e inferencia}
+
+Los parámetros del modelo $\{\boldsymbol{\delta}, \boldsymbol{\beta}, \boldsymbol{\kappa}, \sigma\}$ se estiman bajo un marco bayesiano. Prophet coloca distribuciones a priori sobre los parámetros de cambio de tendencia $\boldsymbol{\delta} \sim \text{Laplace}(0, \tau)$, donde $\tau$ controla la regularización de los quiebres, y sobre los coeficientes estacionales $\boldsymbol{\beta} \sim \mathcal{N}(0, \sigma_s^2)$. La inferencia se realiza mediante \textit{Maximum A Posteriori} (MAP) por defecto, o mediante muestreo MCMC completo cuando se requieren intervalos de credibilidad. Esta formulación permite que Prophet propague incertidumbre en la tendencia y la estacionalidad hacia las predicciones finales.
+
+\subsection{Rol de Prophet en la arquitectura híbrida}
+
+En el modelo propuesto en este trabajo, Prophet cumple el rol de componente de descomposición temporal. Dado que Prophet modela explícitamente la tendencia, la estacionalidad múltiple y los efectos de calendario, sus predicciones capturan la estructura sistemática de largo plazo de la serie. Los residuos de Prophet:
+
+\begin{equation}
+r_t = y_t - \hat{y}_t^{\text{Prophet}}
+\end{equation}
+
+representan la variabilidad no explicada por la estructura sistemática, episodios de sobreoferta renovable, congestiones de transmisión y fluctuaciones de corto plazo, que son precisamente las componentes que el TFT está mejor equipado para modelar. Esta separación de roles motiva el diseño de dos modelos TFT paralelos: uno entrenado sobre los residuos $\{r_t\}$ y otro entrenado directamente sobre la serie original $\{y_t\}$, las predicciones se combinan con las hechas por Prophet posteriormente mediante Stacking Optimization, como se detalla en la Sección 2.5.
+
+\section{Transformer y Temporal Fusion Transformer}
+
+El mecanismo de atención y la arquitectura Transformer, introducidas por Vaswani et al. (2017) \cite{Vaswani2017Attention} revolucionó el procesamiento secuencial de datos y el \textit{Deep Learning}, eliminando completamente las recurrencias y convoluciones, las cuales eran necesarias para el funcionamiento de \textit{Redes Neuronales Recurrentes} (RNN) o modelos \textit{Memoria Larga a Corto Plazo} (LSTM), los cuales eran el estado del arte en procesamiento de secuencias, convirtiéndose en la base de los modelos de mayor rendimiento en procesamiento de lenguaje natural, visión computacional, genómica, entre otros, pero más recientemente, forecasting de series temporales. En esta sección se presenta primero el mecanismo de atención y la arquitectura Transformer clásica, para luego describir el \textit{Temporal Fusion Transformer} o simplemente TFT, la variante especializada para forecasting multihorizonte utilizada en este trabajo.
+
+\subsection{Mecanismo de atención}
+
+El mecanismo de atención permite que un modelo pondere diferencialmente la relevancia de distintas posiciones de una secuencia al producir una representación para cada posición. La idea central es que, al predecir el valor en el tiempo $t$, no todas las observaciones pasadas son igual de relevantes, algunas tienen mayor influencia que otras dependiendo del contexto.
+
+Formalmente, el mecanismo de atención opera sobre tres matrices: las \textit{queries} $\mathbf{Q} \in \mathbb{R}^{n \times d_k}$, las \textit{keys} $\mathbf{K} \in \mathbb{R}^{m \times d_k}$ y los \textit{values} $\mathbf{V} \in \mathbb{R}^{m \times d_v}$, donde $n$ es el número de posiciones de consulta, $m$ el número de posiciones de referencia, $d_k$ la dimensión de las queries y keys, y $d_v$ la dimensión de los values. La salida del mecanismo de atención es:
+
+\begin{equation}
+\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d_k}}\right)\mathbf{V}
+\end{equation}
+
+El término $\mathbf{Q}\mathbf{K}^\top \in \mathbb{R}^{n \times m}$ calcula los productos punto entre cada query y cada key, produciendo una matriz de \textit{scores} que mide la afinidad entre pares de posiciones. La división por $\sqrt{d_k}$ estabiliza los gradientes durante el entrenamiento. Sin este factor, cuando $d_k$ es grande los productos punto crecen en magnitud, empujando a la función softmax hacia regiones de gradiente muy pequeño. La función softmax normaliza los \textit{scores} por filas, produciendo una distribución de probabilidad sobre las posiciones de referencia:
+
+\begin{equation}
+\alpha_{ij} = \frac{\exp\left(\mathbf{q}_i^\top \mathbf{k}j / \sqrt{d_k}\right)}{\sum{l=1}^{m} \exp\left(\mathbf{q}_i^\top \mathbf{k}_l / \sqrt{d_k}\right)}
+\end{equation}
+
+donde $\alpha_{ij}$ es el peso de atención que la posición $i$ asigna a la posición $j$. La salida para la posición $i$ es entonces la combinación convexa de los values ponderada por estos pesos:
+
+\begin{equation}
+\mathbf{o}_i = \sum_{j=1}^{m} \alpha_{ij} \mathbf{v}_j
+\end{equation}
+
+Este mecanismo se denomina \textit{scaled dot-product attention} y tiene complejidad computacional $\mathcal{O}(n \cdot m \cdot d_k)$ en tiempo y $\mathcal{O}(n \cdot m)$ en memoria, lo que puede ser restrictivo para secuencias largas.
+
+\subsection{Atención multi-cabeza}
+
+En la práctica, es beneficioso que el modelo pueda atender a distintos tipos de relaciones simultáneamente, por ejemplo, dependencias de corto plazo y de largo plazo al mismo tiempo. La \textit{atención multi-cabeza} (\textit{multi-head attention}) logra esto proyectando las queries, keys y values en $H$ subespacios distintos y calculando la atención en cada uno, de forma paralela:
+
+\begin{equation}
+\text{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{Concat}(\text{head}_1, \ldots, \text{head}_H) \,\mathbf{W}^O
+\end{equation}
+
+donde cada cabeza se define como:
+
+\begin{equation}
+\text{head}_h = \text{Attention}(\mathbf{Q}\mathbf{W}_h^Q, \mathbf{K}\mathbf{W}_h^K, \mathbf{V}\mathbf{W}_h^V)
+\end{equation}
+
+con matrices de proyección $\mathbf{W}_h^Q \in \mathbb{R}^{d_{\text{model}} \times d_k}$, $ \mathbf{W}_h^K \in \mathbb{R}^{d_{\text{model}} \times d_k}$, $\mathbf{W}_h^V \in \mathbb{R}^{d_{\text{model}} \times d_v}$ y $\mathbf{W}^O \in \mathbb{R}^{H d_v \times d_{\text{model}}}$. Típicamente se fija $d_k = d_v = d_{\text{model}} / H$ para mantener el costo computacional equivalente al de una sola cabeza de dimensión completa.
+
+\subsection{Arquitectura Transformer}
+
+El Transformer completo apila $N$ bloques idénticos, cada uno compuesto por una capa de atención multi-cabeza seguida de una red neuronal de alimentación directa, también conocida como \textit{Feed-Forward Network} (FFN), con conexiones residuales y normalización de capa alrededor de cada subcapa:
+
+\begin{equation}
+\mathbf{Z}^{(l)} = \text{LayerNorm}\left(\mathbf{Z}^{(l-1)} + \text{MultiHead}(\mathbf{Z}^{(l-1)}, \mathbf{Z}^{(l-1)}, \mathbf{Z}^{(l-1)})\right)
+\end{equation}
+
+\begin{equation}
+\mathbf{Z}^{(l+1)} = \text{LayerNorm}\left(\mathbf{Z}^{(l)} + \text{FFN}(\mathbf{Z}^{(l)})\right)
+\end{equation}
+
+donde la FFN aplica dos transformaciones lineales con una activación no lineal intermedia:
+
+\begin{equation}
+\text{FFN}(\mathbf{z}) = \mathbf{W}_2 \text{ReLU}(\mathbf{W}_1 \mathbf{z} + \mathbf{b}_1) + \mathbf{b}_2
+\end{equation}
+
+Dado que el mecanismo de atención es invariante al orden de las posiciones, el Transformer incorpora \textit{codificación posicional} (\textit{positional encoding}) para inyectar información sobre la posición temporal de cada observación. La codificación posicional estándar usa funciones senosoidales:
+
+\begin{equation}
+\text{PE}(t, 2i) = \sin\left(\frac{t}{10000^{2i/d_{\text{model}}}}\right), \quad
+\text{PE}(t, 2i+1) = \cos\left(\frac{t}{10000^{2i/d_{\text{model}}}}\right)
+\end{equation}
+
+donde $t$ es la posición temporal y $2i$, $2i+1$ son las dimensiones del vector de codificación. Esta representación tiene la propiedad de que para cualquier desplazamiento fijo $\phi$, el vector $\text{PE}(t+\phi)$ puede expresarse como una transformación lineal de $\text{PE}(t)$, permitiendo al modelo aprender relaciones relativas entre posiciones.
+
+\subsection{Temporal Fusion Transformer}
+
+El Temporal Fusion Transformer (TFT), propuesto por Lim et al. (2021) \cite{TFT}, extiende la arquitectura Transformer para el problema específico de forecasting multihorizonte con covariables heterogéneas. A diferencia del Transformer clásico, el TFT incorpora mecanismos explícitos para el manejo de covariables estáticas, selección de variables relevantes, procesamiento secuencial local e interpretabilidad de las dependencias temporales aprendidas. La arquitectura se organiza en cinco componentes principales que se describen a continuación.
+
+\subsubsection{Codificación de entradas y embeddings}
+
+El TFT recibe tres tipos de entradas: covariables estáticas $\mathbf{s} \in \mathbb{R}^{d_s}$, que no varían en el tiempo, por ejemplo, el identificador de barra, covariables temporales pasadas conocidas $\mathbf{x}_{t-L:t} \in \mathbb{R}^{L \times d_x}$ y covariables temporales futuras conocidas $\mathbf{x}_{t:t+H} \in \mathbb{R}^{H \times d_x}$, por ejemplo, el día de la semana o el indicador de feriado. Cada variable es proyectada a un espacio de representación de dimensión $d_{\text{model}}$ mediante transformaciones lineales o embeddings aprendibles.
+
+\subsubsection{Gated Residual Network}
+
+El bloque fundamental del TFT es la \textit{Gated Residual Network} (GRN), que permite al modelo suprimir información irrelevante mediante una compuerta aprendible:
+
+\begin{equation}
+\text{GRN}(\mathbf{a}, \mathbf{c}) = \text{LayerNorm}\left(\mathbf{a} + \text{GLU}\left(\mathbf{W}_1 \, \text{ELU}(\mathbf{W}_2 \, \mathbf{a} + \mathbf{W}_3 \, \mathbf{c} + \mathbf{b}_2) + \mathbf{b}_1\right)\right)
+\end{equation}
+
+donde $\mathbf{a}$ es la entrada principal, $\mathbf{c}$ es un contexto opcional, ELU es la función de activación exponencial lineal, y GLU (\textit{Gated Linear Unit}) es el mecanismo de compuerta definido como:
+
+\begin{equation}
+\text{GLU}(\mathbf{h}) = \sigma(\mathbf{W}_4 \, \mathbf{h} + \mathbf{b}_3) \odot (\mathbf{W}_5 \, \mathbf{h} + \mathbf{b}_4)
+\end{equation}
+
+donde $\sigma$ es la función sigmoide y $\odot$ denota el producto de Hadamard. La compuerta $\sigma(\cdot)$ puede aprender a anular completamente la contribución del bloque cuando la entrada no es informativa, lo que dota al TFT de una capacidad de regularización adaptativa que el Transformer clásico no posee.
+
+\subsubsection{Variable Selection Network}
+
+La \textit{Variable Selection Network} (VSN) extiende la idea de la GRN para seleccionar, de manera suave y diferenciable, cuáles de las $d_x$ covariables disponibles son más relevantes para la predicción en cada paso temporal:
+
+\begin{equation}
+\mathbf{v}\chi = \text{Softmax}\left(\text{GRN}\chi\left(\Xi, \mathbf{c}_s\right)\right)
+\end{equation}
+
+\begin{equation}
+\tilde{\mathbf{x}}t = \sum{j=1}^{d_x} v_{\chi,j}\cdot \tilde{\mathbf{x}}_{t}^{(j)}
+\end{equation}
+
+donde $\Xi$ es la concatenación de las representaciones de todas las covariables, $\mathbf{c}_s$ es el vector de contexto derivado de las covariables estáticas, $v_{\chi,j}$ es el peso asignado a la covariable $j$, y $\tilde{\mathbf{x}}_{t}^{(j)}$ es la representación procesada de la covariable $j$. Los pesos $v_{\chi,j}$ son interpretables y permiten identificar qué variables exógenas contribuyen más a la predicción.
+
+\subsubsection{Procesamiento secuencial local}
+
+Antes de aplicar la atención global, el TFT procesa la secuencia temporal con una capa LSTM bidireccional para capturar dependencias locales de corto plazo:
+
+\begin{align}
+    \left[\mathbf{h}_{t-L}, \ldots, \mathbf{h}_t\right] &= \text{LSTM}_{\text{enc}}\left(\left[\tilde{\mathbf{x}}_{t-L}, \ldots, \tilde{\mathbf{x}}_t\right]\right) \\
+    \left[\mathbf{h}_{t+1}, \ldots, \mathbf{h}_{t+H}\right] &= \text{LSTM}_{\text{dec}}\left(\left[\tilde{\mathbf{x}}_{t+1}, \ldots, \tilde{\mathbf{x}}_{t+H}\right]\right)
+\end{align}
+
+Dado que en este trabajo $H = 1$, la distinción de encoder/decoder no es relevante, por lo que podemos simplificar a:
+
+\begin{equation}
+\left[\mathbf{h}_{t-L}, \ldots, \mathbf{h}_t\right] = \text{LSTM}\left(\left[\tilde{\mathbf{x}}_{t-L}, \ldots, \tilde{\mathbf{x}}_t\right]\right)
+\end{equation}
+
+Las representaciones $\mathbf{h}_t$ son luego procesadas por una GRN con conexión residual antes de ser pasadas al bloque de atención. Esta combinación de LSTM y Transformer permite al TFT capturar tanto dependencias locales (a través del LSTM) como dependencias de largo alcance (a través de la atención).
+
+\subsubsection{Atención temporal interpretable}
+
+El TFT reemplaza la atención multi-cabeza estándar por una variante interpretable en la que todas las cabezas comparten la misma matriz de values:
+
+\begin{equation}
+\text{InterpretableAttention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \tilde{\mathbf{A}}\mathbf{V}\mathbf{W}_V
+\end{equation}
+
+\begin{equation}
+\tilde{\mathbf{A}} = \frac{1}{H}\sum_{h=1}^{H} \text{softmax}\left(\frac{\mathbf{Q}\mathbf{W}_h^Q (\mathbf{K}\mathbf{W}_h^K)^\top}{\sqrt{d_k}}\right)
+\end{equation}
+
+Al compartir los values entre cabezas y promediar las matrices de atención, el TFT produce una única matriz $\tilde{\mathbf{A}}$ que puede visualizarse directamente para identificar qué instantes temporales del pasado son más relevantes para la predicción. Esta propiedad es especialmente valiosa en el contexto del SEN, donde identificar qué horas o días del pasado influyen más en el costo marginal tiene valor interpretativo directo para los operadores del sistema.
+
+\subsubsection{Salidas cuantílicas}
+
+A diferencia del Transformer clásico que produce predicciones puntuales, el TFT genera predicciones para múltiples cuantiles $q \in \mathcal{Q}$ simultáneamente mediante capas lineales independientes aplicadas a la representación final:
+
+\begin{equation}
+\hat{y}_t^{(q)} = \mathbf{W}_q \, \mathbf{h}_t + \mathbf{b}_q \quad \forall\, q \in \mathcal{Q}
+\end{equation}
+
+El modelo se entrena minimizando la pérdida de regresión cuantílica sumada sobre todos los cuantiles y horizontes:
+
+\begin{equation}
+\mathcal{L} = \sum_{q \in \mathcal{Q}} \sum_{t} \mathcal{L}_q\left(y_t, \, \hat{y}_t^{(q)}\right)
+\end{equation}
+
+donde la pérdida cuantílica para el cuantil $q$ es:
+
+\begin{equation}
+\mathcal{L}_q(y, \hat{y}) = \max\left(q(y - \hat{y}), \, (q-1)(y - \hat{y})\right)
+\end{equation}
+
+Esta formulación garantiza que $\hat{y}_t^{(q)}$ converja al cuantil $q$ de la distribución condicional de $Y_t$, proporcionando intervalos de predicción sin supuestos distribucionales. En este trabajo se utilizan los cuantiles $\mathcal{Q} = \{0{.}02, \,0{.}1, \, 0{.}25, \, 0{.}5, \, 0{.}75, \, 0{.}9, \, 0{.}98\}$, donde $\hat{y}_t^{(0{.}5)}$ es la predicción mediana y los cuantiles $0{.}2$ y $0{.}98$ definen un intervalo de predicción del $96\%$.
+
+\subsection{Rol del TFT en la arquitectura híbrida}
+
+En el modelo propuesto, se entrenan dos instancias del TFT en paralelo: una sobre los residuos de Prophet $\{r_t\}$ y otra directamente sobre la serie original $\{y_t\}$. La primera instancia captura la variabilidad de corto plazo no explicada por la descomposición sistemática de Prophet, mientras que la segunda modela la serie completa sin restricciones de descomposición. Ambas instancias se comparan mediante las mismas métricas de evaluación, y sus predicciones, junto con las de Prophet, se combinan posteriormente mediante Stacking Optimization, como se detalla en la Sección 2.5.
+
+Adicionalmente, las componentes descompuestas por Prophet, la tendencia $T(t)$, la estacionalidad $S(t)$ y el efecto de festividades $H(t)$, se incorporan como covariables exógenas en ambas instancias del TFT, permitiendo que el modelo de atención explote explícitamente la estructura temporal identificada por Prophet al construir sus representaciones.

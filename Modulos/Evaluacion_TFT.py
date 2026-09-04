@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import torch
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.linear_model import LinearRegression
 
 # Extraer predicciones del modelo considerando desafase
 def extraer_predicciones_modelo(barra, modelo, dataloader, datasets_norm,
@@ -179,7 +180,9 @@ def extraer_todas_predicciones_modelo(barra, modelo, dataloader_test, datasets_n
     else:
         y_tft_reales_norm = actuals.cpu().numpy()
     if len(y_tft_reales_norm.shape) > 1:
-        y_tft_reales_norm = y_tft_reales_norm.flatten()
+        # multi-step (max_prediction_length > 1): una columna por paso de horizonte,
+        # igual que predictions -- seleccionar la misma columna, no aplanar todas
+        y_tft_reales_norm = y_tft_reales_norm[:, horizonte - 1]
     y_tft_reales_completo = scaler.inverse_transform(
         y_tft_reales_norm.reshape(-1, 1)).flatten()
 
@@ -187,6 +190,11 @@ def extraer_todas_predicciones_modelo(barra, modelo, dataloader_test, datasets_n
         time_idx = raw.index['time_idx'].cpu().numpy()
     except AttributeError:
         time_idx = raw.index['time_idx'].values
+    # raw.index['time_idx'] es el time_idx del PRIMER paso de predicción
+    # (pytorch_forecasting: TimeSeriesDataSet.x_to_index -> decoder_time_idx[:, 0]);
+    # para horizonte > 1 el paso horizonte cae en time_idx + (horizonte - 1).
+    if horizonte > 1:
+        time_idx = time_idx + (horizonte - 1)
 
     del raw
 
@@ -277,6 +285,153 @@ def calcular_metricas_predicciones(y_real, y_pred, y_tft_reales=None,
         'diff_reales': diff_reales,
         'tiene_desfase': tiene_desfase
     }
+
+# Recalcula métricas contra la serie cruda (sin recorte de outliers), reusando predicciones ya guardadas
+# Ventana de precio de falla/administrativo (17h del 25-feb-2025 a 03h del 26-feb-2025):
+# valor idéntico (576.82) en las 8 barras simultáneamente, verificado contra la serie
+# cruda -- no es un precio de mercado (no depende de clima/solar/historial), es un
+# techo regulatorio aplicado a todo el sistema. Se excluye por defecto de las métricas
+# de test, igual que cualquier otro dato administrativo no representativo del fenómeno
+# que el modelo intenta predecir.
+VENTANA_PRECIO_FALLA = (pd.Timestamp('2025-02-25 17:00:00'), pd.Timestamp('2025-02-26 03:00:00'))
+
+
+def recalcular_metricas_serie_cruda(barra, fechas, y_pred, ruta_serie_cruda='Datos/h/2020-2026.csv',
+                                     percentil_regimen=95, excluir_precio_falla=True, verbose=True):
+    """
+    Recalcula MAE/RMSE/R2 usando la serie cruda (Datos/h/2020-2026.csv, sin recorte de
+    outliers por Z-score) como y_real, en vez de la serie recortada con la que se
+    evaluó originalmente. Reusa las predicciones (y_pred) ya calculadas por el modelo
+    entrenado — no requiere reentrenar ni re-inferir.
+
+    Además calcula métricas condicionales al régimen sobre esa misma serie cruda:
+    horas de precio muy alto (>= percentil `percentil_regimen` del propio conjunto
+    evaluado) y horas de precio cero (curtailment/sobreoferta).
+
+    Si `excluir_precio_falla=True` (default), se excluye del recálculo la ventana de
+    precio administrativo verificada en VENTANA_PRECIO_FALLA.
+    """
+    df_crudo = pd.read_csv(ruta_serie_cruda, sep=';')
+    df_crudo['Fecha'] = pd.to_datetime(df_crudo['Fecha'])
+    sub_crudo = df_crudo.loc[df_crudo['Barra'] == barra]
+    # Timestamps duplicados (hora 01:00 del cambio de horario en abril) se promedian
+    serie_barra = sub_crudo.groupby('Fecha')['Valor'].mean()
+
+    fechas = pd.to_datetime(fechas)
+    y_real_crudo = serie_barra.reindex(fechas).values
+    y_pred = np.asarray(y_pred)
+
+    faltantes = np.isnan(y_real_crudo)
+    if faltantes.any() and verbose:
+        print(f"[{barra}] Advertencia: {faltantes.sum()} de {len(fechas)} fechas sin dato crudo "
+              f"(no encontradas en {ruta_serie_cruda}), se excluyen del recálculo.")
+    mask = ~faltantes
+
+    if excluir_precio_falla:
+        ini, fin = VENTANA_PRECIO_FALLA
+        mask_falla = (fechas >= ini) & (fechas <= fin)
+        if mask_falla.any() and verbose:
+            print(f"[{barra}] Excluyendo {int(mask_falla.sum())} horas de precio de falla administrativo "
+                  f"({ini} a {fin}).")
+        mask = mask & ~np.asarray(mask_falla)
+
+    metricas_general = calcular_metricas_predicciones(y_real_crudo[mask], y_pred[mask], verbose=False)
+
+    umbral_alto = float(np.percentile(y_real_crudo[mask], percentil_regimen))
+    mask_alto = mask & (y_real_crudo >= umbral_alto)
+    mask_cero = mask & (y_real_crudo == 0)
+
+    metricas_alto = (calcular_metricas_predicciones(y_real_crudo[mask_alto], y_pred[mask_alto], verbose=False)
+                      if mask_alto.sum() > 0 else None)
+    metricas_cero = (calcular_metricas_predicciones(y_real_crudo[mask_cero], y_pred[mask_cero], verbose=False)
+                      if mask_cero.sum() > 0 else None)
+
+    if verbose:
+        print(f"[{barra}] General (serie cruda, n={int(mask.sum())}): "
+              f"MAE={metricas_general['MAE']:.2f} | R²={metricas_general['R2']:.3f}")
+        if metricas_alto is not None:
+            print(f"[{barra}] Régimen alto (y>=p{percentil_regimen}={umbral_alto:.1f}, "
+                  f"n={int(mask_alto.sum())}): MAE={metricas_alto['MAE']:.2f}")
+        if metricas_cero is not None:
+            print(f"[{barra}] Régimen cero (y=0, n={int(mask_cero.sum())}): MAE={metricas_cero['MAE']:.2f}")
+
+    return {
+        'general': metricas_general,
+        'n_total': int(mask.sum()),
+        f'p{percentil_regimen}_umbral': umbral_alto,
+        f'p{percentil_regimen}_n': int(mask_alto.sum()),
+        f'p{percentil_regimen}_metricas': metricas_alto,
+        'cero_n': int(mask_cero.sum()),
+        'cero_metricas': metricas_cero,
+    }
+
+# Líneas base ingenuas (persistencia, naive estacional, AR vía OLS) para MASE/skill score
+def calcular_baselines_naive(barra, fechas_train, fechas_test, mae_modelo=None,
+                              ruta_serie_cruda='Datos/h/2020-2026.csv',
+                              lags_naive=(1, 24, 168), lags_ar=(24, 168), verbose=True):
+    """
+    Calcula líneas base ingenuas sobre la serie cruda (sin recorte de outliers, ver
+    recalcular_metricas_serie_cruda): persistencia y naive estacional en `lags_naive`
+    (ej. lag 1 = predecir el valor de la hora anterior, lag 24 = mismo momento ayer,
+    lag 168 = mismo momento la semana pasada), más AR(lag) vía regresión lineal (OLS)
+    ajustada en train para cada lag en `lags_ar`. Todas se evalúan en el mismo conjunto
+    de test (mismas fechas) que el modelo, para que las comparaciones sean directas.
+
+    Si se entrega `mae_modelo` (el MAE del modelo en ese mismo test), calcula además
+    MASE = mae_modelo / MAE_persistencia_lag1 y el skill score = 1 - MASE, la
+    definición estándar (Hyndman y Koehler, 2006) usando la persistencia de un paso
+    como referencia.
+    """
+    df_crudo = pd.read_csv(ruta_serie_cruda, sep=';')
+    df_crudo['Fecha'] = pd.to_datetime(df_crudo['Fecha'])
+    serie = df_crudo.loc[df_crudo['Barra'] == barra].groupby('Fecha')['Valor'].mean()
+
+    fechas_train = pd.to_datetime(fechas_train)
+    fechas_test = pd.to_datetime(fechas_test)
+    y_real_test = serie.reindex(fechas_test).values
+
+    resultados = {}
+
+    for lag in lags_naive:
+        y_pred = serie.reindex(fechas_test - pd.Timedelta(hours=lag)).values
+        mask = np.isfinite(y_real_test) & np.isfinite(y_pred)
+        mae = mean_absolute_error(y_real_test[mask], y_pred[mask])
+        nombre = 'persistencia' if lag == 1 else f'naive_lag{lag}'
+        resultados[nombre] = {'MAE': mae, 'n': int(mask.sum())}
+        if verbose:
+            print(f"[{barra}] {nombre} (lag={lag}h): MAE={mae:.2f} (n={int(mask.sum())})")
+
+    for lag in lags_ar:
+        y_train = serie.reindex(fechas_train).values
+        x_train = serie.reindex(fechas_train - pd.Timedelta(hours=lag)).values
+        mask_train = np.isfinite(y_train) & np.isfinite(x_train)
+
+        modelo = LinearRegression()
+        modelo.fit(x_train[mask_train].reshape(-1, 1), y_train[mask_train])
+
+        x_test = serie.reindex(fechas_test - pd.Timedelta(hours=lag)).values
+        mask_test = np.isfinite(y_real_test) & np.isfinite(x_test)
+        y_pred = modelo.predict(x_test[mask_test].reshape(-1, 1))
+        mae = mean_absolute_error(y_real_test[mask_test], y_pred)
+
+        nombre = f'AR{lag}'
+        resultados[nombre] = {'MAE': mae, 'n': int(mask_test.sum()),
+                               'coef': float(modelo.coef_[0]), 'intercept': float(modelo.intercept_)}
+        if verbose:
+            print(f"[{barra}] {nombre} (OLS en train): MAE={mae:.2f} "
+                  f"(y = {modelo.coef_[0]:.3f}*y[t-{lag}] + {modelo.intercept_:.2f})")
+
+    if mae_modelo is not None:
+        mae_persistencia = resultados['persistencia']['MAE']
+        mase = mae_modelo / mae_persistencia
+        skill_score = 1 - mase
+        resultados['MASE'] = mase
+        resultados['skill_score'] = skill_score
+        if verbose:
+            print(f"[{barra}] MASE={mase:.3f} | Skill score={skill_score:.3f} "
+                  f"(modelo MAE={mae_modelo:.2f} vs. persistencia MAE={mae_persistencia:.2f})")
+
+    return resultados
 
 # Función para crear gráfico de evaluación de precios y residuos
 def crear_grafico_evaluacion(barra, datos_precios, datos_residuos,

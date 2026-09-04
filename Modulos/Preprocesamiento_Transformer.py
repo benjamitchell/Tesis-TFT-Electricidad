@@ -6,6 +6,19 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from pytorch_forecasting import TimeSeriesDataSet
 
+# Coordenadas de las 8 barras del SEN
+# Fuentes: https://www.geodatos.net/coordenadas/chile/iquique y https://www.igm.cl
+COORDENADAS_BARRAS = {
+    'ATACAMA':  (-28.57617, -70.75938),   # Vallenar
+    'CARDONES': (-27.36737, -70.33219),   # Copiapó
+    'CHARRUA':  (-36.82699, -73.04977),   # Concepción
+    'CRUCERO':  (-23.65094, -70.39752),   # Antofagasta
+    'P.AZUCAR': (-29.90591, -71.25014),   # La Serena
+    'P.MONTT':  (-41.4693,  -72.94237),   # Puerto Montt
+    'QUILLOTA': (-33.036,   -71.62963),   # Valparaíso
+    'TARAPACA': (-20.21326, -70.15027),   # Iquique
+}
+
 # Función para obtener datos climáticos desde Open-Meteo
 def obtener_clima_historico(lat, lon, fecha_inicio, fecha_fin, freq):
     
@@ -176,13 +189,29 @@ def incluir_features_horario(dict_datos):
 
         # ── Lags (en horas) ───────────────────────────────────────────────────
         df['y_lag1']   = df['y_real'].shift(1)    # 1 hora atrás
+        df['y_lag2']   = df['y_real'].shift(2)    # 2 horas atrás
+        df['y_lag3']   = df['y_real'].shift(3)    # 3 horas atrás
+        df['y_lag6']   = df['y_real'].shift(6)    # 6 horas atrás
+        df['y_lag8']   = df['y_real'].shift(8)    # 8 horas atrás
+        df['y_lag12']  = df['y_real'].shift(12)   # 12 horas atrás
         df['y_lag24']  = df['y_real'].shift(24)   # mismo momento ayer
         df['y_lag168'] = df['y_real'].shift(168)  # mismo momento hace 1 semana
+        df['y_lag336'] = df['y_real'].shift(336)  # mismo momento hace 2 semanas
+        df['y_lag720'] = df['y_real'].shift(720)  # mismo momento hace 30 días
+        df['y_lag8760']= df['y_real'].shift(8760) # mismo momento hace 1 año
 
         # Lags de residuos
         df['resid_lag1']   = df['residuo'].shift(1)
+        df['resid_lag2']   = df['residuo'].shift(2)
+        df['resid_lag3']   = df['residuo'].shift(3)
+        df['resid_lag6']   = df['residuo'].shift(6)
+        df['resid_lag8']   = df['residuo'].shift(8)
+        df['resid_lag12']  = df['residuo'].shift(12)
         df['resid_lag24']  = df['residuo'].shift(24)
         df['resid_lag168'] = df['residuo'].shift(168)
+        df['resid_lag336'] = df['residuo'].shift(336)
+        df['resid_lag720'] = df['residuo'].shift(720)
+        df['resid_lag8760']= df['residuo'].shift(8760)
 
         # ── Rolling windows (en horas) ────────────────────────────────────────
         # Últimas 24h (patrón diario)
@@ -201,11 +230,15 @@ def incluir_features_horario(dict_datos):
         # ── Limpieza de NaNs generados por lags ──────────────────────────────
         # Los primeros 168 registros (1 semana) tendrán NaN por lag168/rolling_168
         df = df.dropna().reset_index(drop=True)
-        
+
+        # ── Parámetros obligatorios para PyTorch Forecasting ──────────────────
+        df['time_idx'] = range(len(df))
+        df['serie_id'] = localidad
+
         dict_enriquecido[localidad] = df
-        
+
     print(f"Cols agregadas. Total features: {df.shape[1]}")
-        
+
     return dict_enriquecido
 
 # Función para normalizar 
@@ -226,9 +259,12 @@ def normalizar_datos(datasets, feature_cols, target_cols):
         
         # Normalizar features (ahora sin yhat)
         scaler_x = StandardScaler()
-        sets['train'][features_x_puros] = scaler_x.fit_transform(sets['train'][features_x_puros])
-        for set_name in ['val', 'test']:
-            sets[set_name][features_x_puros] = scaler_x.transform(sets[set_name][features_x_puros])
+        if features_x_puros:
+            sets['train'][features_x_puros] = scaler_x.fit_transform(sets['train'][features_x_puros])
+            for set_name in ['val', 'test']:
+                sets[set_name][features_x_puros] = scaler_x.transform(sets[set_name][features_x_puros])
+        else:
+            scaler_x.fit([[0]])  # scaler vacío pero válido para serializar
         
         # Normalizar targets
         scalers_y = {target: StandardScaler() for target in target_cols}
@@ -435,3 +471,127 @@ def crear_dataloaders(lista_barras, datasets_norm, known_reals, unknown_reals_pr
                                     'test': test_dataset_residuos}
         
     return dataloaders_precios, dataloaders_residuos, datasets_precios, datasets_residuos
+
+
+def agregar_features_solares(datos_para_transformer, coordenadas):
+    try:
+        import pvlib
+    except ImportError:
+        import subprocess, sys
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pvlib', '-q'])
+        import pvlib
+
+    _CAMBIOS_INVIERNO = pd.to_datetime([
+        '2020-04-04','2021-04-03','2022-04-02','2023-04-01',
+        '2024-04-06','2025-04-05','2026-04-04',
+    ])
+    _CAMBIOS_VERANO = pd.to_datetime([
+        '2019-09-07','2020-09-05','2021-09-04','2022-09-10',
+        '2023-09-02','2024-09-07','2025-09-06',
+    ])
+    _REGIMENES = sorted(
+        [(f, 1) for f in _CAMBIOS_VERANO] + [(f, 0) for f in _CAMBIOS_INVIERNO],
+        key=lambda x: x[0]
+    )
+
+    def _es_verano(ts):
+        ts = pd.Timestamp(ts)
+        regimen = 1  # enero 2020 comienza en verano (UTC-3)
+        for fecha, val in _REGIMENES:
+            if fecha <= ts:
+                regimen = val
+            else:
+                break
+        return regimen
+
+    print("Agregando features solares a datos_para_transformer...")
+
+    for barra, df in datos_para_transformer.items():
+        lat, lon = coordenadas[barra]
+
+        df['es_horario_verano'] = df['ds'].apply(_es_verano).astype(float)
+
+        ds_local = pd.to_datetime(df['ds'])
+        ds_utc = ds_local.dt.tz_localize(
+            'America/Santiago',
+            ambiguous='NaT',
+            nonexistent='shift_forward'
+        ).dt.tz_convert('UTC')
+
+        nat_mask = ds_utc.isna()
+        if nat_mask.any():
+            ds_utc = ds_utc.ffill() + pd.Timedelta(hours=1)
+
+        hora_utc = ds_utc.dt.hour
+        df['hora_utc_sin'] = np.sin(2 * np.pi * hora_utc / 24)
+        df['hora_utc_cos'] = np.cos(2 * np.pi * hora_utc / 24)
+
+        sol = pvlib.solarposition.get_solarposition(ds_utc, lat, lon)
+        df['elevacion_solar'] = sol['elevation'].values
+        df['cos_elevacion']   = np.cos(np.radians(sol['elevation'].values))
+
+        datos_para_transformer[barra] = df
+
+    print("✓ Features solares agregadas: es_horario_verano, hora_utc_sin/cos, elevacion_solar, cos_elevacion")
+    return datos_para_transformer
+
+
+def guardar_experimento(carpeta, dataloaders_dict_precios, dataloaders_dict_residuos,
+                        diccionario_scalers, feature_config, tft_config_total):
+    import pickle, json
+
+    def _convert_ndarray(obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, dict):
+            return {k: _convert_ndarray(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [_convert_ndarray(i) for i in obj]
+        return obj
+
+    os.makedirs(carpeta, exist_ok=True)
+
+    with open(f'{carpeta}/dataloaders_precios.pkl', 'wb') as f:
+        pickle.dump(dataloaders_dict_precios, f)
+    print("✓ Dataloaders precios guardados")
+
+    with open(f'{carpeta}/dataloaders_residuos.pkl', 'wb') as f:
+        pickle.dump(dataloaders_dict_residuos, f)
+    print("✓ Dataloaders residuos guardados")
+
+    with open(f'{carpeta}/scalers.pkl', 'wb') as f:
+        pickle.dump(diccionario_scalers, f)
+    print("✓ Scalers guardados")
+
+    with open(f'{carpeta}/feature_config.json', 'w') as f:
+        json.dump(_convert_ndarray(feature_config), f, indent=2)
+    print("✓ Feature config guardado")
+
+    with open(f'{carpeta}/tft_config.json', 'w') as f:
+        json.dump(tft_config_total, f, indent=2)
+    print("✓ TFT config guardado")
+
+
+def verificar_dataloaders(ruta_precios, ruta_residuos):
+    import pickle
+
+    def _ver(ruta, nombre):
+        print(f"\n{'='*60}")
+        print(f" {nombre}")
+        print(f"{'='*60}")
+        with open(ruta, "rb") as f:
+            dl = pickle.load(f)
+        barras = list(dl.keys())
+        print(f"Barras disponibles ({len(barras)}): {barras}")
+        for barra in barras:
+            dataset = dl[barra]["train"].dataset
+            print(f"\n  ── {barra} ──")
+            print(f"  time_varying_known_reals:    {dataset.time_varying_known_reals}")
+            print(f"  time_varying_unknown_reals:  {dataset.time_varying_unknown_reals}")
+            print(f"  static_reals:                {dataset.static_reals}")
+            print(f"  time_varying_known_cats:     {dataset.time_varying_known_categoricals}")
+            print(f"  static_cats:                 {dataset.static_categoricals}")
+            print(f"  target:                      {dataset.target}")
+
+    _ver(ruta_precios,  "DATALOADERS PRECIOS")
+    _ver(ruta_residuos, "DATALOADERS RESIDUOS")

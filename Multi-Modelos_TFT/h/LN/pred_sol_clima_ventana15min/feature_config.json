@@ -1,0 +1,28 @@
+{
+  "known_reals": [
+    "es_horario_verano",
+    "elevacion_solar",
+    "cos_elevacion"
+  ],
+  "unknown_reals_price": [
+    "y_real",
+    "temperatura",
+    "humedad",
+    "velocidad_viento",
+    "precipitacion",
+    "nubosidad"
+  ],
+  "unknown_reals_resid": [],
+  "max_encoder_length": 168,
+  "max_prediction_length": 1,
+  "batch_size": 128,
+  "lista_barras": [
+    "ATACAMA",
+    "CARDONES",
+    "P.MONTT"
+  ],
+  "nota": "S+C Horario, ventana de fechas identica al piloto 15min, para comparacion justa de granularidad",
+  "corte_train_fin": "2025-11-28 21:15:00",
+  "corte_val_fin": "2026-03-16 10:15:00",
+  "corte_test_fin": "2026-07-01 23:45:00"
+}

@@ -1,0 +1,15 @@
+tipo,variable,importancia_pct
+decoder,relative_time_idx,43.22
+decoder,es_horario_verano,31.89
+decoder,cos_elevacion,19.27
+decoder,elevacion_solar,5.63
+encoder,y_real,54.94
+encoder,elevacion_solar,21.13
+encoder,es_horario_verano,5.43
+encoder,relative_time_idx,3.7
+encoder,velocidad_viento,3.02
+encoder,humedad,2.71
+encoder,precipitacion,2.7
+encoder,nubosidad,2.4
+encoder,cos_elevacion,2.28
+encoder,temperatura,1.69

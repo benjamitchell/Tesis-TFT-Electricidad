@@ -1,0 +1,4 @@
+tipo,variable,importancia_pct
+decoder,relative_time_idx,100.0
+encoder,residuo,76.87
+encoder,relative_time_idx,23.13

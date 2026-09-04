@@ -140,10 +140,10 @@ def extraer_predicciones_prophet(barra, datasets_norm, diccionario_scalers, conj
             'n_puntos': len(y_pred)}
 
 # Función para realizar grid search de pesos
-def grid_search_modelos(y_real, pred1, pred2, resolution, metrica='MAE'):
-    
+def grid_search_modelos(y_real, pred1, pred2, resolution, metrica='MAE', w_min=0.0):
+
      # Grid de w1
-    w1_grid = np.linspace(0, 1, resolution)     # Restricción w1, w2 >= 0 
+    w1_grid = np.linspace(w_min, 1 - w_min, resolution)     # Restricción w1, w2 >= w_min
 
     best_score = np.inf
     best_w1 = 0.5
@@ -379,6 +379,7 @@ def stacking_optimization(lista_barras,
                           nombre_modelo='TFT',
                           grid_resolution=41,
                           metrica_optimizacion='MAE',
+                          w_min=0.0,
                           metricas_grafico=None,
                           linestyles=['-'],
                           colormap = 'cividis',
@@ -544,9 +545,16 @@ def stacking_optimization(lista_barras,
         }
 
         # ESTRATEGIA 2.5: TFT RESIDUOS SOLO
-        metricas_tft_res_train = calcular_metricas(y_real_train, tft_residuos_train)
-        metricas_tft_res_val = calcular_metricas(y_real_val, tft_residuos_val)
-        metricas_tft_res_test = calcular_metricas(y_real_test, tft_residuos_test)
+        # OJO: se compara contra el residuo real (datos_*_residuos['y_real']), no contra
+        # y_real_train/val/test (precio real) -- tft_residuos_* esta en escala de residuo,
+        # no de precio, por lo que comparar contra el precio real produce metricas sin sentido.
+        residuo_real_train = datos_train_residuos['y_real'][:n_train]
+        residuo_real_val = datos_val_residuos['y_real'][:n_val]
+        residuo_real_test = datos_test_residuos['y_real'][:n_test]
+
+        metricas_tft_res_train = calcular_metricas(residuo_real_train, tft_residuos_train)
+        metricas_tft_res_val = calcular_metricas(residuo_real_val, tft_residuos_val)
+        metricas_tft_res_test = calcular_metricas(residuo_real_test, tft_residuos_test)
 
         resultados_stacking[barra]['TFT_Residuos_Solo'] = {
             'nombre': f'{nombre_modelo} Residuos Solo',
@@ -561,8 +569,9 @@ def stacking_optimization(lista_barras,
 
         # ESTRATEGIA 3: PROPHET + TFT PRECIOS
         result = grid_search_modelos(y_real_train, prophet_train, tft_precios_train,
-                                     resolution=grid_resolution, 
-                                     metrica=metrica_optimizacion)
+                                     resolution=grid_resolution,
+                                     metrica=metrica_optimizacion,
+                                     w_min=w_min)
         w_prophet, w_tft = result['w1'], result['w2']
         
         pred_train = w_prophet * prophet_train + w_tft * tft_precios_train
@@ -606,8 +615,9 @@ def stacking_optimization(lista_barras,
         
         # ESTRATEGIA 5: PROPHET + TFT RESIDUOS (OPT)
         result = grid_search_modelos(y_real_train, prophet_train, tft_residuos_train,
-                                     resolution=grid_resolution, 
-                                     metrica=metrica_optimizacion)
+                                     resolution=grid_resolution,
+                                     metrica=metrica_optimizacion,
+                                     w_min=w_min)
 
         w_prophet, w_residuo = result['w1'], result['w2']
         
@@ -636,8 +646,9 @@ def stacking_optimization(lista_barras,
         prophet_residuos_test = prophet_test + tft_residuos_test
         
         result = grid_search_modelos(y_real_train, prophet_residuos_train, tft_precios_train,
-                                     resolution=grid_resolution, 
-                                     metrica=metrica_optimizacion)
+                                     resolution=grid_resolution,
+                                     metrica=metrica_optimizacion,
+                                     w_min=w_min)
         w1, w2 = result['w1'], result['w2']
         
         pred_train = w1 * prophet_residuos_train + w2 * tft_precios_train
@@ -739,34 +750,35 @@ def stacking_optimization(lista_barras,
     # Tabla resumen de las mejores estrategias por barra
     print("\n" + "="*80)
     print(f"MEJORES ESTRATEGIAS POR BARRA - {nombre_modelo}")
-    print(f"(según {metrica_optimizacion} en TEST)")
+    print(f"(según {metrica_optimizacion} en VALIDACIÓN; el test se reporta una sola vez, ya fijado el ganador)")
     print("="*80 + "\n")
-    
+
     datos_mejores = []
 
     for barra in lista_barras:
 
-        mejor_score_test = np.inf
+        mejor_score_val = np.inf
         mejor_info = None
 
         for key, resultado in resultados_stacking[barra].items():
             if key.startswith('_'):
                 continue
 
-            score_test = resultado['metricas_test'][metrica_optimizacion]
+            score_val = resultado['metricas_val'][metrica_optimizacion]
 
-            if score_test < mejor_score_test:
-                mejor_score_test = score_test
+            if score_val < mejor_score_val:
+                mejor_score_val = score_val
                 mejor_info = {
                     'barra': barra,
                     'estrategia': resultado['nombre'],
                     'pesos': resultado['pesos'],
+                    'mae_val': resultado['metricas_val']['MAE'],
                     'mae_test': resultado['metricas_test']['MAE'],
                     'rmse_test': resultado['metricas_test']['RMSE'],
                     'mse_test': resultado['metricas_test']['MSE'],
                     'r2_test': resultado['metricas_test']['R2']
                 }
-        
+
         if mejor_info:
             # Formatear pesos
             if mejor_info['pesos'] is None:
@@ -779,6 +791,7 @@ def stacking_optimization(lista_barras,
                 'Barra': mejor_info['barra'],
                 'Mejor Estrategia': mejor_info['estrategia'],
                 'Pesos': pesos_str,
+                'MAE_val': mejor_info['mae_val'],
                 'MAE': mejor_info['mae_test'],
                 'RMSE': mejor_info['rmse_test'],
                 'MSE': mejor_info['mse_test'],
@@ -787,6 +800,7 @@ def stacking_optimization(lista_barras,
     
     # Crear DataFrame de mejores estrategias
     df_mejores = pd.DataFrame(datos_mejores)
+    df_mejores['MAE_val'] = df_mejores['MAE_val'].round(4)
     df_mejores['MAE'] = df_mejores['MAE'].round(4)
     df_mejores['RMSE'] = df_mejores['RMSE'].round(4)
     df_mejores['MSE'] = df_mejores['MSE'].round(4)
@@ -1113,41 +1127,43 @@ def comparar_metodos_stacking(lista_barras, resultados_stacking,
     
     # Mejor método por estartegia y barra
     print("\n" + "="*100)
-    print(f"MEJORES MÉTODOS POR BARRA Y ESTRATEGIA (TEST) - {nombre_modelo}")
+    print(f"MEJORES MÉTODOS POR BARRA Y ESTRATEGIA (según MAE en VALIDACIÓN; test reportado una sola vez) - {nombre_modelo}")
     print("="*100 + "\n")
-    
+
     datos_mejores = []
-    
+
     for barra in lista_barras:
         for estrategia_key, metodos_dict in comparacion_metodos[barra].items():
             estrategia_nombre = estrategias_opt[estrategia_key]['nombre']
-            
-            # Encontrar mejor método para esta estrategia
-            mejor_mae = np.inf
+
+            # Encontrar mejor método para esta estrategia, según MAE en VALIDACIÓN
+            mejor_mae_val = np.inf
             mejor_metodo = None
-            
+
             for metodo, resultado in metodos_dict.items():
-                if resultado['test']['MAE'] < mejor_mae:
-                    mejor_mae = resultado['test']['MAE']
+                if resultado['val']['MAE'] < mejor_mae_val:
+                    mejor_mae_val = resultado['val']['MAE']
                     mejor_metodo = metodo
                     mejor_resultado = resultado
-            
+
             # Formatear pesos
             pesos_str = f"w1={mejor_resultado['w1']:.3f}, w2={mejor_resultado['w2']:.3f}"
-            
+
             datos_mejores.append({
                 'Barra': barra,
                 'Estrategia': estrategia_nombre,
                 'Mejor Método': mejor_metodo,
                 'Pesos': pesos_str,
+                'MAE_val': mejor_resultado['val']['MAE'],
                 'MAE': mejor_resultado['test']['MAE'],
                 'RMSE': mejor_resultado['test']['RMSE'],
                 'R²': mejor_resultado['test']['R2'],
                 'Tiempo (s)': mejor_resultado['time']
             })
-    
+
     # Crear DataFrame de mejores
     df_mejores = pd.DataFrame(datos_mejores)
+    df_mejores['MAE_val'] = df_mejores['MAE_val'].round(4)
     df_mejores['MAE'] = df_mejores['MAE'].round(4)
     df_mejores['RMSE'] = df_mejores['RMSE'].round(4)
     df_mejores['R²'] = df_mejores['R²'].round(4)
@@ -1168,7 +1184,7 @@ def graficar_stacking(resultados_stacking, lista_barras,
                       nombre_modelo='TFT',
                       estrategias_plot=None,
                       metrica_mejor='MAE',
-                      conjunto_mejor='test',
+                      conjunto_mejor='val',
                       zoom_dias=30,
                       colores_estrategias=None,
                       guardar_graficos=False,
@@ -1720,7 +1736,7 @@ def grafico_zoom_ultimos_dias(resultados_stacking,
                               mostrar=True):
     """
     Genera una figura por barra con zoom en los últimos n_dias del conjunto Test,
-    superponiendo la mejor estrategia (menor MAE en Test) sobre los valores reales.
+    superponiendo la mejor estrategia (menor MAE en Validación) sobre los valores reales.
 
     Parámetros
     ----------
@@ -1762,16 +1778,16 @@ def grafico_zoom_ultimos_dias(resultados_stacking,
         y_real_test = split['y_real_test']
         fechas_test = split['fechas_test']
 
-        # ── Identificar la mejor estrategia (menor MAE en Test) ───────────────
+        # ── Identificar la mejor estrategia (menor MAE en Validación) ─────────
         mejor_key   = None
-        mejor_mae   = np.inf
+        mejor_mae_val = np.inf
 
         for key, resultado in datos_barra.items():
             if key.startswith('_'):
                 continue
-            mae_test = resultado['metricas_test']['MAE']
-            if mae_test < mejor_mae:
-                mejor_mae   = mae_test
+            mae_val = resultado['metricas_val']['MAE']
+            if mae_val < mejor_mae_val:
+                mejor_mae_val = mae_val
                 mejor_key   = key
                 mejor_nombre = resultado['nombre']
                 mejor_pred  = resultado['prediccion_test']

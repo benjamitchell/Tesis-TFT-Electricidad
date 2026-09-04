@@ -1,0 +1,92 @@
+CARPETA LISTA PARA SUBIR AL CLUSTER
+=====================================
+
+Contenido de esta carpeta (todo lo necesario para los 4 experimentos nuevos
+de la revision de Jofre: 5 semillas LN/DyT, S+C a h=24, el piloto de
+outliers en train, y el piloto combinado sin-outliers + h=24):
+
+  Modulos/               -> TFT_Model.py, Parche.py, DyT.py (sin cambios,
+                             copiados solo porque train_tft.py/train_dyt.py
+                             los importan)
+  Scripts Cluster/        -> train_tft.py y train_dyt.py YA ACTUALIZADOS con
+                             el flag --seed (antes no existia ningun control
+                             de semilla), mas los 3 scripts de envio:
+                               train_5seeds.sh         (30 jobs: 3 barras x 2 arq x 5 seeds)
+                               train_h24.sh             (10 jobs: 5 barras x 2 arq, horizonte 24h --
+                                                          ATACAMA/CHARRUA/P.MONTT/P.AZUCAR/TARAPACA;
+                                                          se agregaron P.AZUCAR y TARAPACA para poder
+                                                          comparar 2x2 con/sin outliers x h=1/h=24)
+                               train_piloto_outliers.sh (4 jobs: ATACAMA/CHARRUA/P.AZUCAR/TARAPACA, LN)
+                               train_piloto_outliers_h24.sh (4 jobs: mismas 4 barras, LN, horizonte 24)
+  Multi-Modelos_TFT/h/{LN,DyT}/pred_sol_clima/       -> dataloaders ya existentes,
+                             los reusa train_5seeds.sh (no hace falta recalcular
+                             features, se entrena directo)
+  Multi-Modelos_TFT/h/{LN,DyT}/pred_sol_clima_h24/   -> dataloaders NUEVOS,
+                             generados hoy localmente con max_prediction_length=24
+                             (reusando el mismo datasets_norm/scalers de pred_sol_clima,
+                             sin recomputar nada), ya verificados (batch shape [128,24]).
+  Multi-Modelos_TFT/h/LN/pred_sol_clima_piloto_sin_outliers/  -> dataloaders NUEVOS,
+                             train SIN el recorte automatico de outliers (z>=4):
+                             se detecto que ese recorte eliminaba un patron
+                             sistemico de invierno 2022 (no eventos aislados),
+                             asi que ahora train queda practicamente crudo. La
+                             unica exclusion manual son las 3 horas absurdas de
+                             P.AZUCAR (2020-03-19 17-19h, valores 860-1589 vs
+                             media~71 -- esas si son un error/evento real aislado).
+                             Prophet se reentreno (CPU, ya hecho localmente) solo
+                             para estas 4 barras con el nuevo train; el resto del
+                             pipeline (clima, features solares) quedo identico.
+                             Si el MAE en regimen alto mejora vs los modelos
+                             actuales, se entrenan las 8 barras completas asi.
+  Multi-Modelos_TFT/h/LN/pred_sol_clima_piloto_sin_outliers_h24/  -> dataloaders
+                             NUEVOS: mismo train sin recorte de outliers de arriba,
+                             pero con max_prediction_length=24 (horizonte day-ahead
+                             completo, en vez de h=1). Reusa el datasets_norm del
+                             piloto sin outliers, sin recomputar Prophet ni clima/
+                             solar de nuevo. Verificado (batch shape [128,24]).
+
+PASO 1: Subir la carpeta
+-------------------------
+Conectate como siempre (conexion remota / VPN a la red de la U) y sube el
+CONTENIDO de esta carpeta a tu carpeta del cluster, fusionando con lo que
+ya esta alla (NO reemplaza nada mas, solo agrega/actualiza estos archivos
+puntuales). Por ejemplo, con rsync desde Windows (WSL/Git Bash) o Mac/Linux:
+
+  rsync -avz "Subir_Cluster/" minas01@leftaru:/home/minas01/BMitchell/
+
+Si usas WinSCP/FileZilla: arrastra las 3 carpetas (Modulos, "Scripts Cluster",
+Multi-Modelos_TFT) hacia /home/minas01/BMitchell/, dejando que se fusionen
+con las carpetas existentes (no elegir "reemplazar todo").
+
+PASO 2: Correr los jobs
+-------------------------
+Conectado por SSH al cluster:
+
+  cd /home/minas01/BMitchell/"Scripts Cluster"
+  sbatch train_5seeds.sh
+  sbatch train_h24.sh
+  sbatch train_piloto_outliers.sh
+  sbatch train_piloto_outliers_h24.sh
+
+Con `squeue -u minas01` revisas el avance. Los logs quedan en
+slurm_<task>_<jobid>_out.txt / _err.txt en esa misma carpeta.
+
+PASO 3: Cuando terminen
+-------------------------
+Sincroniza de vuelta los resultados (checkpoints + config.json) a tu
+maquina local, en las mismas rutas relativas:
+  Multi-Modelos_TFT/h/{LN,DyT}/pred_sol_clima_seeds/seed{1..5}/
+  Multi-Modelos_TFT/h/{LN,DyT}/pred_sol_clima_h24/
+  Multi-Modelos_TFT/h/LN/pred_sol_clima_piloto_sin_outliers/
+  Multi-Modelos_TFT/h/LN/pred_sol_clima_piloto_sin_outliers_h24/
+
+Para el estudio de 5 semillas, corre localmente:
+  python Scripts/analizar_5seeds.py
+
+Para h=24 (el original, 3 barras) todavia no hay script de evaluacion armado
+(falta definir el baseline de persistencia a 24 pasos) -- se arma cuando
+volvamos a esto. Lo mismo aplica para el piloto sin-outliers + h=24.
+
+Para el piloto de outliers (h=1), todavia no hay script de evaluacion armado --
+falta compararlo contra los modelos actuales (MAE general + MAE en regimen
+alto/p95) cuando bajen los checkpoints. Se arma cuando volvamos a esto.

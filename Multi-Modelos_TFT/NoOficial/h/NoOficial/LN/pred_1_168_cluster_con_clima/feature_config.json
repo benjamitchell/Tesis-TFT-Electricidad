@@ -1,0 +1,28 @@
+{
+  "known_reals": [],
+  "unknown_reals_price": [
+    "y_real",
+    "y_lag336",
+    "y_lag720",
+    "y_lag8760"
+  ],
+  "unknown_reals_resid": [
+    "residuo",
+    "resid_lag336",
+    "resid_lag720",
+    "resid_lag8760"
+  ],
+  "max_encoder_length": 168,
+  "max_prediction_length": 1,
+  "batch_size": 128,
+  "lista_barras": [
+    "ATACAMA",
+    "CARDONES",
+    "CHARRUA",
+    "CRUCERO",
+    "P.AZUCAR",
+    "P.MONTT",
+    "QUILLOTA",
+    "TARAPACA"
+  ]
+}

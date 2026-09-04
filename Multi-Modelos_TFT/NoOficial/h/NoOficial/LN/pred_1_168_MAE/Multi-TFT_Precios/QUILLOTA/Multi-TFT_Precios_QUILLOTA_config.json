@@ -1,0 +1,20 @@
+{
+    "barra": "QUILLOTA",
+    "experimento": "Multi-TFT_Precios",
+    "timestamp": "20260628_031945",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 32,
+        "heads": 4,
+        "dropout": 0.2,
+        "cont_size": 8,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.0001,
+        "patience": 15
+    },
+    "epochs_trained": 200,
+    "best_val_loss": 0.12872080504894257,
+    "model_path": "Multi-Modelos_TFT/h/LN/pred_1_168_MAE/Multi-TFT_Precios/QUILLOTA/Multi-TFT_Precios_QUILLOTA_best.ckpt"
+}

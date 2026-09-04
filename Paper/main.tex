@@ -1,0 +1,182 @@
+%  LaTeX support: latex@mdpi.com
+%  Plantilla oficial MDPI (Applied Sciences), obtenida de la clase mdpi.cls estandar.
+
+%=================================================================
+\documentclass[applsci,article,submit,moreauthors,pdftex]{Definitions/mdpi}
+
+%=================================================================
+\firstpage{1}
+\makeatletter
+\setcounter{page}{\@firstpage}
+\makeatother
+\pubvolume{xx}
+\issuenum{1}
+\articlenumber{5}
+\pubyear{2026}
+\copyrightyear{2026}
+\history{Received: date; Accepted: date; Published: date}
+
+%=================================================================
+% TODO: decidir con el usuario si el paper se escribe en ingles (estandar
+% para Applied Sciences, como el paper de Leon et al. con el que se compara)
+% o en espanol. Todo el contenido de abajo esta en espanol por ahora, como
+% placeholder/outline, hasta confirmar.
+
+% Titulo completo del paper (placeholder, a definir)
+\Title{Sol en vez de Prophet: comparacion de estrategias de features y 
+un metodo de Conformal Prediction ponderado por hora para pronostico de precios 
+electricos con Temporal Fusion Transformers}
+
+% Autores
+\Author{Benjamín Mitchell García and Alejandro Jofré Cáceres}
+
+% Autores para metadata del PDF
+\AuthorNames{Benjamín Mitchell García and Alejandro Jofré Cáceres}
+
+% Afiliaciones
+\address{%
+$^{1}$ \quad Departamento de Ingenier\'ia Matem\'atica, Facultad de Ciencias F\'isicas y Matem\'aticas, Universidad de Chile; edward.mitchell@ug.uchile.cl (E.M.G.); ajofre@dim.uchile.cl (A.J.C.)}
+
+\newcommand{\orcidauthorA}{0000-0000-0000-0000} % TODO: completar ORCID real si se tiene
+
+% Contacto del autor de correspondencia
+\corres{Correspondence: edward.mitchell@ug.uchile.cl}
+
+% Abstract (placeholder -- se escribe al final, cuando el resto este cerrado)
+\abstract{TODO: resumen de ~200 palabras. Estructura sugerida sin subtitulos: (1) Contexto -- pronostico de precios en el SEN chileno, alta penetracion renovable, dos aproximaciones comparadas; (2) Metodos -- TFT, dos estrategias de features (Prophet+Clima vs. Sol+Clima), Stacking, LayerNorm vs. Dynamic Tanh, Conformal Prediction con el metodo propio LW-ACP; (3) Resultados -- S+C gana en la mayoria de las 8 barras, LW-ACP domina en cobertura y ancho, hallazgos de Puerto Montt, comparacion favorable contra Leon et al. (2026) en Crucero; (4) Conclusion -- una oracion de cierre.}
+
+% Keywords
+\keyword{electricity price forecasting; Temporal Fusion Transformer; conformal prediction; solar position features; time series; Chilean electricity market}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Solo para la revista Applied Sciences:
+\featuredapplication{TODO: una o dos oraciones describiendo la aplicacion practica -- p.ej. intervalos de confianza para valorizacion de contratos y programacion de despacho en mercados electricos con alta penetracion renovable.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%=================================================================
+\section{Introduction}
+
+El Sistema Eléctrico Nacional (SEN) de Chile ha experimentado una transformación estructural sin precedentes durante la última década. Al cierre de 2024, las Energías Renovables No Convencionales (ERNC) alcanzaron el 50,3\% de la capacidad instalada y el 40,4\% de la generación total, lideradas por la energía solar \cite{CEN2024}, en una trayectoria que en cinco años llevó su participación del 20\% al 40\% de la generación \cite{LaTercera}. Esta transición ha introducido una volatilidad estructural sin precedentes en el costo marginal, la principal señal de precio del mercado spot: la intermitencia solar y eólica genera episodios recurrentes de sobreoferta, con caídas del precio a valores cercanos a cero durante el bloque solar seguidas de alzas abruptas en horas de menor generación \cite{REVE}. En 2024 se perdieron 5908,71~GWh de energía renovable por \textit{curtailment}, un aumento del 149\% respecto al año anterior \cite{LaTerceraPerdidas}. A esto se suma una topología de red radial y extendida, sin interconexión con otros países, donde la expansión de la transmisión no ha seguido el ritmo de la nueva capacidad renovable, convirtiendo la congestión en un fenómeno estructural más que estocástico \cite{LeonSMPChile}. Esta congestión es marcadamente asimétrica: el corredor que conecta la zona centro-sur con Puerto Montt concentra la mayor tasa de desacople de precios del sistema (hasta 43,3\% de las horas), muy por encima del resto de los corredores \cite{LeonSMPChile}, lo que motiva un tratamiento diferenciado de esa barra en este trabajo.
+
+\subsection{State of the Art}
+
+La predicción del costo marginal ha sido clasificada tradicionalmente según el horizonte de predicción (corto, mediano y largo plazo) y según el paradigma de modelamiento: métodos basados en simulación estructural del mercado (\textit{unit commitment}, despacho económico) frente a métodos \textit{data-driven}, que infieren el comportamiento del precio directamente de los datos históricos sin optimización explícita del sistema \cite{weron}. Dentro de este segundo grupo, los modelos estadísticos clásicos como ARIMA y sus variantes estacionales asumen estacionariedad y linealidad en la serie, supuestos difícilmente sostenibles en mercados con heterocedasticidad y quiebres estructurales asociados a la incorporación continua de generación renovable \cite{weron}.
+
+Frente a estas limitaciones, la literatura reciente ha adoptado arquitecturas de aprendizaje profundo con mayor expresividad, en particular basadas en el mecanismo de atención introducido por el Transformer \cite{Vaswani2017Attention}. El \textit{Temporal Fusion Transformer} (TFT) \cite{TFT} combina procesamiento recurrente local (LSTM) con atención interpretable de largo alcance y salidas probabilísticas mediante regresión cuantílica, lo que lo hace especialmente adecuado para \textit{forecasting} multihorizonte con múltiples variables exógenas; sin embargo, opera típicamente sobre la serie cruda, sin descomponer explícitamente tendencia y estacionalidad. Prophet \cite{Prophet} ofrece esa descomposición de forma interpretable y robusta a valores atípicos, lo que ha motivado arquitecturas híbridas que combinan ambos enfoques. Huang et al.\ (2024) \cite{ProphetTransformers} proponen un modelo Prophet-Transformer en el que ambos modelos se entrenan de forma independiente y paralela sobre la serie de precios, y sus predicciones puntuales se combinan mediante un módulo de \textit{Stacking Optimization} que aprende una combinación lineal ponderada, $\hat{y}_{\text{stacking}} = \alpha_1 \hat{y}_{\text{Prophet}} + \alpha_2 \hat{y}_{\text{Transformer}}$, validando mejoras consistentes de exactitud y estabilidad en cuatro mercados eléctricos mayoristas (ENTSO-E, PJM, CAISO y ERCOT). Este trabajo adopta una arquitectura de ensamblaje conceptualmente análoga --TFT más Prophet combinados mediante Stacking-- pero, a diferencia de Huang et al., la contrasta directamente contra una alternativa que prescinde por completo de Prophet, reemplazando sus componentes por variables de posición solar; hasta donde sabemos, esta comparación no ha sido reportada previamente, y es particularmente relevante en un mercado como el chileno donde la generación fotovoltaica es el principal determinante del ciclo diario del precio.
+
+Un segundo eje de diseño, ortogonal al anterior, es el mecanismo de normalización interno del Transformer. \textit{Layer Normalization} (LayerNorm) es un componente casi universal de estas arquitecturas desde su introducción \cite{Vaswani2017Attention}, y ha sido considerado prácticamente indispensable para la convergencia estable del entrenamiento. Zhu et al.\ (2025) \cite{Zhu2025Transformers} cuestionan esta premisa al proponer \textit{Dynamic Tanh} (DyT), una operación puramente elemento a elemento, $\mathrm{DyT}(x)=\gamma\tanh(\alpha x)+\beta$, que reemplaza directamente a LayerNorm sin requerir el cómputo de estadísticas del \textit{batch}. Los autores validan que Transformers con DyT igualan o superan a sus contrapartes normalizadas en una amplia variedad de tareas --reconocimiento y generación de imágenes, aprendizaje autosupervisado, modelos de lenguaje y de habla--, sin ajuste adicional de hiperparámetros. Sin embargo, esta validación no incluye arquitecturas híbridas de tipo TFT ni tareas de \textit{forecasting} de series temporales con alta variabilidad y episodios de \textit{spike}, como el costo marginal eléctrico, donde la normalización local por token de LayerNorm --frente al escalar global de DyT-- podría tener un rol estructuralmente distinto. Si la equivalencia reportada por Zhu et al.\ se sostiene en este dominio es, por tanto, una pregunta abierta que este trabajo aborda empíricamente.
+
+Para el mercado eléctrico chileno específicamente, León et al.\ (2026) \cite{LeonSMPChile} evalúan modelos de \textit{machine learning} clásico (Random Forest, Support Vector Regression, Bayesian Ridge, entre otros) para predecir el costo marginal horario en tres barras representativas, comparando dos metodologías de selección de predictores --una que usa información de todas las barras del sistema, y otra restringida a subsistemas espacialmente correlacionados-- y encontrando mejoras significativas de la segunda en zonas de alta congestión mediante un test de Wilcoxon pareado. Este trabajo utiliza la misma fuente de datos públicos del Coordinador Eléctrico Nacional y la misma metodología de comparación estadística no paramétrica, pero se distingue en dos aspectos: primero, emplea una arquitectura de aprendizaje profundo secuencial (TFT) en lugar de modelos de regresión clásicos; segundo, incorpora cuantificación de incertidumbre mediante \textit{Conformal Prediction} (CP), un marco que garantiza cobertura estadística sin supuestos distribucionales sobre los errores \cite{ConformalPrediction}, ausente en la literatura de \textit{forecasting} de precios eléctricos chilenos revisada. Las variantes clásicas de CP --\textit{split conformal} \cite{VovkCP,LeiCP}, \textit{Ensemble Batch Prediction Intervals} \cite{XuCP}, \textit{Adaptive Conformal Inference} \cite{GibbsCP} y \textit{Conformalized Quantile Regression} \cite{RomanoCQR}-- tratan la incertidumbre como homogénea en el tiempo o se adaptan únicamente a la deriva distribucional global, lo que resulta ineficiente cuando el error del modelo se concentra sistemáticamente en ciertas horas del día, como ocurre en sistemas con fuerte componente solar. Esta limitación motiva LW-ACP, la variante propuesta en este trabajo.
+
+\subsection{Novel Contributions and Structure of This Work}
+
+Este trabajo propone y compara empíricamente dos estrategias de \textit{features} para un TFT aplicado a la predicción del costo marginal en las ocho barras más representativas del SEN. La primera, Prophet+Clima (P+C), usa las componentes de Prophet como covariables conocidas del TFT y, adicionalmente, entrena una segunda instancia del TFT sobre los residuos de Prophet, ensamblando ambas predicciones junto con la de Prophet mediante \textit{Stacking Optimization} --un esquema de combinación más elaborado que el de Huang et al.\ \cite{ProphetTransformers}, quienes combinan Prophet y Transformer como dos predictores paralelos independientes. La segunda, Sol+Clima (S+C), reemplaza esas componentes por variables de posición solar (elevación solar, horario de verano) calculadas directamente por geolocalización, prescindiendo de Prophet y del ensamblaje. Ambas estrategias se evalúan sobre dos variantes del TFT --con LayerNorm y con DyT-- y se complementan con \textit{Locally-Weighted Adaptive Conformal Prediction} (LW-ACP), una variante de CP que combina la ponderación local de la incertidumbre por hora del día con la adaptación \textit{online} del nivel de cobertura. Puerto Montt, la barra de mayor volatilidad y congestión del sistema, se aborda por separado evaluando si variables hídricas propias de la zona (cota de embalse, agua caída horaria) mejoran su predicción respecto de las estrategias generales.
+
+Las principales contribuciones de este trabajo son:
+\begin{itemize}[leftmargin=*,labelsep=5.8mm]
+\item la comparación empírica entre una estrategia híbrida Prophet-Transformer (P+C), en la línea de trabajos como el de Huang et al.\ \cite{ProphetTransformers}, y una estrategia más simple basada en variables de posición solar (S+C) para el mercado eléctrico chileno, encontrándose que esta última es consistentemente superior en la mayoría de las barras del sistema;
+\item la comparación estadística de LayerNorm y DyT en un contexto de \textit{forecasting} energético, un dominio no evaluado por Zhu et al.\ \cite{Zhu2025Transformers}, incluyendo una prueba de Wilcoxon pareada por hora que matiza la hipótesis de equivalencia entre ambas arquitecturas;
+\item LW-ACP, una variante de \textit{Conformal Prediction} que combina ponderación local por hora del día con adaptación \textit{online} del nivel de cobertura, ausente en la literatura de \textit{forecasting} de precios eléctricos revisada;
+\item un análisis diferenciado de Puerto Montt, la barra de mayor congestión y volatilidad del SEN según León et al.\ \cite{LeonSMPChile}, evaluando si variables hídricas específicas de la zona mejoran su predicción; y
+\item una comparación empírica directa contra los resultados de León et al.\ \cite{LeonSMPChile} para la barra Crucero, bajo un protocolo de evaluación equivalente.
+\end{itemize}
+
+El resto de este artículo se organiza como sigue: la Sección~\ref{sec:materials} describe los datos, el preprocesamiento, la arquitectura del TFT, las estrategias P+C y S+C, el esquema de \textit{Stacking Optimization}, la comparación LayerNorm--DyT, las variantes de \textit{Conformal Prediction} incluyendo LW-ACP, la extensión hídrica de Puerto Montt y el protocolo de comparación con León et al.; la Sección~\ref{sec:results} presenta los resultados correspondientes; la Sección~\ref{sec:discussion} discute los hallazgos en conjunto y sus limitaciones; y la Sección~\ref{sec:conclusions} concluye con una síntesis y líneas de trabajo futuro.
+
+%=================================================================
+\section{Materials and Methods}
+\label{sec:materials}
+
+\subsection{Data}
+% TODO. Version condensada de Metodologia Seccion 3.1: fuente CEN, periodo 2020-2026,
+% 8 barras, tabla de estadisticas descriptivas (reusar tab:estadisticas si cabe en el espacio).
+
+\subsection{Preprocessing}
+% TODO. Condensar Seccion 3.2: outliers 4-sigma, split 70/15/15, normalizacion z-score.
+
+\subsection{Temporal Fusion Transformer}
+% TODO. Condensar Seccion 3.4: arquitectura, hiperparametros (Tabla tab:tft_config),
+% las dos estrategias de known_reals -- Prophet+Clima (P+C) vs. Sol+Clima (S+C) -- esta es
+% la comparacion central del paper.
+
+\subsection{LayerNorm vs.\ Dynamic Tanh}
+% TODO. Condensar Seccion 3.6 + el hallazgo nuevo del test de Wilcoxon pareado por hora
+% (LN gana 13/14 combinaciones significativas) -- esto es un resultado nuevo que no
+% esta en el texto actual de la tesis, HAY QUE REDACTARLO DE CERO aqui.
+
+\subsection{Stacking Optimization}
+% TODO. Condensar Seccion 3.5: 6 estrategias, 9 metodos de optimizacion de pesos.
+
+\subsection{Conformal Prediction}
+% TODO. Condensar Seccion 3.7: las 6 variantes, con foco en LW-ACP (aporte metodologico
+% propio) -- esta es la segunda contribucion central del paper.
+
+\subsection{Puerto Montt: Hydrological Features}
+% TODO. Condensar Seccion 3.8.1: H+C y S+H+C, motivacion, test de Wilcoxon.
+
+\subsection{Comparison with Le\'on et al. (2026) for Crucero}
+% TODO. Condensar Seccion 3.8.4: split 2024-only, comparacion con RFR M1/M2.
+
+%=================================================================
+\section{Results}
+\label{sec:results}
+
+\subsection{P+C vs.\ S+C across the Eight Busbars}
+% TODO. Tabla principal (equivalente a la comparativa de 4.2/4.4 de la tesis), resumen del
+% conteo de barras ganadas por cada estrategia.
+
+\subsection{LayerNorm vs.\ Dynamic Tanh}
+% TODO. Tabla de MAE por barra + tabla del test de Wilcoxon pareado (14/16 significativo,
+% LN gana 13/14) -- Resultado NUEVO, no escrito en ningun lado todavia, se redacta aqui primero.
+
+\subsection{Conformal Prediction}
+% TODO. Tabla comparativa de metodos (Split CP, EnbPI, ACI, LW Split CP, LW-ACP, CQR),
+% foco en que LW-ACP domina simultaneamente en cobertura y ancho.
+
+\subsection{Puerto Montt}
+% TODO. Tabla H+C/P+C/S+C/S+H+C + resultado del Wilcoxon (S+H+C no mejora sobre H+C).
+
+\subsection{Comparison with the Literature}
+% TODO. Tabla Crucero: TFT S+C vs. RFR M1/M2 de Leon et al.
+
+%=================================================================
+\section{Discussion}
+\label{sec:discussion}
+% TODO. Interpretacion conjunta: por que S+C > P+C (posicion solar invariante a cambio de
+% hora vs. proxy de Prophet), hipotesis de por que LN > DyT (normalizacion local vs. global,
+% ver conversacion con Jofre), limitaciones (LW-ACP y sigma_h a alta resolucion, ver
+% Seccion 4.7.2 de la tesis), comparacion con el paper de Leon et al. y sus limitaciones
+% metodologicas (protocolos de evaluacion distintos).
+
+%=================================================================
+\section{Conclusions}
+\label{sec:conclusions}
+% TODO. 1 parrafo, sintesis de hallazgos + trabajo futuro (extension de LW-ACP a mas
+% granularidades, ensamble LN+DyT, generacion real por tecnologia como feature).
+
+%=================================================================
+\vspace{6pt}
+
+\authorcontributions{TODO: usar la plantilla CReDiT est\'andar de MDPI. Ejemplo: "Conceptualization, E.M.G. and A.J.C.; methodology, E.M.G.; software, E.M.G.; validation, E.M.G.; formal analysis, E.M.G.; investigation, E.M.G.; resources, E.M.G.; data curation, E.M.G.; writing---original draft preparation, E.M.G.; writing---review and editing, A.J.C.; visualization, E.M.G.; supervision, A.J.C.; project administration, A.J.C. All authors have read and agreed to the published version of the manuscript."}
+
+\funding{TODO: confirmar con el usuario si hubo financiamiento (p.ej. beca ANID, proyecto FONDECYT de Jofr\'e, etc.) o si corresponde "This research received no external funding."}
+
+% NOTA: el macro \dataavailability no existe en esta version (2020) de mdpi.cls.
+% Las guias actuales de MDPI piden una Data Availability Statement -- verificar si el
+% journal la exige al momento de enviar, y si el .cls oficial descargado de mdpi.com
+% en ese momento ya lo incluye (probablemente si, dado que es mas reciente que esta copia).
+% TODO: confirmar politica de disponibilidad de datos (los datos crudos provienen del CEN,
+% portal publico; el codigo podria subirse a un repositorio publico de GitHub).
+
+\acknowledgments{TODO opcional.}
+
+\conflictsofinterest{The authors declare no conflict of interest.}
+
+%=================================================================
+\reftitle{References}
+\externalbibliography{yes}
+\bibliography{bibliography}
+
+\end{document}

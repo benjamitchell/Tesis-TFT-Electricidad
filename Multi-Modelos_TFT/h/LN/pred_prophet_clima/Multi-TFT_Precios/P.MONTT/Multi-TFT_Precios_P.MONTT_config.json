@@ -1,0 +1,20 @@
+{
+ "barra": "P.MONTT",
+ "experimento": "Multi-TFT_Precios",
+ "timestamp": "20260730_193325",
+ "tft_config": {
+  "lr": 0.001,
+  "hidden_size": 32,
+  "heads": 4,
+  "dropout": 0.2,
+  "cont_size": 8,
+  "patience_lr": 5
+ },
+ "early_stop_config": {
+  "min_delta": 0.001,
+  "patience": 15
+ },
+ "epochs_trained": 40,
+ "best_val_loss": 0.13267099857330322,
+ "model_path": "Multi-Modelos_TFT/h/LN/pred_prophet_clima/Multi-TFT_Precios/P.MONTT/Multi-TFT_Precios_P.MONTT_best.ckpt"
+}

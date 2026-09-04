@@ -1,0 +1,20 @@
+{
+    "barra": "CRUCERO",
+    "experimento": "Multi-TFT_Residuos",
+    "timestamp": "20260715_065433",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 64,
+        "heads": 4,
+        "dropout": 0.3,
+        "cont_size": 32,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.001,
+        "patience": 15
+    },
+    "epochs_trained": 100,
+    "best_val_loss": 0.1750037968158722,
+    "model_path": "Multi-Modelos_TFT/h/LN/pred_MAE_prophet_clima/Multi-TFT_Residuos/CRUCERO/Multi-TFT_Residuos_CRUCERO_best.ckpt"
+}

@@ -1,0 +1,156 @@
+\begin{thebibliography}{10}
+
+\bibitem{Humphreys}
+Paula Acuña.
+\newblock Volatilidad del precio spot. sector eléctrico - chile.
+\newblock Technical report, Humphreys Calsificadora de Riesgo, 2025.
+
+\bibitem{LNBa}
+Jimmy~Lei Ba, Jamie~Ryan Kiros, and Geoffrey~E. Hinton.
+\newblock Layer normalization.
+\newblock arXiv preprint arXiv:1607.06450, 2016.
+
+\bibitem{Dietterich}
+Thomas~G. Dietterich.
+\newblock Ensemble methods in machine learning.
+\newblock In {\em Multiple Classifier Systems (MCS 2000)}, volume 1857 of {\em
+  Lecture Notes in Computer Science}, pages 1--15. Springer, 2000.
+
+\bibitem{GibbsCP}
+Isaac Gibbs and Emmanuel Cand\`es.
+\newblock Adaptive conformal inference under distribution shift.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  volume~34, 2021.
+
+\bibitem{LaTercera}
+Victor Guillou.
+\newblock Aporte de las ernc a la generación eléctrica toca nuevo máximo
+  histórico tras superar el 40\% en el primer trimestre.
+\newblock {\em La Tercera}, 2024.
+
+\bibitem{LaTerceraPerdidas}
+Victor Guillou.
+\newblock Pérdidas de energía renovable alcanzan máximo histórico en el
+  2024.
+\newblock {\em La Tercera}, 2025.
+
+\bibitem{REVE}
+Víctor Guillou.
+\newblock Curtailment: Vertimientos de energía eólica y fotovoltaica aumentan
+  219\% a marzo en chile.
+\newblock {\em La Tercera}, 2024.
+
+\bibitem{ProphetTransformers}
+Cheng Huang et~al.
+\newblock Artificial intelligence-based power market price prediction in smart
+  renewable energy systems: Combining prophet and transformer models.
+\newblock {\em Heliyon}, 2024.
+
+\bibitem{Lago2021Review}
+Jesus Lago, Fjo De~Ridder, and Bart De~Schutter.
+\newblock Forecasting day-ahead electricity prices: A review of
+  state-of-the-art algorithms, best practices and an open-access benchmark.
+\newblock {\em Applied Energy}, 293:116983, 2021.
+
+\bibitem{LeiCP}
+Jing Lei, Max G'Sell, Alessandro Rinaldo, Ryan~J. Tibshirani, and Larry
+  Wasserman.
+\newblock Distribution-free predictive inference for regression.
+\newblock {\em Journal of the American Statistical Association},
+  113(523):1094--1111, 2018.
+
+\bibitem{LeonSMPChile}
+Ricardo León, Guillermo Ramírez, Camilo Cifuentes, Samuel Vergara, Roberto
+  Aedo-García, Francisco Ramis~Lanyon, and Rodrigo~J. Villalobos San~Martin.
+\newblock Data-driven forecasting of electricity prices in chile using machine
+  learning.
+\newblock {\em Applied Sciences}, 16(3):1318, 2026.
+
+\bibitem{TFT}
+Bryan Lim et~al.
+\newblock Temporal fusion transformers for interpretable multi-horizon time
+  series forecasting.
+\newblock {\em International Journal of Forecasting}, 37(4):1748--1764, 2021.
+
+\bibitem{CEN2024}
+Coordinador~Eléctrico Nacional.
+\newblock Reporte anual de desempeño del sistema eléctrico nacional.
+\newblock Technical report, Coordinador Eléctrico Nacional, 2025.
+
+\bibitem{RomanoCQR}
+Yaniv Romano, Evan Patterson, and Emmanuel Cand\`es.
+\newblock Conformalized quantile regression.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  volume~32, 2019.
+
+\bibitem{Prophet}
+Sean~J. Taylor and Benjamin Letham.
+\newblock Forecasting at scale.
+\newblock {\em The American Statistician}, 72(1):37--45, 2018.
+
+\bibitem{Vaswani2017Attention}
+Ashish Vaswani et~al.
+\newblock Attention is all you need.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  volume~30, 2017.
+
+\bibitem{VovkCP}
+Vladimir Vovk, Alexander Gammerman, and Glenn Shafer.
+\newblock {\em Algorithmic Learning in a Random World}.
+\newblock Springer, 2005.
+
+\bibitem{weron}
+Rafal Weron.
+\newblock Electricity price forecasting: A review of the state-of-the-art with
+  a look into the future.
+\newblock {\em International Journal of Forecasting}, 30(4):1030--1081, 2014.
+
+\bibitem{StackingWolpert}
+David~H. Wolpert.
+\newblock Stacked generalization.
+\newblock {\em Neural Networks}, 5(2):241--259, 1992.
+
+\bibitem{LNInTransformers}
+Ruibin Xiong et~al.
+\newblock On layer normalization in the transformer architecture.
+\newblock In {\em Proceedings of the 37th International Conference on Machine
+  Learning (ICML)}, volume 119 of {\em PMLR}, 2020.
+
+\bibitem{XuCP}
+Chen Xu and Yao Xie.
+\newblock Conformal prediction interval for dynamic time-series.
+\newblock In {\em Proceedings of the 38th International Conference on Machine
+  Learning (ICML)}, volume 139 of {\em PMLR}, 2021.
+
+\bibitem{ConformalPrediction}
+Margaux Zaffran.
+\newblock {\em Post-hoc predictive uncertainty quantification: methods with
+  applications to electricity price forecasting}.
+\newblock PhD thesis, Institut Polytechnique de Paris, 2024.
+
+\bibitem{ZaffranICML2022}
+Margaux Zaffran, Olivier F\'eron, Yannig Goude, Julie Josse, and Aymeric
+  Dieuleveut.
+\newblock Adaptive conformal predictions for time series.
+\newblock In {\em Proceedings of the 39th International Conference on Machine
+  Learning (ICML)}, volume 162 of {\em PMLR}, 2022.
+
+\bibitem{Zhao2025LIME}
+Xuanyi Zhao, Jiawen Ding, Xueting Huang, and Yibo Zhang.
+\newblock A comparative study of machine learning algorithms for electricity
+  price forecasting with lime-based interpretability.
+\newblock {\em arXiv preprint arXiv:2512.01212}, 2025.
+
+\bibitem{informer}
+Haoyi Zhou et~al.
+\newblock Informer: Beyond efficient transformer for long sequence time-series
+  forecasting.
+\newblock In {\em Proceedings of the AAAI Conference on Artificial
+  Intelligence}, volume~35, pages 11106--11115, 2021.
+
+\bibitem{Zhu2025Transformers}
+Jiachen Zhu et~al.
+\newblock Transformers without normalization.
+\newblock {\em Conference on Computer Vision and Pattern Recognition}, 2025.
+
+\end{thebibliography}

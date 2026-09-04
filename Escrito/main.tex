@@ -1,0 +1,99 @@
+% se puede agregar la opción [english] para 
+%  memorias o tesis en inglés (borrando el archivo .aux)
+\documentclass{umemoria} 
+
+\depto{Departamento de Ingeniería Matemática}
+\author{Edward Benjamín Mitchell García}
+\title{Algoritmo híbrido de Machine Learning Aplicado al Mercado Eléctrico}
+
+% incluir ambos comandos para una doble titulación
+%  o quitar el comando que no aplica
+\memoria{Ingeniero Civil en Matemáticas}
+\tesis{Magíster en Matemáticas Aplicadas}
+%\tesis{Doctor en ???} % incluir solo este comando para doctorados
+
+% puede haber varios profesores guía seperados por coma;
+% pero si es una memoria, solo puede haber un profesor guía
+\guia{Alejandro Jofré Cáceres} 
+
+% puede haber varios profesores co-guía seperados por coma;
+% pero si es una memoria, el profesor co-guía será el primer
+% integrante de la comisión
+%\coguia{Nombre Completo Co-Guía} % incluir en caso de co-guía de *tesis*
+
+%\cotutela{Nombre Institución} % incluir en caso de cotutela
+
+\comision{Nombre Completo Uno,Nombre Completo Dos,Nombre Completo Tres}
+
+%\auspicio{Nombre Institución} % incluir en caso de recibir financiamiento
+
+% tiene que ser el año en que se da el examen de título/grado (defensa)
+%\anho{2021} % incluir solo para reemplazar el año actual
+
+\usepackage{lipsum}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\newtheorem{teorema}{Teorema}[section]
+\usepackage{booktabs}
+\usepackage{multirow}
+
+% Evita líneas huérfanas (viudas) y huérfanas de párrafo al inicio/final de página
+\widowpenalty=10000
+\clubpenalty=10000
+
+\begin{document}
+
+\frontmatter
+\maketitle
+
+\begin{resumen}
+El Sistema Eléctrico Nacional (SEN) de Chile ha experimentado una transición acelerada hacia la generación solar, que introduce una volatilidad estructural creciente en el costo marginal horario y motiva la necesidad de modelos de pronóstico más robustos que los métodos estadísticos clásicos. Este trabajo propone un modelo híbrido basado en un \textit{Temporal Fusion Transformer} (TFT) para predecir el costo marginal horario en las ocho barras más representativas del SEN, y compara dos estrategias de variables exógenas: Prophet+Clima (P+C), que combina la descomposición estadística de Prophet con un TFT mediante \textit{Stacking Optimization}, y Sol+Clima (S+C), que reemplaza esa descomposición por variables de posición solar calculadas de forma determinista mediante geolocalización. Se evalúan además dos mecanismos de normalización del Transformer (LayerNorm y \textit{Dynamic Tanh}) y se propone LW-ACP (\textit{Locally-Weighted Adaptive Conformal Prediction}), un método de cuantificación de incertidumbre que combina la ponderación horaria de la incertidumbre con la adaptación \textit{online} del nivel de cobertura.
+
+Los resultados muestran que S+C, pese a ser la estrategia más simple, supera a P+C en 14 de 16 combinaciones de barra y arquitectura evaluadas (13 estadísticamente significativas mediante un test de Diebold-Mariano con varianza Newey-West), y que LayerNorm supera a \textit{Dynamic Tanh} de forma sistemática, aunque de magnitud pequeña. LW-ACP logra intervalos hasta un 16\% más angostos que Split CP clásico, con cobertura empírica dentro de medio punto porcentual del nivel nominal en las ocho barras. Un análisis cuantitativo de los errores más extremos revela que la mayoría corresponde a un desfase de fase de aproximadamente una hora en la transición solar diaria, un patrón consistente en las ocho barras y no un artefacto de una barra particular. Puerto Montt persiste como un caso no resuelto: ninguna de las variables hidrológicas exploradas logra mejorar su desempeño respecto a la estrategia general. Comparado con literatura reciente de \textit{machine learning} clásico para el mismo mercado, el modelo propuesto reduce el error absoluto medio entre un 20\% y un 34\% en las barras evaluadas conjuntamente. En conjunto, estos resultados sugieren que la señal física de posición solar es al menos tan informativa como la descomposición estadística de Prophet para este problema, y que la heterocedasticidad horaria del costo marginal chileno es explotable mediante métodos de \textit{Conformal Prediction} adaptativos.
+\end{resumen}
+
+% El entorno "abstract" de umemoria.cls titula el capítulo "Abstract" solo si el
+% documento se compiló con la opción de clase [english]; como esta tesis es en
+% español pero de todos modos se incluye un abstract en inglés (a pedido del
+% profesor guía), se fuerza el título aquí en vez de usar \if@en.
+\clearpage
+\chapter*{Abstract}
+Chile's National Electric System (SEN) has undergone a rapid transition toward solar generation, introducing growing structural volatility in the hourly marginal cost and motivating the need for forecasting models more robust than classical statistical methods. This work proposes a hybrid model based on a Temporal Fusion Transformer (TFT) to forecast the hourly marginal cost across the eight most representative busbars of the SEN, and compares two exogenous feature strategies: Prophet+Weather (P+C), which combines Prophet's statistical decomposition with a TFT via Stacking Optimization, and Sun+Weather (S+C), which replaces that decomposition with solar position variables computed deterministically via geolocation. Two Transformer normalization mechanisms (LayerNorm and Dynamic Tanh) are also compared, and LW-ACP (Locally-Weighted Adaptive Conformal Prediction) is proposed, an uncertainty quantification method that combines hour-of-day weighting of uncertainty with online adaptation of the coverage level.
+
+Results show that S+C, despite being the simpler strategy, outperforms P+C in 14 of 16 evaluated busbar-architecture combinations (13 statistically significant under a Diebold-Mariano test with Newey-West variance), and that LayerNorm systematically, though modestly, outperforms Dynamic Tanh. LW-ACP achieves intervals up to 16\% narrower than classical Split CP, with empirical coverage within half a percentage point of the nominal level across all eight busbars. A quantitative analysis of the largest errors reveals that most correspond to an approximately one-hour phase shift in the daily solar transition, a pattern consistent across all eight busbars rather than an artifact of any single one. Puerto Montt remains an unresolved case: none of the hydrological features explored improve its performance relative to the general strategy. Compared against recent classical machine learning literature for the same market, the proposed model reduces mean absolute error by 20-34\% across the jointly evaluated busbars. Together, these results suggest that the physical solar-position signal is at least as informative as Prophet's statistical decomposition for this problem, and that the hourly heteroscedasticity of the Chilean marginal cost is exploitable through adaptive Conformal Prediction methods.
+\vfill\null
+
+\begin{dedicatoria}
+Una dedicatoria corta.
+\end{dedicatoria}
+
+\begin{thanks}
+Mis padres, Mady y Edward, mis hermanos, Agu y Rena, mi cachorra Adharita, mi gran amor, Fran, mi kit y mis u panas
+\end{thanks}
+
+\tableofcontents
+%\listoftables % opcional
+%\listoffigures % opcional
+
+\mainmatter
+
+\input{1. Introducción}
+\input{2. Marco Teórico}
+\input{3. Metodología}
+\input{4. Resultados}
+\input{conclu.tex}
+
+% ver https://www.overleaf.com/learn/latex/Glossaries
+% \input{glosario.tex} % opcional
+
+\nocite{*}
+\bibliographystyle{plain}
+\bibliography{bibliografia}
+
+% opcional ...
+\begin{appendices}
+\input{Anexo}
+\end{appendices}
+\end{document}

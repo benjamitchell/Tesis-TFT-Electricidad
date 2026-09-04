@@ -1,0 +1,144 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {chapter}{\numberline {1}Introducción}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Mercado eléctrico}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Modelos actuales}{3}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Propuesta}{5}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Objetivos}{6}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}Objetivo General}{6}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {1.4.2}Objetivos Específicos}{7}{subsection.1.4.2}%
+\contentsline {section}{\numberline {1.5}Organización del documento}{7}{section.1.5}%
+\contentsline {chapter}{\numberline {2}Marco Teórico}{9}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Series Temporales}{9}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Estacionariedad}{9}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Estacionalidad múltiple}{10}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Procesos no estacionarios y transformaciones}{12}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.1.4}Horizonte de predicción y estrategia de forecasting multihorizonte}{12}{subsection.2.1.4}%
+\contentsline {subsection}{\numberline {2.1.5}Forecasting multivariado y estructura de barras}{13}{subsection.2.1.5}%
+\contentsline {section}{\numberline {2.2}Prophet}{14}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Componente de tendencia}{14}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Componente de estacionalidad}{15}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Componente de festividades y eventos especiales}{15}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Estimación e inferencia}{15}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}Rol de Prophet en la arquitectura híbrida}{16}{subsection.2.2.5}%
+\contentsline {section}{\numberline {2.3}Transformer y Temporal Fusion Transformer}{16}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Mecanismo de atención}{17}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Atención multi-cabeza}{17}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Arquitectura Transformer}{18}{subsection.2.3.3}%
+\contentsline {subsection}{\numberline {2.3.4}Temporal Fusion Transformer}{18}{subsection.2.3.4}%
+\contentsline {subsubsection}{Codificación de entradas y embeddings}{18}{section*.8}%
+\contentsline {subsubsection}{Gated Residual Network}{18}{section*.9}%
+\contentsline {subsubsection}{Variable Selection Network}{19}{section*.10}%
+\contentsline {subsubsection}{Procesamiento secuencial local}{19}{section*.11}%
+\contentsline {subsubsection}{Enriquecimiento estático}{20}{section*.12}%
+\contentsline {subsubsection}{Atención temporal interpretable}{20}{section*.13}%
+\contentsline {subsubsection}{Salidas cuantílicas}{21}{section*.14}%
+\contentsline {subsection}{\numberline {2.3.5}Rol del TFT en la arquitectura híbrida}{22}{subsection.2.3.5}%
+\contentsline {section}{\numberline {2.4}Layer Normalization y Dynamic Tanh}{22}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Layer Normalization}{23}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Comportamiento empírico de LayerNorm: curvas tipo tanh}{23}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Dynamic Tanh (DyT)}{24}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}LayerNorm vs DyT}{26}{subsection.2.4.4}%
+\contentsline {subsection}{\numberline {2.4.5}Uso de DyT en el TFT para predicción de costos marginales}{27}{subsection.2.4.5}%
+\contentsline {section}{\numberline {2.5}Stacking Optimization}{28}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}Formulación general y diversidad del ensamble}{29}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}Protocolo de entrenamiento y prevención de data leakage}{30}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}Stacking Optimization en el modelo híbrido propuesto}{31}{subsection.2.5.3}%
+\contentsline {section}{\numberline {2.6}Conformal Prediction}{32}{section.2.6}%
+\contentsline {subsection}{\numberline {2.6.1}Split Conformal Prediction (SCP)}{33}{subsection.2.6.1}%
+\contentsline {subsection}{\numberline {2.6.2}Regresión Cuantílica Conformada (CQR)}{34}{subsection.2.6.2}%
+\contentsline {subsection}{\numberline {2.6.3}Conformal Prediction con Ensemble (EnbPI)}{35}{subsection.2.6.3}%
+\contentsline {subsection}{\numberline {2.6.4}Adaptive Conformal Inference (ACI)}{35}{subsection.2.6.4}%
+\contentsline {subsection}{\numberline {2.6.5}CP ponderado localmente: LW Split CP y LW-ACP}{36}{subsection.2.6.5}%
+\contentsline {paragraph}{LW Split CP.}{37}{section*.21}%
+\contentsline {paragraph}{LW-ACP.}{37}{section*.22}%
+\contentsline {subsection}{\numberline {2.6.6}Métricas de evaluación de los intervalos de predicción}{37}{subsection.2.6.6}%
+\contentsline {chapter}{\numberline {3}Metodología}{39}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Datos}{39}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Fuente y descripción}{39}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Estadísticas descriptivas y análisis exploratorio}{40}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Análisis de estacionariedad}{42}{subsection.3.1.3}%
+\contentsline {section}{\numberline {3.2}Preprocesamiento}{43}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Limpieza y tratamiento de valores atípicos}{43}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}División temporal de los datos}{43}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Normalización}{44}{subsection.3.2.3}%
+\contentsline {section}{\numberline {3.3}Modelo Prophet}{44}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Configuración y optimización de hiperparámetros}{44}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Componentes de tendencia y estacionalidad anual}{45}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Predicciones a 48 horas}{46}{subsection.3.3.3}%
+\contentsline {section}{\numberline {3.4}Temporal Fusion Transformer}{48}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}Construcción de features y dataloaders}{48}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Arquitectura y entrenamiento}{49}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.4.3}Curvas de aprendizaje}{50}{subsection.3.4.3}%
+\contentsline {section}{\numberline {3.5}Stacking Optimization}{52}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Estrategias de ensamblaje}{52}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Métodos de optimización de pesos}{52}{subsection.3.5.2}%
+\contentsline {section}{\numberline {3.6}TFT con Dynamic Tanh}{53}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Curvas de aprendizaje}{53}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.2}Análisis del parámetro $\alpha $ aprendido}{53}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.3}Curvas de aprendizaje de S+C}{56}{subsection.3.6.3}%
+\contentsline {section}{\numberline {3.7}Conformal Prediction}{56}{section.3.7}%
+\contentsline {subsection}{\numberline {3.7.1}Configuración general}{56}{subsection.3.7.1}%
+\contentsline {subsection}{\numberline {3.7.2}Split CP clásico}{58}{subsection.3.7.2}%
+\contentsline {subsection}{\numberline {3.7.3}ACI}{59}{subsection.3.7.3}%
+\contentsline {subsection}{\numberline {3.7.4}LW Split CP}{59}{subsection.3.7.4}%
+\contentsline {subsection}{\numberline {3.7.5}LW-ACP Online}{60}{subsection.3.7.5}%
+\contentsline {subsection}{\numberline {3.7.6}CQR (Regresión Cuantílica Conformada)}{60}{subsection.3.7.6}%
+\contentsline {section}{\numberline {3.8}Extensiones y análisis complementarios}{61}{section.3.8}%
+\contentsline {subsection}{\numberline {3.8.1}Puerto Montt: features hídricas (H+C y S+H+C)}{61}{subsection.3.8.1}%
+\contentsline {subsection}{\numberline {3.8.2}Comparación contra el costo marginal programado del CEN}{61}{subsection.3.8.2}%
+\contentsline {subsection}{\numberline {3.8.3}Estudio de granularidad temporal}{62}{subsection.3.8.3}%
+\contentsline {subsection}{\numberline {3.8.4}Ablación de features}{62}{subsection.3.8.4}%
+\contentsline {subsection}{\numberline {3.8.5}Comparación con la literatura: Crucero y P.Montt 2024}{63}{subsection.3.8.5}%
+\contentsline {chapter}{\numberline {4}Resultados y Análisis}{64}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Líneas base ingenuas}{64}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Modelo Prophet}{65}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Desempeño por barra}{65}{subsection.4.2.1}%
+\contentsline {section}{\numberline {4.3}Temporal Fusion Transformer con LayerNorm}{68}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Desempeño por barra}{68}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Sol+Clima (S+C)}{71}{subsection.4.3.2}%
+\contentsline {section}{\numberline {4.4}Stacking Optimization}{71}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Selección del mejor método de optimización}{71}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Selección de la mejor estrategia}{73}{subsection.4.4.2}%
+\contentsline {section}{\numberline {4.5}Temporal Fusion Transformer con Dynamic Tanh}{74}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Desempeño por barra}{74}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.2}Sol+Clima (S+C) con $\text {TFT}_\text {DyT}$}{74}{subsection.4.5.2}%
+\contentsline {subsection}{\numberline {4.5.3}Stacking Optimization con $\text {TFT}_\text {DyT}$}{78}{subsection.4.5.3}%
+\contentsline {subsection}{\numberline {4.5.4}Comparativa $\text {TFT}_\text {LN}$ vs.\ $\text {TFT}_\text {DyT}$}{79}{subsection.4.5.4}%
+\contentsline {subsubsection}{Desempeño puntual}{79}{section*.46}%
+\contentsline {subsubsection}{Prueba de Diebold-Mariano pareada por hora}{80}{section*.48}%
+\contentsline {subsubsection}{Comparativa tras el Stacking Optimization}{81}{section*.50}%
+\contentsline {subsection}{\numberline {4.5.5}P+C vs.\ S+C: comparación central}{82}{subsection.4.5.5}%
+\contentsline {section}{\numberline {4.6}Conformal Prediction}{83}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Split CP clásico}{83}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}ACI}{84}{subsection.4.6.2}%
+\contentsline {subsection}{\numberline {4.6.3}LW Split CP}{85}{subsection.4.6.3}%
+\contentsline {subsection}{\numberline {4.6.4}LW-ACP Online}{86}{subsection.4.6.4}%
+\contentsline {subsection}{\numberline {4.6.5}Comparativa de métodos: SCP, ACP, LW-ACP y CQR}{87}{subsection.4.6.5}%
+\contentsline {subsection}{\numberline {4.6.6}Cobertura condicional por hora y por mes}{88}{subsection.4.6.6}%
+\contentsline {subsection}{\numberline {4.6.7}Selección del mejor método de CP}{89}{subsection.4.6.7}%
+\contentsline {subsection}{\numberline {4.6.8}Análisis de errores extremos}{90}{subsection.4.6.8}%
+\contentsline {section}{\numberline {4.7}Análisis de interpretabilidad del TFT}{93}{section.4.7}%
+\contentsline {subsection}{\numberline {4.7.1}Importancia de variables}{93}{subsection.4.7.1}%
+\contentsline {section}{\numberline {4.8}Extensiones y análisis complementarios}{95}{section.4.8}%
+\contentsline {subsection}{\numberline {4.8.1}Puerto Montt: features hídricas (H+C y S+H+C)}{95}{subsection.4.8.1}%
+\contentsline {subsection}{\numberline {4.8.2}Comparación contra el costo marginal programado del CEN}{98}{subsection.4.8.2}%
+\contentsline {subsection}{\numberline {4.8.3}Estudio de granularidad temporal}{99}{subsection.4.8.3}%
+\contentsline {subsubsection}{Inestabilidad de $\hat \sigma _h$ en 15 minutos, y su corrección}{101}{section*.71}%
+\contentsline {subsubsection}{Comparación justa Horario vs. 15 minutos (misma ventana calendario)}{102}{section*.72}%
+\contentsline {subsection}{\numberline {4.8.4}Ablación de features}{103}{subsection.4.8.4}%
+\contentsline {subsection}{\numberline {4.8.5}Comparación con la literatura: CRUCERO y P.MONTT 2024}{104}{subsection.4.8.5}%
+\contentsline {chapter}{\numberline {5}Conclusiones}{106}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Síntesis de resultados}{106}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Contribuciones}{108}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Limitaciones}{109}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Trabajo futuro}{110}{section.5.4}%
+\contentsline {chapter}{\numberline {}Bibliograf\'ia}{113}{chapter*.76}%
+\contentsline {chapter}{Ap\'{e}ndice \numberline {A}Anexo}{114}{Appendix.1.Alph1}%
+\contentsline {section}{\numberline {A.1}Análisis de errores extremos: detalle por barra}{114}{section.1.Alph1.1}%
+\contentsline {subsection}{\numberline {A.1.1}Cardones}{114}{subsection.1.Alph1.1.1}%
+\contentsline {subsection}{\numberline {A.1.2}Charrúa}{116}{subsection.1.Alph1.1.2}%
+\contentsline {subsection}{\numberline {A.1.3}Crucero}{118}{subsection.1.Alph1.1.3}%
+\contentsline {subsection}{\numberline {A.1.4}Pan de Azúcar}{120}{subsection.1.Alph1.1.4}%
+\contentsline {subsection}{\numberline {A.1.5}Puerto Montt}{122}{subsection.1.Alph1.1.5}%
+\contentsline {subsection}{\numberline {A.1.6}Quillota}{124}{subsection.1.Alph1.1.6}%
+\contentsline {subsection}{\numberline {A.1.7}Tarapacá}{126}{subsection.1.Alph1.1.7}%

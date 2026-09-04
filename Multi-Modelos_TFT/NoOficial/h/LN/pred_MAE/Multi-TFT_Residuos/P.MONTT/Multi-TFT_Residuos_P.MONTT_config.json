@@ -1,0 +1,20 @@
+{
+    "barra": "P.MONTT",
+    "experimento": "Multi-TFT_Residuos",
+    "timestamp": "20260713_103516",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 64,
+        "heads": 4,
+        "dropout": 0.3,
+        "cont_size": 32,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.001,
+        "patience": 15
+    },
+    "epochs_trained": 57,
+    "best_val_loss": 0.21364806592464447,
+    "model_path": "Multi-Modelos_TFT/h/LN/pred_MAE/Multi-TFT_Residuos/P.MONTT/Multi-TFT_Residuos_P.MONTT_best.ckpt"
+}

@@ -1,0 +1,12 @@
+tipo,variable,importancia_pct
+decoder,relative_time_idx,31.75
+decoder,daily,27.56
+decoder,trend,15.81
+decoder,weekly,14.1
+decoder,yearly,10.78
+encoder,daily,27.78
+encoder,trend,25.32
+encoder,residuo,21.44
+encoder,yearly,14.47
+encoder,relative_time_idx,6.63
+encoder,weekly,4.35
