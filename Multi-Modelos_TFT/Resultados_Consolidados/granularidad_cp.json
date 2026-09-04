@@ -1,0 +1,194 @@
+{
+  "D\u00eda|LN|ATACAMA": {
+    "scp": {
+      "coverage": 0.9223300970873787,
+      "width": 72.92683410644531
+    },
+    "n_excl_val": 0,
+    "n_excl_test": 1
+  },
+  "D\u00eda|LN|CARDONES": {
+    "scp": {
+      "coverage": 0.9288025889967637,
+      "width": 69.26291809082034
+    },
+    "n_excl_val": 0,
+    "n_excl_test": 1
+  },
+  "D\u00eda|LN|P.MONTT": {
+    "scp": {
+      "coverage": 0.9676375404530745,
+      "width": 133.573735518224
+    },
+    "n_excl_val": 0,
+    "n_excl_test": 1
+  },
+  "D\u00eda|DyT|ATACAMA": {
+    "scp": {
+      "coverage": 0.9255663430420712,
+      "width": 81.20861750828026
+    },
+    "n_excl_val": 0,
+    "n_excl_test": 1
+  },
+  "D\u00eda|DyT|CARDONES": {
+    "scp": {
+      "coverage": 0.8996763754045307,
+      "width": 64.32237854003904
+    },
+    "n_excl_val": 0,
+    "n_excl_test": 1
+  },
+  "D\u00eda|DyT|P.MONTT": {
+    "scp": {
+      "coverage": 0.9546925566343042,
+      "width": 136.38497972161252
+    },
+    "n_excl_val": 0,
+    "n_excl_test": 1
+  },
+  "Horario|LN|ATACAMA": {
+    "scp": {
+      "coverage": 0.9648107977825983,
+      "width": 54.677247837956926
+    },
+    "n_excl_val": 11,
+    "n_excl_test": 0,
+    "lwacp": {
+      "coverage": 0.9470956857073993,
+      "width": 49.62225527934351
+    }
+  },
+  "Horario|LN|CARDONES": {
+    "scp": {
+      "coverage": 0.9595083152566883,
+      "width": 53.58355813283973
+    },
+    "n_excl_val": 11,
+    "n_excl_test": 0,
+    "lwacp": {
+      "coverage": 0.9461315979754158,
+      "width": 48.474124710712125
+    }
+  },
+  "Horario|LN|P.MONTT": {
+    "scp": {
+      "coverage": 0.9599903591226802,
+      "width": 110.41217995403697
+    },
+    "n_excl_val": 11,
+    "n_excl_test": 0,
+    "lwacp": {
+      "coverage": 0.9474572186068932,
+      "width": 101.33896702021597
+    }
+  },
+  "Horario|DyT|ATACAMA": {
+    "scp": {
+      "coverage": 0.9639672210171125,
+      "width": 53.40185866163047
+    },
+    "n_excl_val": 11,
+    "n_excl_test": 0,
+    "lwacp": {
+      "coverage": 0.9472161966738973,
+      "width": 48.676641365228235
+    }
+  },
+  "Horario|DyT|CARDONES": {
+    "scp": {
+      "coverage": 0.9601108700891782,
+      "width": 53.755875216735504
+    },
+    "n_excl_val": 11,
+    "n_excl_test": 0,
+    "lwacp": {
+      "coverage": 0.9461315979754158,
+      "width": 48.71697650944339
+    }
+  },
+  "Horario|DyT|P.MONTT": {
+    "scp": {
+      "coverage": 0.9566160520607375,
+      "width": 108.94670826146724
+    },
+    "n_excl_val": 11,
+    "n_excl_test": 0,
+    "lwacp": {
+      "coverage": 0.9466136418414076,
+      "width": 97.88611563153826
+    }
+  },
+  "15 min|LN|ATACAMA": {
+    "scp": {
+      "coverage": 0.9000581057524695,
+      "width": 27.016934423890717
+    },
+    "n_excl_val": 0,
+    "n_excl_test": 0,
+    "lwacp": {
+      "coverage": 0.9187487894634903,
+      "width": 34.2060444709276
+    }
+  },
+  "15 min|LN|CARDONES": {
+    "scp": {
+      "coverage": 0.8975401898121247,
+      "width": 29.11100178282034
+    },
+    "n_excl_val": 0,
+    "n_excl_test": 0,
+    "lwacp": {
+      "coverage": 0.9162308735231455,
+      "width": 36.29768843782642
+    }
+  },
+  "15 min|LN|P.MONTT": {
+    "scp": {
+      "coverage": 0.9388921169862483,
+      "width": 63.56506486964966
+    },
+    "n_excl_val": 0,
+    "n_excl_test": 0,
+    "lwacp": {
+      "coverage": 0.9384079023823358,
+      "width": 58.55766138783823
+    }
+  },
+  "15 min|DyT|ATACAMA": {
+    "scp": {
+      "coverage": 0.8941506875847376,
+      "width": 25.952831289639217
+    },
+    "n_excl_val": 0,
+    "n_excl_test": 0,
+    "lwacp": {
+      "coverage": 0.9176835173348828,
+      "width": 34.245148533112705
+    }
+  },
+  "15 min|DyT|CARDONES": {
+    "scp": {
+      "coverage": 0.8926012008522177,
+      "width": 27.308762614804778
+    },
+    "n_excl_val": 0,
+    "n_excl_test": 0,
+    "lwacp": {
+      "coverage": 0.916134030602363,
+      "width": 36.220195481580255
+    }
+  },
+  "15 min|DyT|P.MONTT": {
+    "scp": {
+      "coverage": 0.9377300019368584,
+      "width": 61.1901206437305
+    },
+    "n_excl_val": 0,
+    "n_excl_test": 0,
+    "lwacp": {
+      "coverage": 0.9380205306992059,
+      "width": 57.50237577404276
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "LN": {
+    "ATACAMA": {
+      "mae_pc": 7.095910509413586,
+      "mae_sc": 6.704689435011045,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "Prophet_Residuos_Precios",
+      "DM": 6.6065177851688235,
+      "p_valor": 3.934652603732047e-11,
+      "sig": true
+    },
+    "CARDONES": {
+      "mae_pc": 6.725662109793062,
+      "mae_sc": 6.625576697105363,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "Prophet_Residuos_Precios",
+      "DM": 1.933470950389357,
+      "p_valor": 0.053178208314569986,
+      "sig": false
+    },
+    "CHARRUA": {
+      "mae_pc": 8.317433005424624,
+      "mae_sc": 7.979657482250019,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "Prophet_Residuos_Precios",
+      "DM": 5.8482927749348965,
+      "p_valor": 4.9664385937120414e-09,
+      "sig": true
+    },
+    "CRUCERO": {
+      "mae_pc": 6.859548845664269,
+      "mae_sc": 6.742322910416856,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "Prophet_Residuos_Precios",
+      "DM": 2.222894760759117,
+      "p_valor": 0.02622289715173065,
+      "sig": true
+    },
+    "P.AZUCAR": {
+      "mae_pc": 7.047318080392738,
+      "mae_sc": 6.925305165443644,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "Prophet_Residuos_Precios",
+      "DM": 1.9167971663317729,
+      "p_valor": 0.05526370509779377,
+      "sig": false
+    },
+    "P.MONTT": {
+      "mae_pc": 13.938711123818644,
+      "mae_sc": 13.684493049190102,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "TFT_Precios_Solo",
+      "DM": 3.431810136319109,
+      "p_valor": 0.0005995671508329803,
+      "sig": true
+    },
+    "QUILLOTA": {
+      "mae_pc": 8.6152579064949,
+      "mae_sc": 8.26469761105843,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "Prophet_Residuos_Precios",
+      "DM": 5.478102611547559,
+      "p_valor": 4.299108158356546e-08,
+      "sig": true
+    },
+    "TARAPACA": {
+      "mae_pc": 7.056976696931756,
+      "mae_sc": 7.1147322958768155,
+      "ganador_mae": "P+C",
+      "mejor_estrategia_pc": "Prophet_Residuos_Precios",
+      "DM": -1.1184448514311212,
+      "p_valor": 0.26337704765215,
+      "sig": false
+    }
+  },
+  "DyT": {
+    "ATACAMA": {
+      "mae_pc": 7.246839224097528,
+      "mae_sc": 6.683020828200469,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "TFT_Precios_Solo",
+      "DM": 8.452705878392257,
+      "p_valor": 0.0,
+      "sig": true
+    },
+    "CARDONES": {
+      "mae_pc": 7.177821022032989,
+      "mae_sc": 6.777328226591039,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "Prophet_Residuos_Precios",
+      "DM": 6.070058140958118,
+      "p_valor": 1.2786394165686943e-09,
+      "sig": true
+    },
+    "CHARRUA": {
+      "mae_pc": 8.450591814758448,
+      "mae_sc": 8.275494713653194,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "Prophet_Residuos_Precios",
+      "DM": 2.604841331038691,
+      "p_valor": 0.00919168154012251,
+      "sig": true
+    },
+    "CRUCERO": {
+      "mae_pc": 7.214803307533954,
+      "mae_sc": 6.8731655104505975,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "TFT_Precios_Solo",
+      "DM": 5.7185558513100645,
+      "p_valor": 1.0743320455475214e-08,
+      "sig": true
+    },
+    "P.AZUCAR": {
+      "mae_pc": 7.080266611806182,
+      "mae_sc": 6.829143283120843,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "Prophet_Residuos_Precios",
+      "DM": 3.46502560668659,
+      "p_valor": 0.0005301809951405723,
+      "sig": true
+    },
+    "P.MONTT": {
+      "mae_pc": 13.710946888050096,
+      "mae_sc": 14.010947155832293,
+      "ganador_mae": "P+C",
+      "mejor_estrategia_pc": "Prophet_Residuos_Precios",
+      "DM": -2.5861340520799785,
+      "p_valor": 0.009705917430657074,
+      "sig": true
+    },
+    "QUILLOTA": {
+      "mae_pc": 8.891382566576766,
+      "mae_sc": 8.575956928929664,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "Prophet_Residuos_Precios",
+      "DM": 3.835117631104127,
+      "p_valor": 0.00012550421430934655,
+      "sig": true
+    },
+    "TARAPACA": {
+      "mae_pc": 7.498235443549204,
+      "mae_sc": 6.953422257452577,
+      "ganador_mae": "S+C",
+      "mejor_estrategia_pc": "TFT_Precios_Solo",
+      "DM": 7.696700768582662,
+      "p_valor": 1.3988810110276972e-14,
+      "sig": true
+    }
+  }
+}

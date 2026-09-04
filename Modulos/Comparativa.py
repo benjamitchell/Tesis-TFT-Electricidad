@@ -372,4 +372,21 @@ def analisis_comparativo(
             if 'tiempos' in resultados:
                 print("   • comparacion_tiempos_LN_vs_DyT.csv")
 
+
+def perdida_asimetrica(y_real, y_pred, tau=0.5):
+    """
+    Perdida lineal-lineal (linlin/pinball) con parametro de asimetria tau in (0,1):
+
+        L_tau(e) = tau * max(e, 0) + (1-tau) * max(-e, 0),   e = y_real - y_pred
+
+    tau=0.5 recupera 0.5*MAE (caso simetrico). tau>0.5 penaliza mas subestimar el
+    precio (e>0, y_pred < y_real); tau<0.5 penaliza mas sobreestimarlo (e<0).
+    Devuelve el promedio de L_tau sobre todas las observaciones.
+    """
+    y_real = np.asarray(y_real, dtype=float)
+    y_pred = np.asarray(y_pred, dtype=float)
+    mask = np.isfinite(y_real) & np.isfinite(y_pred)
+    e = y_real[mask] - y_pred[mask]
+    return float(np.mean(tau * np.maximum(e, 0.0) + (1 - tau) * np.maximum(-e, 0.0)))
+
     return resultados

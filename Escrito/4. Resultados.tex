@@ -1090,6 +1090,42 @@ Todas las comparaciones anteriores son internas al propio trabajo: el TFT contra
 
 El resultado es contundente y, sobre todo, consistente: S+C-LN reduce el MAE entre 52.1\% y 60.6\% respecto al costo marginal programado del CEN en las seis barras disponibles, con una mejora promedio de 55.5\%, incluyendo Puerto Montt, la barra de peor desempeño del sistema en el resto de este capítulo y por tanto el caso menos favorable para este trabajo. Que la ventaja sea de magnitud similar en las seis barras --no un resultado aislado de una barra particular-- descarta que se trate de una coincidencia del período o del nodo evaluado. Esto no es evidencia de que el CEN pronostique mal --su costo marginal programado responde a un proceso de optimización de la operación con restricciones técnicas, de seguridad y de despacho que este trabajo no modela, no a un pronóstico estadístico optimizado para minimizar el error puntual-- sino de que ambos problemas, aunque relacionados, no son el mismo: la Programación de la Operación optimiza el despacho del sistema completo sujeto a restricciones físicas, mientras que S+C-LN solo pronostica el valor numérico del costo marginal de cada barra. Aun con esa salvedad, el resultado es relevante para la pregunta aplicada que plantea esta comparación: un pronóstico dedicado y sin restricciones operativas, como el de este trabajo, puede superar por un margen amplio y sistemático a la cifra que efectivamente circula en el mercado antes del despacho real. Completar Atacama y Tarapacá, cuyo mnemotécnico de barra no se logró ubicar en el catálogo de la API pese a intentarlo con las variantes de voltaje y sección de barra disponibles, es la continuación natural de este resultado.
 
+\subsection{Sensibilidad a una función de pérdida asimétrica}
+\label{sec:perdida_asimetrica}
+
+Todas las métricas usadas hasta aquí (MAE, RMSE) son simétricas: penalizan por igual sobreestimar y subestimar el costo marginal. En el mercado spot, sin embargo, el costo de un error de pronóstico es asimétrico y depende de la posición del agente: un generador que subestima el precio real deja de capturar el ingreso adicional que habría obtenido vendiendo a un precio mayor; un comercializador o consumidor que subestima el precio queda expuesto a un costo de abastecimiento mayor al presupuestado cuando el precio real resulta más alto de lo previsto. En ambos casos, el error más costoso es la subestimación del precio, no la sobreestimación, aunque la magnitud relativa de esa asimetría depende del agente y del contrato específico.
+
+Se evalúa la sensibilidad de la ventaja de S+C-LN sobre la línea base de persistencia (Sección \ref{sec:baselines}) frente a esta asimetría, mediante la pérdida lineal-lineal (\textit{linlin} o \textit{pinball}) con parámetro $\tau \in (0,1)$:
+
+\begin{equation}
+    L_\tau(e) = \tau \max(e, 0) + (1-\tau)\max(-e, 0), \qquad e = y_t - \hat{y}_t
+    \label{eq:linlin}
+\end{equation}
+
+que penaliza la subestimación ($e>0$) con peso $\tau$ y la sobreestimación ($e<0$) con peso $1-\tau$; $\tau=0.5$ recupera el caso simétrico (equivalente a la mitad del MAE). La Tabla \ref{tab:perdida_asimetrica} presenta el \textit{skill score} de S+C-LN respecto a persistencia, $1 - L_\tau(\text{S+C-LN})/L_\tau(\text{persistencia})$, para tres valores de $\tau$: 0.2 (sobreestimar es cuatro veces más costoso que subestimar), 0.5 (simétrico) y 0.8 (subestimar es cuatro veces más costoso que sobreestimar).
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrr}
+        \toprule
+        Barra & Skill ($\tau=0.2$) & Skill ($\tau=0.5$) & Skill ($\tau=0.8$) \\
+        \midrule
+        Atacama        & +0.367 & +0.352 & +0.337 \\
+        Cardones       & +0.378 & +0.359 & +0.340 \\
+        Charrúa        & +0.243 & +0.224 & +0.204 \\
+        Crucero        & +0.361 & +0.353 & +0.346 \\
+        Pan de Azúcar  & +0.331 & +0.333 & +0.335 \\
+        Puerto Montt   & $-$0.019 & +0.036 & +0.091 \\
+        Quillota       & +0.208 & +0.206 & +0.204 \\
+        Tarapacá       & +0.358 & +0.357 & +0.355 \\
+        \bottomrule
+    \end{tabular}
+    \caption{\textit{Skill score} de S+C-LN respecto a persistencia bajo la pérdida asimétrica \eqref{eq:linlin}, para tres valores de $\tau$, conjunto de prueba completo. $\tau=0.5$ es el caso simétrico; valores positivos indican que S+C-LN supera a la persistencia bajo esa asimetría de costos.}
+    \label{tab:perdida_asimetrica}
+\end{table}
+
+En siete de las ocho barras, la ventaja de S+C-LN sobre la persistencia es robusta a la asimetría de costos: el \textit{skill score} se mantiene positivo y de magnitud similar (0.20--0.38) en todo el rango de $\tau$ evaluado, con variaciones de a lo más 0.02--0.03 entre los extremos. Puerto Montt es la excepción, y de forma reveladora: con $\tau=0.2$ (sobreestimar es lo costoso), S+C-LN resulta ligeramente \textbf{peor} que la persistencia ($-$0.019); recién entre $\tau=0.2$ y $\tau=0.35$ el \textit{skill score} cruza a positivo, y solo alcanza +0.091 en el extremo opuesto ($\tau=0.8$). Es decir, en la barra de peor desempeño del sistema, la conclusión de que S+C-LN supera a un pronóstico ingenuo \textbf{depende de qué tipo de error le resulta más costoso al agente} --algo que el MAE simétrico, usado en el resto de este capítulo, no puede revelar por construcción--. Para las siete barras restantes, en cambio, la ventaja del modelo es una conclusión sólida independientemente de esa asimetría.
+
 \subsection{Estudio de granularidad temporal}
 \label{sec:granularidad}
 
