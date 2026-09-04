@@ -1,0 +1,20 @@
+{
+ "barra": "QUILLOTA",
+ "experimento": "Multi-TFT_Precios",
+ "timestamp": "20260730_090150",
+ "tft_config": {
+  "lr": 0.001,
+  "hidden_size": 32,
+  "heads": 4,
+  "dropout": 0.2,
+  "cont_size": 8,
+  "patience_lr": 5
+ },
+ "early_stop_config": {
+  "min_delta": 0.001,
+  "patience": 15
+ },
+ "epochs_trained": 100,
+ "best_val_loss": 0.27428317070007324,
+ "model_path": "Multi-Modelos_TFT/D/LN/pred_sol_clima/Multi-TFT_Precios/QUILLOTA\\Multi-TFT_Precios_QUILLOTA_best.ckpt"
+}

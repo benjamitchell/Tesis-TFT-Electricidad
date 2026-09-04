@@ -1,0 +1,20 @@
+{
+    "barra": "ATACAMA",
+    "experimento": "Multi-TFT_Precios",
+    "timestamp": "20260731_024235",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 32,
+        "heads": 4,
+        "dropout": 0.2,
+        "cont_size": 8,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.001,
+        "patience": 15
+    },
+    "epochs_trained": 45,
+    "best_val_loss": 0.06211603432893753,
+    "model_path": "/home/minas01/BMitchell/Multi-Modelos_TFT/15min/LN/pred_sol_clima/Multi-TFT_Precios/ATACAMA/Multi-TFT_Precios_ATACAMA_best.ckpt"
+}

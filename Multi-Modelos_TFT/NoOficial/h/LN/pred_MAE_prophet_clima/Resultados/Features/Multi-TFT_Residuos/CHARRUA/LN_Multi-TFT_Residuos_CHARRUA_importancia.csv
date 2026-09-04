@@ -1,0 +1,17 @@
+tipo,variable,importancia_pct
+decoder,relative_time_idx,27.35
+decoder,daily,20.4
+decoder,trend,20.02
+decoder,yearly,19.77
+decoder,weekly,12.46
+encoder,residuo,41.04
+encoder,daily,19.52
+encoder,trend,8.98
+encoder,yearly,8.85
+encoder,temperatura,6.79
+encoder,weekly,4.23
+encoder,velocidad_viento,4.03
+encoder,humedad,2.87
+encoder,nubosidad,1.69
+encoder,precipitacion,1.23
+encoder,relative_time_idx,0.78

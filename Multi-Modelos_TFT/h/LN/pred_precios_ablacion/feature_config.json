@@ -1,0 +1,17 @@
+{
+  "known_reals": [],
+  "unknown_reals_price": [
+    "y_real"
+  ],
+  "unknown_reals_resid": [],
+  "max_encoder_length": 168,
+  "max_prediction_length": 1,
+  "batch_size": 128,
+  "lista_barras": [
+    "ATACAMA",
+    "CRUCERO",
+    "P.MONTT",
+    "TARAPACA"
+  ],
+  "nota": "Ablacion sin features exogenas (ni solar ni clima), mismas fechas de corte que el pipeline principal"
+}

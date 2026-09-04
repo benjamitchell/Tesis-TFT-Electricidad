@@ -1,0 +1,20 @@
+{
+    "barra": "P.AZUCAR",
+    "experimento": "Multi-TFT_Precios",
+    "timestamp": "20260724_050937",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 32,
+        "heads": 4,
+        "dropout": 0.2,
+        "cont_size": 8,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.001,
+        "patience": 15
+    },
+    "epochs_trained": 89,
+    "best_val_loss": 0.14261126518249512,
+    "model_path": "Multi-Modelos_TFT/h/LN/pred_precios_sol_clima_2/Multi-TFT_Precios/P.AZUCAR/Multi-TFT_Precios_P.AZUCAR_best.ckpt"
+}

@@ -43,7 +43,7 @@ def split_cp_from_calibration(y_cal, yhat_cal, y_test, yhat_test, alpha=0.05):
     q_level = np.ceil((1 - alpha) * (n + 1)) / (n + 1)
     q = np.quantile(scores, q_level, method="higher")
 
-    lower = yhat_test_clean - q
+    lower = np.maximum(yhat_test_clean - q, 0.0)
     upper = yhat_test_clean + q
 
     coverage = np.mean((y_test_clean >= lower) & (y_test_clean <= upper))
@@ -328,7 +328,7 @@ def acp_offline_implementation(resultados_stacking, barras, estrategia_barras,
                 q_t = np.quantile(residuos_cal, np.minimum(q_level, 1.0), method='higher')
                 
                 # PASO 2: Generar intervalo para t
-                lower[t] = y_pred_test[t] - q_t
+                lower[t] = max(y_pred_test[t] - q_t, 0.0)
                 upper[t] = y_pred_test[t] + q_t
                 
                 # PASO 3: Observar y_test[t] y calcular error
@@ -505,7 +505,7 @@ def acp_online_implementation(resultados_stacking, barras, estrategia_barras,
                 q_t = np.quantile(residuos_cal_t, np.minimum(q_level, 1.0), method='higher')
                 
                 # PASO 5: Generar intervalo =====
-                lower[t] = y_pred_t - q_t
+                lower[t] = max(y_pred_t - q_t, 0.0)
                 upper[t] = y_pred_t + q_t
                 
                 # PASO 6: Observar error y ADAPTAR alpha =====
@@ -598,17 +598,81 @@ def _get_mapping(mapping):
     return mapping  # ya es dict
 
 
-def _estimar_sigma_h(errores_cal, horas_cal, min_muestras=30):
+def _estimar_sigma_h(errores_cal, horas_cal, min_muestras=30, eps=1.0):
+    """
+    sigma_h[h] nunca baja de eps*sigma_global (default eps=1.0: nunca por debajo de la
+    varianza global de calibración). Sin este piso, en horas de variabilidad muy baja
+    (ej. mediodía/madrugada en barras con curtailment) un outlier puntual normalizado
+    por un sigma_h casi nulo infla el cuantil q para TODAS las horas, no solo esa --
+    verificado en CHARRUA/QUILLOTA, donde LW Split CP/LW-ACP quedaban peor que Split CP
+    plano sin este piso.
+    """
     sigma_global = max(float(np.std(errores_cal)), 1e-6)
+    piso = eps * sigma_global
     sigma_h = np.empty(24)
     for h in range(24):
         mask_h = horas_cal == h
         if mask_h.sum() >= min_muestras:
             s = float(np.std(errores_cal[mask_h]))
-            sigma_h[h] = s if s > 1e-6 else sigma_global
+            sigma_h[h] = max(s, piso) if s > 1e-6 else sigma_global
         else:
             sigma_h[h] = sigma_global
     return sigma_h
+
+
+def aci_from_calibration(y_cal, yhat_cal, y_test, yhat_test, alpha=0.05, gamma=0.05):
+    """
+    ACI (Gibbs y Candès, 2021) sobre arrays crudos: igual que split_cp_from_calibration
+    (score de no conformidad |y - yhat| sobre calibración/VAL) pero con adaptación online
+    del nivel de cobertura alpha_t sobre el test, sin meta-modelo ni ponderación horaria.
+    Es la version "ACP" del linaje SCP -> ACP -> LW-ACP: mismo yhat crudo que Split CP y
+    LW-ACP, para que el ancho de intervalo entre métodos sea comparable (Sección 4.5.7).
+    Al no reajustar ningún modelo en cada paso -- solo el escalar alpha_t -- no existe una
+    distinción "offline"/"online" como en la formulación con meta-modelo Ridge: es un único
+    método.
+    """
+    y_cal     = np.asarray(y_cal,     dtype=float)
+    yhat_cal  = np.asarray(yhat_cal,  dtype=float)
+    y_test    = np.asarray(y_test,    dtype=float)
+    yhat_test = np.asarray(yhat_test, dtype=float)
+
+    mask_cal  = np.isfinite(y_cal)  & np.isfinite(yhat_cal)
+    mask_test = np.isfinite(y_test) & np.isfinite(yhat_test)
+    y_cal, yhat_cal = y_cal[mask_cal], yhat_cal[mask_cal]
+    y_test, yhat_test = y_test[mask_test], yhat_test[mask_test]
+
+    scores_cal = np.abs(y_cal - yhat_cal)
+    n_cal = len(scores_cal)
+
+    n_test   = len(y_test)
+    lower    = np.empty(n_test)
+    upper    = np.empty(n_test)
+    alphas_t = np.empty(n_test)
+    errors_t = np.empty(n_test)
+    alpha_t  = alpha
+
+    for t in range(n_test):
+        q_level  = (1 - alpha_t) * (n_cal + 1) / n_cal
+        q_t      = np.quantile(scores_cal, min(q_level, 1.0), method='higher')
+        lower[t] = max(yhat_test[t] - q_t, 0.0)
+        upper[t] = yhat_test[t] + q_t
+        err_t    = 1 - int((lower[t] <= y_test[t]) & (y_test[t] <= upper[t]))
+        errors_t[t] = err_t
+        alphas_t[t] = alpha_t
+        alpha_t  = np.clip(alpha_t + gamma * (alpha - err_t), 0.001, 0.999)
+
+    coverage = float(np.mean((y_test >= lower) & (y_test <= upper)))
+    width    = float(np.mean(upper - lower))
+    mae      = float(np.mean(np.abs(y_test - yhat_test)))
+    rmse     = float(np.sqrt(np.mean((y_test - yhat_test) ** 2)))
+    alpha_mean = float(np.mean(alphas_t))
+
+    return {"lower": lower, "upper": upper,
+            "coverage": coverage, "expected_coverage": 1 - alpha,
+            "diff_coverage": float(abs(coverage - (1 - alpha))),
+            "width": width, "mae": mae, "rmse": rmse,
+            "alpha_mean": alpha_mean, "alphas_t": alphas_t, "errors_t": errors_t,
+            "y_test": y_test, "y_pred": yhat_test}
 
 
 def lw_split_cp_from_calibration(y_cal, yhat_cal, fechas_cal,
@@ -641,7 +705,7 @@ def lw_split_cp_from_calibration(y_cal, yhat_cal, fechas_cal,
     q       = np.quantile(scores_norm, q_level, method="higher")
 
     sigma_tc = sigma_h[horas_tc]
-    lower    = yhat_tc - q * sigma_tc
+    lower    = np.maximum(yhat_tc - q * sigma_tc, 0.0)
     upper    = yhat_tc + q * sigma_tc
 
     coverage = float(np.mean((y_test_c >= lower) & (y_test_c <= upper)))
@@ -657,6 +721,65 @@ def lw_split_cp_from_calibration(y_cal, yhat_cal, fechas_cal,
             "y_test": y_test_c, "y_pred": yhat_tc,
             "horas_test": np.asarray(horas_tc),
             "mask_test": mask_test}
+
+
+def lw_acp_online_from_calibration(y_cal, yhat_cal, fechas_cal,
+                                    y_test, yhat_test, fechas_test,
+                                    alpha=0.05, gamma=0.05, min_muestras_por_hora=30):
+    """LW-ACP sobre arrays crudos: igual que lw_split_cp_from_calibration (score
+    normalizado por sigma_h de calibración/VAL) pero con adaptación online del nivel
+    alpha_t sobre el test, como en aci_offline_solar_implementation. Combina la
+    ponderación horaria con la adaptación online (gamma fijo, sin barrer/seleccionar
+    sobre test)."""
+    y_cal     = np.asarray(y_cal,     dtype=float)
+    yhat_cal  = np.asarray(yhat_cal,  dtype=float)
+    y_test    = np.asarray(y_test,    dtype=float)
+    yhat_test = np.asarray(yhat_test, dtype=float)
+
+    horas_cal  = pd.DatetimeIndex(fechas_cal).hour
+    horas_test = pd.DatetimeIndex(fechas_test).hour
+
+    mask_cal  = np.isfinite(y_cal)  & np.isfinite(yhat_cal)
+    mask_test = np.isfinite(y_test) & np.isfinite(yhat_test)
+    y_cal, yhat_cal, horas_cal = y_cal[mask_cal], yhat_cal[mask_cal], horas_cal[mask_cal]
+    y_test, yhat_test, horas_test = y_test[mask_test], yhat_test[mask_test], horas_test[mask_test]
+
+    errores_cal = np.abs(y_cal - yhat_cal)
+    sigma_h     = _estimar_sigma_h(errores_cal, horas_cal, min_muestras_por_hora)
+    scores_cal  = errores_cal / sigma_h[horas_cal]
+
+    n_test   = len(y_test)
+    lower    = np.empty(n_test)
+    upper    = np.empty(n_test)
+    alphas_t = np.empty(n_test)
+    errors_t = np.empty(n_test)
+    alpha_t  = alpha
+
+    n_cal = len(scores_cal)
+    for t in range(n_test):
+        q_level  = (1 - alpha_t) * (n_cal + 1) / n_cal
+        q_t      = np.quantile(scores_cal, min(q_level, 1.0), method='higher')
+        h_t      = horas_test[t]
+        lower[t] = max(yhat_test[t] - q_t * sigma_h[h_t], 0.0)
+        upper[t] = yhat_test[t] + q_t * sigma_h[h_t]
+        err_t    = 1 - int((lower[t] <= y_test[t]) & (y_test[t] <= upper[t]))
+        errors_t[t] = err_t
+        alphas_t[t] = alpha_t
+        alpha_t  = np.clip(alpha_t + gamma * (alpha - err_t), 0.001, 0.999)
+
+    coverage = float(np.mean((y_test >= lower) & (y_test <= upper)))
+    width    = float(np.mean(upper - lower))
+    mae      = float(np.mean(np.abs(y_test - yhat_test)))
+    rmse     = float(np.sqrt(np.mean((y_test - yhat_test) ** 2)))
+    alpha_mean = float(np.mean(alphas_t))
+
+    return {"lower": lower, "upper": upper,
+            "coverage": coverage, "expected_coverage": 1 - alpha,
+            "diff_coverage": float(abs(coverage - (1 - alpha))),
+            "width": width, "mae": mae, "rmse": rmse,
+            "alpha_mean": alpha_mean, "alphas_t": alphas_t, "errors_t": errors_t,
+            "sigma_h": sigma_h, "y_test": y_test, "y_pred": yhat_test,
+            "horas_test": np.asarray(horas_test)}
 
 
 def lw_split_cp_implementation(resultados_stacking, df_mejores,
@@ -777,7 +900,7 @@ def lw_acp_online_implementation(resultados_stacking, df_mejores,
                 q_level    = (1 - alpha_t) * (n_cal + 1) / n_cal
                 q_t        = np.quantile(scores_cal, min(q_level, 1.0), method='higher')
                 h_t        = horas_test[t]
-                lower[t]   = yhat_test[t] - q_t * sigma_h[h_t]
+                lower[t]   = max(yhat_test[t] - q_t * sigma_h[h_t], 0.0)
                 upper[t]   = yhat_test[t] + q_t * sigma_h[h_t]
                 err_t      = 1 - int((lower[t] <= y_test[t]) & (y_test[t] <= upper[t]))
                 errors_t[t] = err_t
@@ -821,6 +944,239 @@ def lw_acp_online_implementation(resultados_stacking, df_mejores,
 
     df_tabla = pd.DataFrame(tabla).sort_values("Barra").reset_index(drop=True)
     return df_tabla, dict_cp, dict_alphas
+
+
+# ========================= ACI OFFLINE / ONLINE SOBRE S+C (Ridge + posición solar) ======================
+
+# Estas dos variantes reemplazan, para S+C, al meta-modelo Ridge de 5 predicciones de
+# Stacking (P+C) usado por acp_offline_implementation/acp_online_implementation: en vez de
+# combinar múltiples predicciones candidatas, el Ridge combina la predicción única de S+C
+# con las dos variables solares dominantes según el análisis de interpretabilidad
+# (elevacion_solar, cos_elevacion), ya que S+C no pasa por Stacking Optimization.
+
+COORDENADAS_BARRAS_SC = {
+    'ATACAMA':  (-28.57617, -70.75938),
+    'CARDONES': (-27.36737, -70.33219),
+    'CHARRUA':  (-36.82699, -73.04977),
+    'CRUCERO':  (-23.65094, -70.39752),
+    'P.AZUCAR': (-29.90591, -71.25014),
+    'P.MONTT':  (-41.4693,  -72.94237),
+    'QUILLOTA': (-33.036,   -71.62963),
+    'TARAPACA': (-20.21326, -70.15027),
+}
+
+
+def _features_solares(fechas, lat, lon):
+    """elevacion_solar y cos_elevacion vía pvlib, para un arreglo de fechas locales (America/Santiago)."""
+    import pvlib
+    ds_local = pd.to_datetime(fechas)
+    ds_utc = ds_local.tz_localize(
+        'America/Santiago', ambiguous='NaT', nonexistent='shift_forward'
+    ).tz_convert('UTC')
+    if ds_utc.isna().any():
+        ds_utc = pd.DatetimeIndex(pd.Series(ds_utc).ffill() + pd.Timedelta(hours=1))
+    sol = pvlib.solarposition.get_solarposition(ds_utc, lat, lon)
+    elevacion = sol['elevation'].values
+    return elevacion, np.cos(np.radians(elevacion))
+
+
+def construir_resultados_stacking_sc(datos_eval, barras):
+    """Shim minimo con la forma de resultados_stacking[barra]['_datos_split'] (fechas/y_real
+    val y test), construido a partir de un dict eval_TFT_{arq}.pkl, para poder reusar
+    plot_cp/plot_cp_por_hora (pensados para el pkl de Stacking P+C) con resultados de S+C."""
+    shim = {}
+    for barra in barras:
+        val = datos_eval[barra]['val']['Precios']['datos']
+        test = datos_eval[barra]['test']['Precios']['datos']
+        orden_val = np.argsort(np.asarray(val['fechas']))
+        orden_test = np.argsort(np.asarray(test['fechas']))
+        shim[barra] = {
+            '_datos_split': {
+                'fechas_val': np.asarray(val['fechas'])[orden_val],
+                'y_real_val': np.asarray(val['y_real'])[orden_val],
+                'fechas_test': np.asarray(test['fechas'])[orden_test],
+                'y_real_test': np.asarray(test['y_real'])[orden_test],
+            }
+        }
+    return shim
+
+
+def _datos_barra_sc(datos_eval, barra, coordenadas=COORDENADAS_BARRAS_SC):
+    """Extrae y ordena por fecha val/test de un dict eval_TFT_{arq}.pkl (datos_eval = pickle.load(...)[0]),
+    agregando las features solares [yhat, elevacion_solar, cos_elevacion]."""
+    lat, lon = coordenadas[barra]
+    val = datos_eval[barra]['val']['Precios']['datos']
+    test = datos_eval[barra]['test']['Precios']['datos']
+
+    orden_val = np.argsort(np.asarray(val['fechas']))
+    orden_test = np.argsort(np.asarray(test['fechas']))
+    y_val = np.asarray(val['y_real'])[orden_val]
+    yhat_val = np.asarray(val['y_pred'])[orden_val]
+    fechas_val = np.asarray(val['fechas'])[orden_val]
+    y_test = np.asarray(test['y_real'])[orden_test]
+    yhat_test = np.asarray(test['y_pred'])[orden_test]
+    fechas_test = np.asarray(test['fechas'])[orden_test]
+
+    elev_val, cos_val = _features_solares(fechas_val, lat, lon)
+    elev_test, cos_test = _features_solares(fechas_test, lat, lon)
+
+    X_val = np.column_stack([yhat_val, elev_val, cos_val])
+    X_test = np.column_stack([yhat_test, elev_test, cos_test])
+    return X_val, y_val, X_test, y_test
+
+
+def aci_offline_solar_implementation(datos_eval, barras, alpha=0.05, gamma=0.05,
+                                      coordenadas=COORDENADAS_BARRAS_SC, verbose=True):
+    """ACI offline sobre S+C: Ridge(yhat_S+C, elevacion_solar, cos_elevacion) fijo desde
+    calibración; solo alpha_t/el cuantil se adaptan en el test. Ver acp_offline_implementation
+    para la variante P+C-Stacking equivalente."""
+    tabla = []
+    dict_cp = {}
+    dict_alphas = {}
+
+    for barra in barras:
+        try:
+            X_val, y_val, X_test, y_test = _datos_barra_sc(datos_eval, barra, coordenadas)
+
+            scaler = StandardScaler()
+            X_val_s = scaler.fit_transform(X_val)
+            X_test_s = scaler.transform(X_test)
+
+            modelo = Ridge(alpha=1.0)
+            modelo.fit(X_val_s, y_val)
+            y_pred_test = modelo.predict(X_test_s)
+            residuos_cal = np.abs(y_val - modelo.predict(X_val_s))
+
+            n_test = len(y_test)
+            lower = np.empty(n_test)
+            upper = np.empty(n_test)
+            alphas_t = np.empty(n_test)
+            errors_t = np.empty(n_test)
+            alpha_t = alpha
+
+            for t in range(n_test):
+                q_level = (1 - alpha_t) * (len(residuos_cal) + 1) / (len(residuos_cal))
+                q_t = np.quantile(residuos_cal, np.minimum(q_level, 1.0), method='higher')
+                lower[t] = max(y_pred_test[t] - q_t, 0.0)
+                upper[t] = y_pred_test[t] + q_t
+                err_t = 1 - int((lower[t] <= y_test[t]) & (y_test[t] <= upper[t]))
+                errors_t[t] = err_t
+                alphas_t[t] = alpha_t
+                alpha_t = np.clip(alpha_t + gamma * (alpha - err_t), 0.001, 0.999)
+
+            coverage = float(np.mean((y_test >= lower) & (y_test <= upper)))
+            width = float(np.mean(upper - lower))
+            mae = float(np.mean(np.abs(y_test - y_pred_test)))
+            rmse = float(np.sqrt(np.mean((y_test - y_pred_test) ** 2)))
+            alpha_mean = float(np.mean(alphas_t))
+            alpha_std = float(np.std(alphas_t))
+            error_rate = float(np.mean(errors_t))
+
+            if verbose:
+                print(f"{barra:10s} | gamma={gamma} | coverage={coverage:.4f} | width={width:.2f} | mae={mae:.2f}")
+
+            tabla.append({
+                "Barra": barra, "Coverage": coverage, "Expected": 1 - alpha,
+                "Coverage_Diff": abs(coverage - (1 - alpha)), "Width": width,
+                "MAE": mae, "RMSE": rmse, "N_test": n_test, "Gamma": gamma,
+                "Alpha_Mean": alpha_mean, "Alpha_Std": alpha_std, "Error_Rate": error_rate,
+                "Modelo_Base": "Ridge_solar",
+            })
+            dict_cp[barra] = {"y_test": y_test, "y_pred": y_pred_test, "lower": lower, "upper": upper,
+                               "coverage": coverage, "width": width, "mae": mae, "rmse": rmse}
+            dict_alphas[barra] = {"alphas_t": alphas_t, "errors_t": errors_t}
+
+        except Exception as e:
+            print(f"  ERROR EN {barra}: {str(e)}")
+            traceback.print_exc()
+            continue
+
+    df_tabla = pd.DataFrame(tabla).sort_values("Barra").reset_index(drop=True)
+    return df_tabla, dict_cp, dict_alphas
+
+
+def aci_online_solar_implementation(datos_eval, barras, alpha=0.05, gamma=0.05,
+                                     coordenadas=COORDENADAS_BARRAS_SC, verbose=True):
+    """ACI online sobre S+C: igual que aci_offline_solar_implementation, pero reentrena
+    el Ridge en cada paso del test con todos los datos observados hasta ese instante.
+    Ver acp_online_implementation para la variante P+C-Stacking equivalente."""
+    tabla = []
+    dict_cp = {}
+    dict_alphas = {}
+    tiempos_ejecucion = {}
+
+    for barra in barras:
+        try:
+            tiempo_inicio = time.time()
+            X_val, y_val, X_test, y_test = _datos_barra_sc(datos_eval, barra, coordenadas)
+
+            train_size = len(X_val)
+            n_test = len(y_test)
+            X_combined = np.vstack([X_val, X_test])
+            y_combined = np.hstack([y_val, y_test])
+
+            scaler = StandardScaler()
+            scaler.fit(X_val)
+            X_combined_s = scaler.transform(X_combined)
+
+            lower = np.empty(n_test)
+            upper = np.empty(n_test)
+            alphas_t = np.empty(n_test)
+            errors_t = np.empty(n_test)
+            y_pred_online = np.empty(n_test)
+            alpha_t = alpha
+
+            for t in range(n_test):
+                idx_train = np.arange(train_size + t)
+                modelo_t = Ridge(alpha=1.0)
+                modelo_t.fit(X_combined_s[idx_train], y_combined[idx_train])
+
+                y_pred_t = modelo_t.predict(X_combined_s[train_size + t:train_size + t + 1])[0]
+                y_pred_online[t] = y_pred_t
+
+                residuos_cal_t = np.abs(y_combined[idx_train] - modelo_t.predict(X_combined_s[idx_train]))
+                q_level = (1 - alpha_t) * (len(residuos_cal_t) + 1) / (len(residuos_cal_t))
+                q_t = np.quantile(residuos_cal_t, np.minimum(q_level, 1.0), method='higher')
+
+                lower[t] = max(y_pred_t - q_t, 0.0)
+                upper[t] = y_pred_t + q_t
+                err_t = 1 - int((lower[t] <= y_test[t]) & (y_test[t] <= upper[t]))
+                errors_t[t] = err_t
+                alphas_t[t] = alpha_t
+                alpha_t = np.clip(alpha_t + gamma * (alpha - err_t), 0.001, 0.999)
+
+            tiempo_total = time.time() - tiempo_inicio
+
+            coverage = float(np.mean((y_test >= lower) & (y_test <= upper)))
+            width = float(np.mean(upper - lower))
+            mae = float(np.mean(np.abs(y_test - y_pred_online)))
+            rmse = float(np.sqrt(np.mean((y_test - y_pred_online) ** 2)))
+            alpha_mean = float(np.mean(alphas_t))
+            alpha_std = float(np.std(alphas_t))
+            error_rate = float(np.mean(errors_t))
+
+            if verbose:
+                print(f"{barra:10s} | coverage={coverage:.4f} | width={width:.2f} | mae={mae:.2f} | t={tiempo_total:.1f}s")
+
+            tabla.append({
+                "Barra": barra, "Coverage": coverage, "Expected": 1 - alpha,
+                "Coverage_Diff": abs(coverage - (1 - alpha)), "Width": width,
+                "MAE": mae, "RMSE": rmse, "N_test": n_test, "Gamma": gamma,
+                "Alpha_Mean": alpha_mean, "Alpha_Std": alpha_std, "Error_Rate": error_rate,
+                "Modelo_Base": "Ridge_solar", "Tiempo_Seg": tiempo_total,
+            })
+            dict_cp[barra] = {"y_test": y_test, "y_pred": y_pred_online, "lower": lower, "upper": upper,
+                               "coverage": coverage, "width": width, "mae": mae, "rmse": rmse}
+            dict_alphas[barra] = {"alphas_t": alphas_t, "errors_t": errors_t}
+            tiempos_ejecucion[barra] = tiempo_total
+
+        except Exception as e:
+            print(f"  ERROR EN {barra}: {str(e)}")
+            traceback.print_exc()
+            continue
+
+    df_tabla = pd.DataFrame(tabla).sort_values("Barra").reset_index(drop=True)
+    return df_tabla, dict_cp, dict_alphas, tiempos_ejecucion
 
 
 # ========================= CONFORMAL QUANTILE REGRESSION (CQR) ======================

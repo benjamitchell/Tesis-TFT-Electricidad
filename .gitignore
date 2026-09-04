@@ -24,3 +24,9 @@ __pycache__/
 # Resultados pesados regenerables
 predicciones_prophet.csv
 predicciones_prophet_horario_*.csv
+
+# Papers de terceros (copyright, no redistribuir en repo publico)
+Papers Transformers/
+
+# Carpeta de limpieza pendiente de confirmar borrado (~9GB), no versionar
+Borrar/

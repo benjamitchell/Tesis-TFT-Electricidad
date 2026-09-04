@@ -1,0 +1,20 @@
+{
+    "barra": "CHARRUA",
+    "experimento": "Multi-TFT_Precios",
+    "timestamp": "20260629_065802",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 64,
+        "heads": 4,
+        "dropout": 0.1,
+        "cont_size": 32,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.0001,
+        "patience": 15
+    },
+    "epochs_trained": 100,
+    "best_val_loss": 0.15203669667243958,
+    "model_path": "Multi-Modelos_TFT/h/LN/pred_1_168_lags_largos/Multi-TFT_Precios/CHARRUA/Multi-TFT_Precios_CHARRUA_best.ckpt"
+}

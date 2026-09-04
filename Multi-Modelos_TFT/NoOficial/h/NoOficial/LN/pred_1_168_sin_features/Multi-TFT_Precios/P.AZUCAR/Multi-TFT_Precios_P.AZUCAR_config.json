@@ -1,0 +1,20 @@
+{
+    "barra": "P.AZUCAR",
+    "experimento": "Multi-TFT_Precios",
+    "timestamp": "20260627_023120",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 64,
+        "heads": 4,
+        "dropout": 0.3,
+        "cont_size": 32,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.0001,
+        "patience": 15
+    },
+    "epochs_trained": 100,
+    "best_val_loss": 0.05894079804420471,
+    "model_path": "Multi-Modelos_TFT/h/LN/pred_1_168_sin_features/Multi-TFT_Precios/P.AZUCAR/Multi-TFT_Precios_P.AZUCAR_best.ckpt"
+}

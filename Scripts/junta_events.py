@@ -3,9 +3,9 @@ from tensorboard.backend.event_processing.event_accumulator import EventAccumula
 from torch.utils.tensorboard import SummaryWriter
 
 # Ajusta estas rutas
-archivo1 = r"C:\Users\56977\OneDrive\Escritorio\Tesis - copia\Logs_TFT\h\DyT\pred_1_168_cluster_con_clima\Residuos\P.MONTT\events.out.tfevents.1781016391.gn004.1820853.0"
-archivo2 = r"C:\Users\56977\OneDrive\Escritorio\Tesis - copia\Logs_TFT\h\DyT\pred_1_168_cluster_con_clima\Residuos\P.MONTT\events.out.tfevents.1781032145.gn004.2394978.0"
-carpeta_salida = r"C:\Users\56977\OneDrive\Escritorio\Tesis - copia\Logs_TFT\h\DyT\pred_1_168_cluster_con_clima\Residuos\P.MONTT\eventos_combinados"
+archivo1 = r"C:\Users\56977\OneDrive\Escritorio\Tesis - copia\Logs_TFT\h\LN\pred_1_168_sin_features\Multi-TFT_Residuos\TARAPACA\events.out.tfevents.1782519163.gn004.1816987.0"
+archivo2 = r"C:\Users\56977\OneDrive\Escritorio\Tesis - copia\Logs_TFT\h\LN\pred_1_168_sin_features\Multi-TFT_Residuos\TARAPACA\events.out.tfevents.1782534194.gn005.2334035.0"
+carpeta_salida = r"C:\Users\56977\OneDrive\Escritorio\Tesis - copia\Logs_TFT\h\LN\pred_1_168_sin_features\Multi-TFT_Residuos\TARAPACA\eventos_combinados"
 
 ea1 = EventAccumulator(archivo1)
 ea1.Reload()

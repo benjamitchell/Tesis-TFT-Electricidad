@@ -1,0 +1,20 @@
+{
+  "known_reals": [],
+  "unknown_reals_price": [
+    "y_real",
+    "temperatura",
+    "humedad",
+    "velocidad_viento",
+    "precipitacion",
+    "nubosidad",
+    "cota_chapo",
+    "agua_caida_hora"
+  ],
+  "unknown_reals_resid": [],
+  "max_encoder_length": 168,
+  "max_prediction_length": 1,
+  "batch_size": 128,
+  "lista_barras": [
+    "P.MONTT"
+  ]
+}

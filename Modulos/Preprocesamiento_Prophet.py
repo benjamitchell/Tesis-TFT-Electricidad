@@ -8,7 +8,8 @@ from contextlib import contextmanager
 from IPython.display import display
 
 # Función de preprocesamiento para Prophet
-def preprocesamiento_prophet(df_por_barra, BARRA, freq, año_inicio, año_fin, proporciones, umbral_outliers, graficos=None, df_feriados=None):
+def preprocesamiento_prophet(df_por_barra, BARRA, freq, año_inicio, año_fin, proporciones, umbral_outliers, graficos=None, df_feriados=None,
+                              recortar_outliers_train=True, fechas_excluir_manual_train=None):
 
     df_prophet = df_por_barra[BARRA].copy()
     print(f'Valor máximo: {df_prophet["Valor"].max()}, valor mínimo: {df_prophet["Valor"].min()}')
@@ -24,22 +25,26 @@ def preprocesamiento_prophet(df_por_barra, BARRA, freq, año_inicio, año_fin, p
 
     # Preprocesamos los datos del conjunto train
     df_train_prophet_clean, train_stats = preprocesar_serie(df=df_train_prophet, col_fecha='Fecha', col_valor='Valor',
-                                                            freq = freq, rango_años=(año_inicio, año_fin), 
-                                                            zscore_stats=None, umbral_outliers=umbral_outliers)
+                                                            freq = freq, rango_años=(año_inicio, año_fin),
+                                                            zscore_stats=None, umbral_outliers=umbral_outliers,
+                                                            recortar_outliers=recortar_outliers_train,
+                                                            fechas_excluir_manual=fechas_excluir_manual_train)
 
     print(f"\nSeries limpias para {BARRA}: {len(df_train_prophet_clean)} registros.")
 
-    # Preprocesamos los datos del conjunto val
+    # Preprocesamos los datos del conjunto val (sin recortar outliers: se evalúa contra la serie cruda)
     df_val_prophet_clean, _ = preprocesar_serie(df=df_val_prophet, col_fecha='Fecha', col_valor='Valor',
-                                                freq = freq, rango_años=(año_inicio, año_fin), 
-                                                zscore_stats=train_stats)
+                                                freq = freq, rango_años=(año_inicio, año_fin),
+                                                zscore_stats=train_stats, umbral_outliers=umbral_outliers,
+                                                recortar_outliers=False)
 
     print(f"\nSeries limpias para {BARRA}: {len(df_val_prophet_clean)} registros.")
 
-    # Preprocesamos los datos del conjunto test
+    # Preprocesamos los datos del conjunto test (sin recortar outliers: se evalúa contra la serie cruda)
     df_test_prophet_clean, _ = preprocesar_serie(df=df_test_prophet, col_fecha='Fecha', col_valor='Valor',
                                                  freq = freq, rango_años=(año_inicio, año_fin),
-                                                 zscore_stats=train_stats)
+                                                 zscore_stats=train_stats, umbral_outliers=umbral_outliers,
+                                                 recortar_outliers=False)
 
     print(f"\nSeries limpias para {BARRA}: {len(df_test_prophet_clean)} registros.")
 
@@ -281,7 +286,8 @@ def dividir_serie_temporal(df, proporciones):
 
     return df_train, df_val, df_test
 
-def preprocesar_serie(df, col_fecha, col_valor, freq, rango_años, zscore_stats, umbral_outliers=3):
+def preprocesar_serie(df, col_fecha, col_valor, freq, rango_años, zscore_stats, umbral_outliers=3, recortar_outliers=True,
+                       fechas_excluir_manual=None):
 
     print("Iniciando preprocesamiento de la serie")
 
@@ -302,15 +308,28 @@ def preprocesar_serie(df, col_fecha, col_valor, freq, rango_años, zscore_stats,
         mean = zscore_stats['mean']
         std = zscore_stats['std']
 
-    z_score = np.abs((y_no_nan - mean) / std)
-    outliers = z_score[z_score >= umbral_outliers]
+    if recortar_outliers:
+        z_score = np.abs((y_no_nan - mean) / std)
+        outliers = z_score[z_score >= umbral_outliers]
 
-    if not outliers.empty:
-        print(f"Outliers detectados (Z-Score >= {umbral_outliers}): {len(outliers)}")
-        df_clean.loc[outliers.index, 'y'] = np.nan
+        if not outliers.empty:
+            print(f"Outliers detectados (Z-Score >= {umbral_outliers}): {len(outliers)}")
+            df_clean.loc[outliers.index, 'y'] = np.nan
+        else:
+            print("No se detectaron outliers significativos.")
     else:
-        print("No se detectaron outliers significativos.")
+        print("Recorte de outliers desactivado para este conjunto: se conserva la serie cruda "
+              "(solo se completan huecos de frecuencia, no se reemplazan valores extremos).")
 
+    if fechas_excluir_manual:
+        fechas_excluir_manual = pd.to_datetime(fechas_excluir_manual)
+        mask_manual = df_clean['ds'].isin(fechas_excluir_manual)
+        n_manual = int(mask_manual.sum())
+        if n_manual > 0:
+            print(f"Excluyendo manualmente {n_manual} registros verificados como anómalos (no sistemáticos).")
+            df_clean.loc[mask_manual, 'y'] = np.nan
+
+    # NaNs genuinos (huecos de frecuencia, no outliers recortados) se interpolan igual en todos los conjuntos
     df_clean = df_clean.set_index('ds').asfreq(freq)
     df_clean['y'] = df_clean['y'].interpolate(method='linear')
     df_clean['y'] = df_clean['y'].bfill().ffill()

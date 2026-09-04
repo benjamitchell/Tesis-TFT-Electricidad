@@ -1,0 +1,20 @@
+{
+    "barra": "ATACAMA",
+    "experimento": "Multi-TFT_Residuos",
+    "timestamp": "20260721_060220",
+    "tft_config": {
+        "lr": 0.001,
+        "hidden_size": 64,
+        "heads": 4,
+        "dropout": 0.3,
+        "cont_size": 32,
+        "patience_lr": 5
+    },
+    "early_stop_config": {
+        "min_delta": 0.001,
+        "patience": 15
+    },
+    "epochs_trained": 100,
+    "best_val_loss": 0.1902359127998352,
+    "model_path": "Multi-Modelos_TFT/h/LN/pred_MAE_solar_clima/Multi-TFT_Residuos/ATACAMA/Multi-TFT_Residuos_ATACAMA_best.ckpt"
+}
