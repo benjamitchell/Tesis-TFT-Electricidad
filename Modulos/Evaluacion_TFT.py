@@ -134,9 +134,22 @@ def extraer_predicciones_modelo(barra, modelo, dataloader, datasets_norm,
 
 # Ejecuta UNA sola inferencia sobre el dataloader del conjunto test (que cubre
 # train+val+test) y devuelve las predicciones divididas por conjunto.
+def inferir_raw_modelo(modelo, dataloader_test):
+    """
+    Corre la inferencia completa del modelo sobre `dataloader_test` una sola vez.
+    Reusar el resultado (parametro `raw` de extraer_todas_predicciones_modelo) para
+    extraer varios horizontes del mismo modelo sin re-inferir sobre todo el set de
+    test en cada paso -- evitar_todas_predicciones_modelo llamado en un loop de 24
+    horizontes sin esto re-hace la inferencia completa 24 veces por nada.
+    """
+    with torch.inference_mode():
+        return modelo.predict(dataloader_test, mode="raw", return_y=True, return_index=True)
+
+
 def extraer_todas_predicciones_modelo(barra, modelo, dataloader_test, datasets_norm,
                                       diccionario_scalers, target_key='y_real',
-                                      scaler_key=None, horizonte=1, umbral_desfase=0.001):
+                                      scaler_key=None, horizonte=1, umbral_desfase=0.001,
+                                      raw=None):
 
     if scaler_key is None:
         scaler_key = target_key
@@ -161,13 +174,18 @@ def extraer_todas_predicciones_modelo(barra, modelo, dataloader_test, datasets_n
     y_original_completo = scaler.inverse_transform(
         df_completo[target_key].values.reshape(-1, 1)).flatten()
 
-    # Una sola inferencia
-    with torch.inference_mode():
-        raw = modelo.predict(dataloader_test, mode="raw", return_y=True, return_index=True)
+    # Una sola inferencia (o reusar una ya calculada, ver inferir_raw_modelo)
+    if raw is None:
+        raw = inferir_raw_modelo(modelo, dataloader_test)
 
     predictions = raw.output.prediction if hasattr(raw.output, 'prediction') else raw.output[0]
     if len(predictions.shape) == 3 and predictions.shape[2] == 7:
-        predictions = predictions[:, :, 3]
+        predictions = predictions[:, :, 3]  # perdida cuantilica: mediana de las 7 cuantiles
+    elif len(predictions.shape) == 3 and predictions.shape[2] == 1:
+        # perdida puntual (MAE) con max_prediction_length>1: (n_muestras, n_pasos, 1),
+        # sin dimension de cuantiles -- se aplana la ultima dimension antes de indexar
+        # por paso de horizonte, si no y_pred_norm queda con n_muestras*n_pasos valores.
+        predictions = predictions.squeeze(-1)
     if len(predictions.shape) == 2:
         y_pred_norm = predictions[:, horizonte - 1].cpu().numpy()
     else:
