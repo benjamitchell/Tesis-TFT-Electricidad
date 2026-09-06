@@ -90,3 +90,41 @@ volvamos a esto. Lo mismo aplica para el piloto sin-outliers + h=24.
 Para el piloto de outliers (h=1), todavia no hay script de evaluacion armado --
 falta compararlo contra los modelos actuales (MAE general + MAE en regimen
 alto/p95) cuando bajen los checkpoints. Se arma cuando volvamos a esto.
+
+=====================================
+NUEVO (2026-09-06): h=24 con mas capacidad (2 barras)
+=====================================
+
+evaluar_h24.py (P1 #9) mostro que el TFT h=24 (mismos hiperparametros que el
+h=1, sin tuning propio) empata o pierde en promedio contra la persistencia-24h
+en la mayoria de barras -- esperable dado el "esfuerzo de tuning asimetrico"
+ya documentado en la Metodologia, pero vale la pena una prueba barata de si
+mas capacidad ayuda antes de dejarlo como limitacion sin mas.
+
+Prueba acotada a 2 barras (ATACAMA: caso solar tipico, P.MONTT: el mas
+dificil) y solo LN, para no gastar mas cluster del necesario. Unico cambio:
+hidden_size 32->64, cont_size 8->16 (tft_config.json), todo lo demas
+identico al h24 original -- mismos dataloaders/scalers, copiados tal cual a
+esta carpeta nueva, para aislar la capacidad como unica variable.
+
+Carpeta nueva en esta subida:
+  Multi-Modelos_TFT/h/LN/pred_sol_clima_h24_bigcap/   -> dataloaders/scalers
+                             identicos a pred_sol_clima_h24, solo con
+                             tft_config.json cambiado (hidden_size=64,
+                             cont_size=16).
+  Scripts Cluster/train_h24_bigcap.sh -> 2 jobs (array 0-1: ATACAMA, P.MONTT)
+
+PASO 1: Subir (fusionar con lo que ya esta alla, igual que antes)
+  rsync -avz "Subir_Cluster/" minas01@leftaru:/home/minas01/BMitchell/
+
+PASO 2: Correr
+  cd /home/minas01/BMitchell/"Scripts Cluster"
+  sbatch train_h24_bigcap.sh
+
+PASO 3: Cuando terminen, sincronizar de vuelta
+  Multi-Modelos_TFT/h/LN/pred_sol_clima_h24_bigcap/
+
+Para evaluar despues: correr Scripts/evaluar_h24.py pero apuntado a esta
+carpeta en vez de pred_sol_clima_h24 (o agregar una entrada nueva a la lista
+EXPERIMENTOS del script) y comparar el MAE_promedio_24h contra el hidden_size
+original en las mismas 2 barras.
