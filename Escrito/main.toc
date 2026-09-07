@@ -51,22 +51,22 @@
 \contentsline {subsection}{\numberline {2.6.5}CP ponderado localmente: LW Split CP y LW-ACP}{36}{subsection.2.6.5}%
 \contentsline {paragraph}{LW Split CP.}{37}{section*.21}%
 \contentsline {paragraph}{LW-ACP.}{37}{section*.22}%
-\contentsline {subsection}{\numberline {2.6.6}Métricas de evaluación de los intervalos de predicción}{37}{subsection.2.6.6}%
+\contentsline {subsection}{\numberline {2.6.6}Métricas de evaluación de los intervalos de predicción}{38}{subsection.2.6.6}%
 \contentsline {chapter}{\numberline {3}Metodología}{39}{chapter.3}%
 \contentsline {section}{\numberline {3.1}Datos}{39}{section.3.1}%
 \contentsline {subsection}{\numberline {3.1.1}Fuente y descripción}{39}{subsection.3.1.1}%
 \contentsline {subsection}{\numberline {3.1.2}Estadísticas descriptivas y análisis exploratorio}{40}{subsection.3.1.2}%
-\contentsline {subsection}{\numberline {3.1.3}Análisis de estacionariedad}{42}{subsection.3.1.3}%
+\contentsline {subsection}{\numberline {3.1.3}Análisis de estacionariedad}{40}{subsection.3.1.3}%
 \contentsline {section}{\numberline {3.2}Preprocesamiento}{43}{section.3.2}%
 \contentsline {subsection}{\numberline {3.2.1}Limpieza y tratamiento de valores atípicos}{43}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}División temporal de los datos}{43}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.2}División temporal de los datos}{44}{subsection.3.2.2}%
 \contentsline {subsection}{\numberline {3.2.3}Normalización}{44}{subsection.3.2.3}%
-\contentsline {section}{\numberline {3.3}Modelo Prophet}{44}{section.3.3}%
-\contentsline {subsection}{\numberline {3.3.1}Configuración y optimización de hiperparámetros}{44}{subsection.3.3.1}%
-\contentsline {subsection}{\numberline {3.3.2}Componentes de tendencia y estacionalidad anual}{45}{subsection.3.3.2}%
-\contentsline {subsection}{\numberline {3.3.3}Predicciones a 48 horas}{46}{subsection.3.3.3}%
-\contentsline {section}{\numberline {3.4}Temporal Fusion Transformer}{48}{section.3.4}%
-\contentsline {subsection}{\numberline {3.4.1}Construcción de features y dataloaders}{48}{subsection.3.4.1}%
+\contentsline {section}{\numberline {3.3}Modelo Prophet}{45}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Configuración y optimización de hiperparámetros}{45}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Componentes de tendencia y estacionalidad anual}{46}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Predicciones a 48 horas}{47}{subsection.3.3.3}%
+\contentsline {section}{\numberline {3.4}Temporal Fusion Transformer}{47}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}Construcción de features y dataloaders}{47}{subsection.3.4.1}%
 \contentsline {subsection}{\numberline {3.4.2}Arquitectura y entrenamiento}{50}{subsection.3.4.2}%
 \contentsline {subsection}{\numberline {3.4.3}Curvas de aprendizaje}{51}{subsection.3.4.3}%
 \contentsline {section}{\numberline {3.5}Stacking Optimization}{53}{section.3.5}%
@@ -74,7 +74,7 @@
 \contentsline {subsection}{\numberline {3.5.2}Métodos de optimización de pesos}{53}{subsection.3.5.2}%
 \contentsline {section}{\numberline {3.6}TFT con Dynamic Tanh}{54}{section.3.6}%
 \contentsline {subsection}{\numberline {3.6.1}Curvas de aprendizaje}{54}{subsection.3.6.1}%
-\contentsline {subsection}{\numberline {3.6.2}Análisis del parámetro $\alpha $ aprendido}{54}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.2}Análisis del parámetro $\alpha $ aprendido}{56}{subsection.3.6.2}%
 \contentsline {subsection}{\numberline {3.6.3}Curvas de aprendizaje de S+C}{57}{subsection.3.6.3}%
 \contentsline {section}{\numberline {3.7}Conformal Prediction}{57}{section.3.7}%
 \contentsline {subsection}{\numberline {3.7.1}Configuración general}{57}{subsection.3.7.1}%
@@ -139,7 +139,7 @@
 \contentsline {section}{\numberline {5.1}Síntesis de resultados}{112}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Contribuciones}{115}{section.5.2}%
 \contentsline {section}{\numberline {5.3}Limitaciones}{116}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Trabajo futuro}{117}{section.5.4}%
+\contentsline {section}{\numberline {5.4}Trabajo futuro}{118}{section.5.4}%
 \contentsline {chapter}{\numberline {}Bibliograf\'ia}{121}{chapter*.84}%
 \contentsline {chapter}{Ap\'{e}ndice \numberline {A}Anexo}{122}{Appendix.1.Alph1}%
 \contentsline {section}{\numberline {A.1}Análisis de errores extremos: detalle por barra}{122}{section.1.Alph1.1}%

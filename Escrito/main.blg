@@ -1,6 +1,12 @@
 This is BibTeX, Version 0.99e
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: main.aux
+Reallocating 'buffer' (item size: 1) to 40000 items.
+Reallocating 'ex_buf' (item size: 1) to 40000 items.
+Reallocating 'name_sep_char' (item size: 1) to 40000 items.
+Reallocating 'name_tok' (item size: 4) to 40000 items.
+Reallocating 'out_buf' (item size: 1) to 40000 items.
+Reallocating 'sv_buffer' (item size: 1) to 40000 items.
 Reallocating 'name_of_file' (item size: 1) to 6 items.
 The style file: plain.bst
 Reallocating 'name_of_file' (item size: 1) to 13 items.

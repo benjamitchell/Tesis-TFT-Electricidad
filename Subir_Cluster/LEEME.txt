@@ -92,6 +92,58 @@ falta compararlo contra los modelos actuales (MAE general + MAE en regimen
 alto/p95) cuando bajen los checkpoints. Se arma cuando volvamos a esto.
 
 =====================================
+NUEVO (2026-09-06): Modelo GLOBAL (8 barras en un solo TFT)
+=====================================
+
+Todo el pipeline hasta ahora entrena un TFT por barra (8 modelos separados
+por arquitectura/experimento), aunque el dataset ya incluye serie_id como
+covariable estatica -- pero constante dentro de cada dataset, porque cada
+uno solo contiene una barra, asi que en la practica no aporta señal.
+
+Este experimento arma UN SOLO TimeSeriesDataSet con las 8 barras mezcladas
+(Scripts/preparar_modelo_global.py), donde serie_id si varia de fila a fila
+y el modelo puede aprender dinamicas compartidas entre barras ademas de las
+especificas de cada una. Verificado localmente que los batches efectivamente
+mezclan las 8 barras (no una a la vez). Mismos hiperparametros, ventana de
+contexto y horizonte que el resto del pipeline S+C-LN (Tabla tft_config);
+la unica diferencia es que ahora hay 8x mas filas de entrenamiento por
+epoca (309 792 en vez de ~38 724), asi que cada epoca tomara mas tiempo que
+un modelo por barra individual -- no hay una medicion previa de cuanto,
+recomendable partir con pocas epocas de prueba o revisar el avance temprano
+en el log de slurm antes de asumir que terminara en un tiempo similar a los
+demas experimentos.
+
+Carpeta nueva en esta subida:
+  Multi-Modelos_TFT/h/LN/pred_sol_clima_global/   -> dataloaders_precios.pkl
+                             y dataloaders_residuos.pkl (este ultimo es una
+                             copia identica del de precios, solo para que
+                             train_tft.py no falle al cargarlo -- nunca se
+                             usa para entrenar, se corre con --solo-precios),
+                             datasets_norm.pkl, scalers.pkl, feature_config.json,
+                             tft_config.json. Todo ya armado localmente, no
+                             hace falta recalcular nada en el cluster.
+  Scripts Cluster/train_global.sh -> 1 solo job (no es un array, es un unico
+                             modelo), usa train_tft.py --barras GLOBAL
+                             --solo-precios.
+
+PASO 1: Subir (fusionar con lo que ya esta alla, igual que antes)
+  rsync -avz "Subir_Cluster/" minas01@leftaru:/home/minas01/BMitchell/
+
+PASO 2: Correr
+  cd /home/minas01/BMitchell/"Scripts Cluster"
+  sbatch train_global.sh
+
+PASO 3: Cuando termine, sincronizar de vuelta
+  Multi-Modelos_TFT/h/LN/pred_sol_clima_global/Multi-TFT_Precios/GLOBAL/
+
+Para evaluar despues: el checkpoint queda como un unico modelo bajo la
+"barra" GLOBAL, no uno por barra. Los scripts de evaluacion existentes
+(evaluar_h24.py, analizar_5seeds.py) asumen un checkpoint por barra real y
+habria que adaptarlos, o extraer predicciones por barra filtrando el batch
+de test por el grupo (serie_id) correspondiente -- se arma cuando volvamos
+a esto, una vez que el checkpoint este disponible.
+
+=====================================
 NUEVO (2026-09-06): h=24 con mas capacidad (2 barras)
 =====================================
 
