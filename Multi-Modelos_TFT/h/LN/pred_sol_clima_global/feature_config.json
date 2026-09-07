@@ -1,0 +1,30 @@
+{
+  "known_reals": [
+    "es_horario_verano",
+    "elevacion_solar",
+    "cos_elevacion"
+  ],
+  "unknown_reals_price": [
+    "y_real",
+    "temperatura",
+    "humedad",
+    "velocidad_viento",
+    "precipitacion",
+    "nubosidad"
+  ],
+  "unknown_reals_resid": [],
+  "max_encoder_length": 168,
+  "max_prediction_length": 1,
+  "batch_size": 128,
+  "lista_barras": [
+    "ATACAMA",
+    "CARDONES",
+    "CHARRUA",
+    "CRUCERO",
+    "P.AZUCAR",
+    "P.MONTT",
+    "QUILLOTA",
+    "TARAPACA"
+  ],
+  "nota": "Modelo GLOBAL: las 8 barras pooled en un unico TimeSeriesDataSet"
+}
