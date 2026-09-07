@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.4)  7 SEP 2026 02:01
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.4)  7 SEP 2026 02:15
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -926,12 +926,12 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 534.
 
 [81] [82] [83] [84] [85]
-<imagenes/fig_cp_ejemplo_intervalo.pdf, id=1510, 578.16pt x 325.215pt>
+<imagenes/fig_cp_ejemplo_intervalo.pdf, id=1510, 722.7pt x 325.215pt>
 File: imagenes/fig_cp_ejemplo_intervalo.pdf Graphic file (type pdf)
 <use imagenes/fig_cp_ejemplo_intervalo.pdf>
 Package pdftex.def Info: imagenes/fig_cp_ejemplo_intervalo.pdf  used on input l
 ine 706.
-(pdftex.def)             Requested size: 354.02342pt x 199.13513pt.
+(pdftex.def)             Requested size: 472.03123pt x 212.41444pt.
  [86 <./imagenes/fig_cp_ejemplo_intervalo.pdf>]
 [87]
 Overfull \hbox (31.1304pt too wide) in paragraph at lines 748--749
@@ -946,21 +946,21 @@ Overfull \hbox (27.68823pt too wide) in paragraph at lines 838--848
  []
 
 [91]
-<imagenes/fig_cp_cobertura_ancho_hora.pdf, id=1629, 867.24pt x 310.761pt>
+<imagenes/fig_cp_cobertura_ancho_hora.pdf, id=1628, 867.24pt x 310.761pt>
 File: imagenes/fig_cp_cobertura_ancho_hora.pdf Graphic file (type pdf)
 <use imagenes/fig_cp_cobertura_ancho_hora.pdf>
 Package pdftex.def Info: imagenes/fig_cp_cobertura_ancho_hora.pdf  used on inpu
 t line 865.
 (pdftex.def)             Requested size: 472.03123pt x 169.14563pt.
  [92 <./imagenes/fig_cp_cobertura_ancho_hora.pdf>] [93]
-<imagenes/fig_error_dist_atacama.pdf, id=1709, 650.43pt x 361.35pt>
+<imagenes/fig_error_dist_atacama.pdf, id=1708, 650.43pt x 361.35pt>
 File: imagenes/fig_error_dist_atacama.pdf Graphic file (type pdf)
 <use imagenes/fig_error_dist_atacama.pdf>
 Package pdftex.def Info: imagenes/fig_error_dist_atacama.pdf  used on input lin
 e 894.
 (pdftex.def)             Requested size: 448.42822pt x 249.13327pt.
  [94] [95 <./imagenes/fig_error_dist_atacama.pdf>]
-<imagenes/fig_phase_shift_panel_2x2.pdf, id=1807, 1003.83896pt x 660.93886pt>
+<imagenes/fig_phase_shift_panel_2x2.pdf, id=1806, 1003.83896pt x 660.93886pt>
 File: imagenes/fig_phase_shift_panel_2x2.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_2x2.pdf>
 Package pdftex.def Info: imagenes/fig_phase_shift_panel_2x2.pdf  used on input 
@@ -996,7 +996,7 @@ Cap\'{\i }tulo 5.
 ]) (Anexo.tex
 [122]
 Ap\'{e}ndice A.
-<imagenes/fig_phase_shift_panel_cardones.pdf, id=2108, 1003.81342pt x 660.93886
+<imagenes/fig_phase_shift_panel_cardones.pdf, id=2107, 1003.81342pt x 660.93886
 pt>
 File: imagenes/fig_phase_shift_panel_cardones.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_cardones.pdf>
@@ -1006,7 +1006,7 @@ nput line 46.
 [123
 
 ] [124 <./imagenes/fig_phase_shift_panel_cardones.pdf>]
-<imagenes/fig_phase_shift_panel_charrua.pdf, id=2205, 1003.10838pt x 660.861pt>
+<imagenes/fig_phase_shift_panel_charrua.pdf, id=2204, 1003.10838pt x 660.861pt>
 
 File: imagenes/fig_phase_shift_panel_charrua.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_charrua.pdf>
@@ -1016,7 +1016,7 @@ put line 90.
  [125
 
 ] [126 <./imagenes/fig_phase_shift_panel_charrua.pdf>]
-<imagenes/fig_phase_shift_panel_crucero.pdf, id=2303, 1003.81342pt x 660.93886p
+<imagenes/fig_phase_shift_panel_crucero.pdf, id=2302, 1003.81342pt x 660.93886p
 t>
 File: imagenes/fig_phase_shift_panel_crucero.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_crucero.pdf>
@@ -1026,7 +1026,7 @@ put line 134.
  [127
 
 ] [128 <./imagenes/fig_phase_shift_panel_crucero.pdf>]
-<imagenes/fig_phase_shift_panel_pazucar.pdf, id=2402, 1003.82658pt x 660.93886p
+<imagenes/fig_phase_shift_panel_pazucar.pdf, id=2401, 1003.82658pt x 660.93886p
 t>
 File: imagenes/fig_phase_shift_panel_pazucar.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_pazucar.pdf>
@@ -1036,7 +1036,7 @@ put line 178.
  [129
 
 ] [130 <./imagenes/fig_phase_shift_panel_pazucar.pdf>]
-<imagenes/fig_phase_shift_panel_pmontt.pdf, id=2503, 1003.07886pt x 661.05135pt
+<imagenes/fig_phase_shift_panel_pmontt.pdf, id=2502, 1003.07886pt x 661.05135pt
 >
 File: imagenes/fig_phase_shift_panel_pmontt.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_pmontt.pdf>
@@ -1047,7 +1047,7 @@ ut line 222.
 [131
 
 ] [132 <./imagenes/fig_phase_shift_panel_pmontt.pdf>]
-<imagenes/fig_phase_shift_panel_quillota.pdf, id=2598, 1003.8498pt x 660.93886p
+<imagenes/fig_phase_shift_panel_quillota.pdf, id=2597, 1003.8498pt x 660.93886p
 t>
 File: imagenes/fig_phase_shift_panel_quillota.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_quillota.pdf>
@@ -1057,7 +1057,7 @@ nput line 266.
  [133
 
 ] [134 <./imagenes/fig_phase_shift_panel_quillota.pdf>]
-<imagenes/fig_phase_shift_panel_tarapaca.pdf, id=2697, 1003.83896pt x 660.93886
+<imagenes/fig_phase_shift_panel_tarapaca.pdf, id=2696, 1003.83896pt x 660.93886
 pt>
 File: imagenes/fig_phase_shift_panel_tarapaca.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_tarapaca.pdf>
@@ -1080,7 +1080,7 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 Here is how much of TeX's memory you used:
  21699 strings out of 467871
  380894 string characters out of 5418377
- 878927 words of memory out of 5000000
+ 878889 words of memory out of 5000000
  49779 multiletter control sequences out of 15000+600000
  645275 words of font info for 105 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1113,9 +1113,9 @@ amsfonts/cm/cmti10.pfb><C:/Users/56977/AppData/Local/Programs/MiKTeX/fonts/type
 onts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Users/56977/AppData/Local/Programs
 /MiKTeX/fonts/type1/public/amsfonts/cm/cmtt12.pfb><C:/Users/56977/AppData/Local
 /Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (147 pages, 6084458 bytes).
+Output written on main.pdf (147 pages, 6087499 bytes).
 PDF statistics:
- 3010 PDF objects out of 3580 (max. 8388607)
+ 3009 PDF objects out of 3580 (max. 8388607)
  488 named destinations out of 1000 (max. 500000)
  1236 words of extra memory for PDF output out of 10000 (max. 10000000)
 
