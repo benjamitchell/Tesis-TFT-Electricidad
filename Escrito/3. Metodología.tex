@@ -424,7 +424,11 @@ Se incorpora además una línea base institucional: el \textit{costo marginal pr
 
 \subsection{Sensibilidad a una función de pérdida asimétrica}
 
-Como cierre aplicado, se evalúa si la ventaja de S+C-LN sobre la línea base de persistencia (Sección 4.1) se sostiene bajo una función de pérdida asimétrica, en vez de las métricas simétricas (MAE, RMSE) usadas en el resto de este trabajo. Se emplea la pérdida lineal-lineal (\textit{linlin} o \textit{pinball}) con parámetro $\tau \in (0,1)$, $L_\tau(e) = \tau \max(e,0) + (1-\tau)\max(-e,0)$ con $e = y_t - \hat{y}_t$, que penaliza la subestimación del precio ($e>0$) con peso $\tau$ y la sobreestimación ($e<0$) con peso $1-\tau$; $\tau=0.5$ recupera el caso simétrico. Se calcula $L_\tau$ para S+C-LN y para la persistencia (Sección 4.1) sobre el conjunto de prueba de las ocho barras, para $\tau \in \{0.2, 0.35, 0.5, 0.65, 0.8\}$, y se reporta el \textit{skill score} $1 - L_\tau(\text{S+C-LN})/L_\tau(\text{persistencia})$ para cada valor de $\tau$.
+Como cierre aplicado, se evalúa si la ventaja de S+C-LN sobre la línea base de persistencia (Sección 4.1) se sostiene bajo una función de pérdida asimétrica, en vez de las métricas simétricas (MAE, RMSE) usadas en el resto de este trabajo. Se emplea la pérdida lineal-lineal (\textit{linlin} o \textit{pinball}) con parámetro $\tau \in (0,1)$:
+\[
+    L_\tau(e) = \tau \max(e,0) + (1-\tau)\max(-e,0)
+\]
+con $e = y_t - \hat{y}_t$, que penaliza la subestimación del precio ($e>0$) con peso $\tau$ y la sobreestimación ($e<0$) con peso $1-\tau$; $\tau=0.5$ recupera el caso simétrico. Se calcula $L_\tau$ para S+C-LN y para la persistencia (Sección 4.1) sobre el conjunto de prueba de las ocho barras, para $\tau \in \{0.2, 0.35, 0.5, 0.65, 0.8\}$, y se reporta el \textit{skill score} $1 - L_\tau(\text{S+C-LN})/L_\tau(\text{persistencia})$ para cada valor de $\tau$.
 
 \subsection{Estudio de granularidad temporal}
 
