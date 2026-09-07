@@ -318,8 +318,8 @@
 \@writefile{lot}{\contentsline {table}{\numberline {4.15}{\ignorespaces Comparación P+C (mejor estrategia de Stacking, seleccionada en validación) vs.\ S+C, MAE de test en USD/MWh, para las 8 barras y ambas arquitecturas, evaluado contra la serie cruda, con test de Diebold-Mariano (varianza Newey-West) sobre los errores absolutos horarios pareados. El signo de DM favorece a S+C cuando es positivo.}}{85}{table.caption.54}\protected@file@percent }
 \newlabel{tab:pc_vs_sc}{{4.15}{85}{Comparación P+C (mejor estrategia de Stacking, seleccionada en validación) vs.\ S+C, MAE de test en USD/MWh, para las 8 barras y ambas arquitecturas, evaluado contra la serie cruda, con test de Diebold-Mariano (varianza Newey-West) sobre los errores absolutos horarios pareados. El signo de DM favorece a S+C cuando es positivo}{table.caption.54}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {4.6}Conformal Prediction}{86}{section.4.6}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {4.2}{\ignorespaces Ejemplo de intervalo de predicción LW-ACP (95\% nominal) para Atacama, 10 días del conjunto de prueba (7--17 de julio de 2025). El intervalo se angosta en las horas de precio cero (madrugada, sobreoferta solar) y se ensancha ante los \textit  {spikes} de precio, como el del 9 de julio.}}{86}{figure.caption.55}\protected@file@percent }
-\newlabel{fig:cp_ejemplo_intervalo}{{4.2}{86}{Ejemplo de intervalo de predicción LW-ACP (95\% nominal) para Atacama, 10 días del conjunto de prueba (7--17 de julio de 2025). El intervalo se angosta en las horas de precio cero (madrugada, sobreoferta solar) y se ensancha ante los \textit {spikes} de precio, como el del 9 de julio}{figure.caption.55}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.2}{\ignorespaces Ejemplo de intervalo de predicción LW-ACP (95\% nominal) para Atacama, 10 días del conjunto de prueba (8--18 de julio de 2025). El eje vertical se acota en 250\,USD/MWh por legibilidad: el intervalo supera ese límite en algunas horas puntuales (por ejemplo, en torno al 9--10 de julio), consistente con que $\alpha _t$ se ensancha tras un error de cobertura reciente (Sección \ref {sec:aci_metodologia}). El intervalo se angosta en las horas de precio cero (madrugada, sobreoferta solar) y captura correctamente los \textit  {spikes} de precio de mediados de mes (14--16 de julio).}}{86}{figure.caption.55}\protected@file@percent }
+\newlabel{fig:cp_ejemplo_intervalo}{{4.2}{86}{Ejemplo de intervalo de predicción LW-ACP (95\% nominal) para Atacama, 10 días del conjunto de prueba (8--18 de julio de 2025). El eje vertical se acota en 250\,USD/MWh por legibilidad: el intervalo supera ese límite en algunas horas puntuales (por ejemplo, en torno al 9--10 de julio), consistente con que $\alpha _t$ se ensancha tras un error de cobertura reciente (Sección \ref {sec:aci_metodologia}). El intervalo se angosta en las horas de precio cero (madrugada, sobreoferta solar) y captura correctamente los \textit {spikes} de precio de mediados de mes (14--16 de julio)}{figure.caption.55}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.6.1}Split CP clásico}{86}{subsection.4.6.1}\protected@file@percent }
 \newlabel{sec:split_cp_clasico}{{4.6.1}{86}{Split CP clásico}{subsection.4.6.1}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {4.16}{\ignorespaces Resultados del Split CP clásico sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.95. Width, MAE y $q$ en USD/MWh. El límite inferior de todos los intervalos se trunca en 0 USD/MWh, respetando el dominio físico del costo marginal; $q$ es el semiancho antes de truncar.}}{87}{table.caption.56}\protected@file@percent }
@@ -342,25 +342,25 @@
 \newlabel{tab:lw_comparativa}{{4.20}{91}{Comparación del linaje SCP $\to $ ACP $\to $ LW-ACP, más CQR como comparación externa, evaluados sobre S+C-LN con el mismo predictor puntual crudo (ocho barras). Width y Winkler promedio en USD/MWh; desviación absoluta media respecto a la cobertura nominal 0.95}{table.caption.60}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.6.6}Cobertura condicional por hora y por mes}{92}{subsection.4.6.6}\protected@file@percent }
 \newlabel{sec:cobertura_condicional}{{4.6.6}{92}{Cobertura condicional por hora y por mes}{subsection.4.6.6}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4.3}{\ignorespaces Cobertura empírica (izquierda) y ancho medio del intervalo (derecha) por hora del día, Split CP vs.\ LW-ACP, promediado sobre las ocho barras. LW-ACP es más angosto que Split CP casi todo el día, pero su cobertura cae marcadamente por debajo del nominal en las horas de transición solar (7--9h, 19--21h).}}{92}{figure.caption.61}\protected@file@percent }
-\newlabel{fig:cp_cobertura_ancho_hora}{{4.3}{92}{Cobertura empírica (izquierda) y ancho medio del intervalo (derecha) por hora del día, Split CP vs.\ LW-ACP, promediado sobre las ocho barras. LW-ACP es más angosto que Split CP casi todo el día, pero su cobertura cae marcadamente por debajo del nominal en las horas de transición solar (7--9h, 19--21h)}{figure.caption.61}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.3}{\ignorespaces Cobertura empírica (izquierda) y ancho medio del intervalo (derecha) por hora del día, Split CP vs.\ ACP vs.\ LW-ACP, promediado sobre las ocho barras. ACP y LW-ACP son más angostos que Split CP casi todo el día, pero ambos --no solo LW-ACP-- caen marcadamente por debajo del nominal en las horas de transición solar (7--9h, 19--21h).}}{92}{figure.caption.61}\protected@file@percent }
+\newlabel{fig:cp_cobertura_ancho_hora}{{4.3}{92}{Cobertura empírica (izquierda) y ancho medio del intervalo (derecha) por hora del día, Split CP vs.\ ACP vs.\ LW-ACP, promediado sobre las ocho barras. ACP y LW-ACP son más angostos que Split CP casi todo el día, pero ambos --no solo LW-ACP-- caen marcadamente por debajo del nominal en las horas de transición solar (7--9h, 19--21h)}{figure.caption.61}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.6.7}Selección del mejor método de CP}{93}{subsection.4.6.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.6.8}Análisis de errores extremos}{93}{subsection.4.6.8}\protected@file@percent }
-\newlabel{sec:errores_extremos}{{4.6.8}{93}{Análisis de errores extremos}{subsection.4.6.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6.8}Análisis de errores extremos}{94}{subsection.4.6.8}\protected@file@percent }
+\newlabel{sec:errores_extremos}{{4.6.8}{94}{Análisis de errores extremos}{subsection.4.6.8}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {4.4}{\ignorespaces Distribución de errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en el conjunto de validación para la barra Atacama ($n = 8\,298$ observaciones). Las líneas verticales indican el MAE (rojo), el percentil 90 (naranja claro), el percentil 95 (naranja oscuro) y el error máximo (granate, punteado), este último señalado además con una flecha dado lo alejado que queda del grueso de la distribución.}}{94}{figure.caption.62}\protected@file@percent }
 \newlabel{fig:error_dist_atacama}{{4.4}{94}{Distribución de errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en el conjunto de validación para la barra Atacama ($n = 8\,298$ observaciones). Las líneas verticales indican el MAE (rojo), el percentil 90 (naranja claro), el percentil 95 (naranja oscuro) y el error máximo (granate, punteado), este último señalado además con una flecha dado lo alejado que queda del grueso de la distribución}{figure.caption.62}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {4.21}{\ignorespaces Síntesis del análisis de errores extremos en validación, las ocho barras del SEN. MAE, P95 y Máximo en USD/MWh. \textit  {Desfase de fase}: cuántos de los 20 mayores errores se clasifican como tal (vs.\ \textit  {evento estructural}). \textit  {Transición solar}: cuántos de los 20 ocurren en las horas 07:00--08:00 o 19:00--21:00. Detalle completo por barra en el Anexo \ref {anexo:errores_extremos}.}}{95}{table.caption.63}\protected@file@percent }
 \newlabel{tab:sintesis_errores}{{4.21}{95}{Síntesis del análisis de errores extremos en validación, las ocho barras del SEN. MAE, P95 y Máximo en USD/MWh. \textit {Desfase de fase}: cuántos de los 20 mayores errores se clasifican como tal (vs.\ \textit {evento estructural}). \textit {Transición solar}: cuántos de los 20 ocurren en las horas 07:00--08:00 o 19:00--21:00. Detalle completo por barra en el Anexo \ref {anexo:errores_extremos}}{table.caption.63}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {4.5}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C) para la barra Atacama en validación. Cada panel muestra una ventana de $\pm $48\,h alrededor del instante de error máximo (línea vertical punteada naranja). La curva azul corresponde al CMg real y la curva roja punteada a la predicción.}}{96}{figure.caption.64}\protected@file@percent }
 \newlabel{fig:phase_shift_panel}{{4.5}{96}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C) para la barra Atacama en validación. Cada panel muestra una ventana de $\pm $48\,h alrededor del instante de error máximo (línea vertical punteada naranja). La curva azul corresponde al CMg real y la curva roja punteada a la predicción}{figure.caption.64}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.7}Análisis de interpretabilidad del TFT}{97}{section.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.7}Análisis de interpretabilidad del TFT}{96}{section.4.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.7.1}Importancia de variables}{97}{subsection.4.7.1}\protected@file@percent }
 \newlabel{sec:interpretabilidad_sc}{{4.7.1}{97}{Importancia de variables}{subsection.4.7.1}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {4.22}{\ignorespaces Importancia agregada en el encoder de S+C ($\text  {TFT}_\text  {LN}$), por barra. ``Posición solar'' agrupa \texttt  {elevacion\_solar}, \texttt  {cos\_elevacion} y \texttt  {es\_horario\_verano}; ``Clima'' agrupa las cinco variables climáticas. Porcentajes sobre el total del encoder.}}{97}{table.caption.65}\protected@file@percent }
 \newlabel{tab:importancia_sc_encoder}{{4.22}{97}{Importancia agregada en el encoder de S+C ($\text {TFT}_\text {LN}$), por barra. ``Posición solar'' agrupa \texttt {elevacion\_solar}, \texttt {cos\_elevacion} y \texttt {es\_horario\_verano}; ``Clima'' agrupa las cinco variables climáticas. Porcentajes sobre el total del encoder}{table.caption.65}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {4.23}{\ignorespaces Importancia en el decoder de S+C ($\text  {TFT}_\text  {LN}$), por barra. Porcentajes sobre el total del decoder (solo cuatro variables).}}{98}{table.caption.66}\protected@file@percent }
 \newlabel{tab:importancia_sc_decoder}{{4.23}{98}{Importancia en el decoder de S+C ($\text {TFT}_\text {LN}$), por barra. Porcentajes sobre el total del decoder (solo cuatro variables)}{table.caption.66}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.8}Extensiones y análisis complementarios}{99}{section.4.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.8}Extensiones y análisis complementarios}{98}{section.4.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.8.1}Puerto Montt: features hídricas (H+C y S+H+C)}{99}{subsection.4.8.1}\protected@file@percent }
 \newlabel{sec:pmontt_desempeno}{{4.8.1}{99}{Puerto Montt: features hídricas (H+C y S+H+C)}{subsection.4.8.1}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {4.24}{\ignorespaces Estadísticas descriptivas del costo marginal por barra, calculadas sobre el conjunto completo (train+val+test) ya tratado por el pipeline. A diferencia de la Tabla \ref {tab:estadisticas} (datos crudos), aquí los outliers ya fueron interpolados, lo que reduce el máximo de Puerto Montt de 1588.95 a 464.13 USD/MWh.}}{99}{table.caption.67}\protected@file@percent }
@@ -375,7 +375,7 @@
 \newlabel{tab:cen_programado}{{4.27}{102}{S+C-LN vs.\ el costo marginal programado publicado operacionalmente por el CEN, ambos evaluados contra el costo marginal real, conjunto de prueba completo (8\,298 horas por barra). MAE y RMSE en USD/MWh. Mejora MAE: reducción relativa de S+C-LN respecto al CEN}{table.caption.70}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.8.3}Sensibilidad a una función de pérdida asimétrica}{102}{subsection.4.8.3}\protected@file@percent }
 \newlabel{sec:perdida_asimetrica}{{4.8.3}{102}{Sensibilidad a una función de pérdida asimétrica}{subsection.4.8.3}{}}
-\newlabel{eq:linlin}{{4.1}{102}{Sensibilidad a una función de pérdida asimétrica}{equation.4.1}{}}
+\newlabel{eq:linlin}{{4.1}{103}{Sensibilidad a una función de pérdida asimétrica}{equation.4.1}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {4.28}{\ignorespaces \textit  {Skill score} de S+C-LN respecto a persistencia bajo la pérdida asimétrica \eqref  {eq:linlin}, para tres valores de $\tau $, conjunto de prueba completo. $\tau =0.5$ es el caso simétrico; valores positivos indican que S+C-LN supera a la persistencia bajo esa asimetría de costos.}}{103}{table.caption.71}\protected@file@percent }
 \newlabel{tab:perdida_asimetrica}{{4.28}{103}{\textit {Skill score} de S+C-LN respecto a persistencia bajo la pérdida asimétrica \eqref {eq:linlin}, para tres valores de $\tau $, conjunto de prueba completo. $\tau =0.5$ es el caso simétrico; valores positivos indican que S+C-LN supera a la persistencia bajo esa asimetría de costos}{table.caption.71}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.8.4}Estudio de granularidad temporal}{103}{subsection.4.8.4}\protected@file@percent }
@@ -394,8 +394,8 @@
 \newlabel{tab:h_vs_15min}{{4.33}{108}{Comparación Horario vs. 15 minutos sobre la misma ventana calendario (16 de marzo -- 24 de abril de 2026, 39 días), estrategia S+C LN}{table.caption.78}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.8.5}Ablación de features}{108}{subsection.4.8.5}\protected@file@percent }
 \newlabel{sec:ablacion}{{4.8.5}{108}{Ablación de features}{subsection.4.8.5}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4.34}{\ignorespaces Comparación entre el TFT ``solo precios'' (sin features exógenas) y S+C, conjunto de prueba, arquitectura LN, evaluado contra la serie cruda sin recorte de outliers. Mejora MAE = reducción porcentual del MAE al agregar las features de S+C.}}{108}{table.caption.79}\protected@file@percent }
-\newlabel{tab:ablacion}{{4.34}{108}{Comparación entre el TFT ``solo precios'' (sin features exógenas) y S+C, conjunto de prueba, arquitectura LN, evaluado contra la serie cruda sin recorte de outliers. Mejora MAE = reducción porcentual del MAE al agregar las features de S+C}{table.caption.79}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.34}{\ignorespaces Comparación entre el TFT ``solo precios'' (sin features exógenas) y S+C, conjunto de prueba, arquitectura LN, evaluado contra la serie cruda sin recorte de outliers. Mejora MAE = reducción porcentual del MAE al agregar las features de S+C.}}{109}{table.caption.79}\protected@file@percent }
+\newlabel{tab:ablacion}{{4.34}{109}{Comparación entre el TFT ``solo precios'' (sin features exógenas) y S+C, conjunto de prueba, arquitectura LN, evaluado contra la serie cruda sin recorte de outliers. Mejora MAE = reducción porcentual del MAE al agregar las features de S+C}{table.caption.79}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.8.6}Piloto: entrenamiento sin recorte de outliers}{109}{subsection.4.8.6}\protected@file@percent }
 \newlabel{sec:piloto_outliers}{{4.8.6}{109}{Piloto: entrenamiento sin recorte de outliers}{subsection.4.8.6}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {4.35}{\ignorespaces MAE de prueba general y condicional al régimen de precio alto (percentil 95 o superior), $h=1$, USD/MWh. $\Delta $ = variación porcentual del piloto respecto al modelo actual (negativo = mejora).}}{109}{table.caption.80}\protected@file@percent }
@@ -410,17 +410,17 @@
 \@writefile{toc}{\contentsline {subsubsection}{Efecto de la capacidad del modelo}{111}{section*.83}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {4.38}{\ignorespaces MAE promedio (USD/MWh) sobre los 24 pasos del horizonte, LN, comparando \texttt  {hidden\_size}=32 (original) contra 64 (mayor capacidad). Mejora = reducción porcentual del MAE promedio.}}{111}{table.caption.84}\protected@file@percent }
 \newlabel{tab:h24_bigcap}{{4.38}{111}{MAE promedio (USD/MWh) sobre los 24 pasos del horizonte, LN, comparando \texttt {hidden\_size}=32 (original) contra 64 (mayor capacidad). Mejora = reducción porcentual del MAE promedio}{table.caption.84}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.8.8}Comparación con la literatura: CRUCERO y P.MONTT 2024}{111}{subsection.4.8.8}\protected@file@percent }
-\newlabel{sec:crucero_leon}{{4.8.8}{111}{Comparación con la literatura: CRUCERO y P.MONTT 2024}{subsection.4.8.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8.8}Comparación con la literatura: CRUCERO y P.MONTT 2024}{112}{subsection.4.8.8}\protected@file@percent }
+\newlabel{sec:crucero_leon}{{4.8.8}{112}{Comparación con la literatura: CRUCERO y P.MONTT 2024}{subsection.4.8.8}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {4.39}{\ignorespaces Comparación entre el TFT S+C de este trabajo y el mejor modelo de León et al. (2026) para las barras Crucero y Puerto Montt, año 2024.}}{112}{table.caption.85}\protected@file@percent }
 \newlabel{tab:crucero_leon}{{4.39}{112}{Comparación entre el TFT S+C de este trabajo y el mejor modelo de León et al. (2026) para las barras Crucero y Puerto Montt, año 2024}{table.caption.85}{}}
-\@writefile{toc}{\contentsline {chapter}{\numberline {5}Conclusiones}{113}{chapter.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {5}Conclusiones}{114}{chapter.5}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {5.1}Síntesis de resultados}{113}{section.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.2}Contribuciones}{116}{section.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.3}Limitaciones}{117}{section.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.4}Trabajo futuro}{119}{section.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.1}Síntesis de resultados}{114}{section.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.2}Contribuciones}{117}{section.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.3}Limitaciones}{118}{section.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.4}Trabajo futuro}{120}{section.5.4}\protected@file@percent }
 \citation{*}
 \bibstyle{plain}
 \bibdata{bibliografia}
@@ -450,45 +450,45 @@
 \bibcite{Zhao2025LIME}{24}
 \bibcite{informer}{25}
 \bibcite{Zhu2025Transformers}{26}
-\@writefile{toc}{\contentsline {chapter}{\numberline {}Bibliograf\'ia}{122}{chapter*.86}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{Ap\'{e}ndice \numberline {A}Anexo}{123}{Appendix.1.Alph1}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {}Bibliograf\'ia}{123}{chapter*.86}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{Ap\'{e}ndice \numberline {A}Anexo}{124}{Appendix.1.Alph1}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {A.1}Análisis de errores extremos: detalle por barra}{123}{section.1.Alph1.1}\protected@file@percent }
-\newlabel{anexo:errores_extremos}{{A.1}{123}{Análisis de errores extremos: detalle por barra}{section.1.Alph1.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.1}Cardones}{123}{subsection.1.Alph1.1.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {A.1}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Cardones.}}{124}{table.caption.87}\protected@file@percent }
-\newlabel{tab:top20_cardones}{{A.1}{124}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Cardones}{table.caption.87}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {A.1}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Cardones.}}{124}{figure.caption.88}\protected@file@percent }
-\newlabel{fig:phase_shift_panel_cardones}{{A.1}{124}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Cardones}{figure.caption.88}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.2}Charrúa}{125}{subsection.1.Alph1.1.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {A.2}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Charrúa.}}{125}{table.caption.89}\protected@file@percent }
-\newlabel{tab:top20_charrua}{{A.2}{125}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Charrúa}{table.caption.89}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {A.2}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Charrúa.}}{126}{figure.caption.90}\protected@file@percent }
-\newlabel{fig:phase_shift_panel_charrua}{{A.2}{126}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Charrúa}{figure.caption.90}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.3}Crucero}{127}{subsection.1.Alph1.1.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {A.3}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Crucero.}}{127}{table.caption.91}\protected@file@percent }
-\newlabel{tab:top20_crucero}{{A.3}{127}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Crucero}{table.caption.91}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {A.3}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Crucero.}}{128}{figure.caption.92}\protected@file@percent }
-\newlabel{fig:phase_shift_panel_crucero}{{A.3}{128}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Crucero}{figure.caption.92}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.4}Pan de Azúcar}{129}{subsection.1.Alph1.1.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {A.4}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Pan de Azúcar.}}{129}{table.caption.93}\protected@file@percent }
-\newlabel{tab:top20_pazucar}{{A.4}{129}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Pan de Azúcar}{table.caption.93}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {A.4}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Pan de Azúcar.}}{130}{figure.caption.94}\protected@file@percent }
-\newlabel{fig:phase_shift_panel_pazucar}{{A.4}{130}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Pan de Azúcar}{figure.caption.94}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.5}Puerto Montt}{131}{subsection.1.Alph1.1.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {A.5}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Puerto Montt. A diferencia del resto de las barras, ninguno cae en horas de transición solar (07:00--08:00, 19:00--21:00) ni comparte fecha con los eventos de las demás barras, consistente con una dinámica gobernada por la disponibilidad hidroeléctrica.}}{131}{table.caption.95}\protected@file@percent }
-\newlabel{tab:top20_pmontt}{{A.5}{131}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Puerto Montt. A diferencia del resto de las barras, ninguno cae en horas de transición solar (07:00--08:00, 19:00--21:00) ni comparte fecha con los eventos de las demás barras, consistente con una dinámica gobernada por la disponibilidad hidroeléctrica}{table.caption.95}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {A.5}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Puerto Montt.}}{132}{figure.caption.96}\protected@file@percent }
-\newlabel{fig:phase_shift_panel_pmontt}{{A.5}{132}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Puerto Montt}{figure.caption.96}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.6}Quillota}{133}{subsection.1.Alph1.1.6}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {A.6}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Quillota.}}{133}{table.caption.97}\protected@file@percent }
-\newlabel{tab:top20_quillota}{{A.6}{133}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Quillota}{table.caption.97}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {A.6}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Quillota.}}{134}{figure.caption.98}\protected@file@percent }
-\newlabel{fig:phase_shift_panel_quillota}{{A.6}{134}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Quillota}{figure.caption.98}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.7}Tarapacá}{135}{subsection.1.Alph1.1.7}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {A.7}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Tarapacá.}}{135}{table.caption.99}\protected@file@percent }
-\newlabel{tab:top20_tarapaca}{{A.7}{135}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Tarapacá}{table.caption.99}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {A.7}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Tarapacá.}}{136}{figure.caption.100}\protected@file@percent }
-\newlabel{fig:phase_shift_panel_tarapaca}{{A.7}{136}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Tarapacá}{figure.caption.100}{}}
-\gdef \@abspage@last{147}
+\@writefile{toc}{\contentsline {section}{\numberline {A.1}Análisis de errores extremos: detalle por barra}{124}{section.1.Alph1.1}\protected@file@percent }
+\newlabel{anexo:errores_extremos}{{A.1}{124}{Análisis de errores extremos: detalle por barra}{section.1.Alph1.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.1}Cardones}{124}{subsection.1.Alph1.1.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {A.1}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Cardones.}}{125}{table.caption.87}\protected@file@percent }
+\newlabel{tab:top20_cardones}{{A.1}{125}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Cardones}{table.caption.87}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {A.1}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Cardones.}}{125}{figure.caption.88}\protected@file@percent }
+\newlabel{fig:phase_shift_panel_cardones}{{A.1}{125}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Cardones}{figure.caption.88}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.2}Charrúa}{126}{subsection.1.Alph1.1.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {A.2}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Charrúa.}}{126}{table.caption.89}\protected@file@percent }
+\newlabel{tab:top20_charrua}{{A.2}{126}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Charrúa}{table.caption.89}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {A.2}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Charrúa.}}{127}{figure.caption.90}\protected@file@percent }
+\newlabel{fig:phase_shift_panel_charrua}{{A.2}{127}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Charrúa}{figure.caption.90}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.3}Crucero}{128}{subsection.1.Alph1.1.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {A.3}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Crucero.}}{128}{table.caption.91}\protected@file@percent }
+\newlabel{tab:top20_crucero}{{A.3}{128}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Crucero}{table.caption.91}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {A.3}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Crucero.}}{129}{figure.caption.92}\protected@file@percent }
+\newlabel{fig:phase_shift_panel_crucero}{{A.3}{129}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Crucero}{figure.caption.92}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.4}Pan de Azúcar}{130}{subsection.1.Alph1.1.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {A.4}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Pan de Azúcar.}}{130}{table.caption.93}\protected@file@percent }
+\newlabel{tab:top20_pazucar}{{A.4}{130}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Pan de Azúcar}{table.caption.93}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {A.4}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Pan de Azúcar.}}{131}{figure.caption.94}\protected@file@percent }
+\newlabel{fig:phase_shift_panel_pazucar}{{A.4}{131}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Pan de Azúcar}{figure.caption.94}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.5}Puerto Montt}{132}{subsection.1.Alph1.1.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {A.5}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Puerto Montt. A diferencia del resto de las barras, ninguno cae en horas de transición solar (07:00--08:00, 19:00--21:00) ni comparte fecha con los eventos de las demás barras, consistente con una dinámica gobernada por la disponibilidad hidroeléctrica.}}{132}{table.caption.95}\protected@file@percent }
+\newlabel{tab:top20_pmontt}{{A.5}{132}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Puerto Montt. A diferencia del resto de las barras, ninguno cae en horas de transición solar (07:00--08:00, 19:00--21:00) ni comparte fecha con los eventos de las demás barras, consistente con una dinámica gobernada por la disponibilidad hidroeléctrica}{table.caption.95}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {A.5}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Puerto Montt.}}{133}{figure.caption.96}\protected@file@percent }
+\newlabel{fig:phase_shift_panel_pmontt}{{A.5}{133}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Puerto Montt}{figure.caption.96}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.6}Quillota}{134}{subsection.1.Alph1.1.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {A.6}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Quillota.}}{134}{table.caption.97}\protected@file@percent }
+\newlabel{tab:top20_quillota}{{A.6}{134}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Quillota}{table.caption.97}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {A.6}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Quillota.}}{135}{figure.caption.98}\protected@file@percent }
+\newlabel{fig:phase_shift_panel_quillota}{{A.6}{135}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Quillota}{figure.caption.98}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1.7}Tarapacá}{136}{subsection.1.Alph1.1.7}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {A.7}{\ignorespaces Los 20 mayores errores absolutos del $\text  {TFT}_\text  {LN}$ (S+C) en validación, Tarapacá.}}{136}{table.caption.99}\protected@file@percent }
+\newlabel{tab:top20_tarapaca}{{A.7}{136}{Los 20 mayores errores absolutos del $\text {TFT}_\text {LN}$ (S+C) en validación, Tarapacá}{table.caption.99}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {A.7}{\ignorespaces Casos extremos de error del $\text  {TFT}_\text  {LN}$ (S+C), Tarapacá.}}{137}{figure.caption.100}\protected@file@percent }
+\newlabel{fig:phase_shift_panel_tarapaca}{{A.7}{137}{Casos extremos de error del $\text {TFT}_\text {LN}$ (S+C), Tarapacá}{figure.caption.100}{}}
+\gdef \@abspage@last{148}

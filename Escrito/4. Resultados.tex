@@ -699,12 +699,12 @@ Este hallazgo, que la estrategia más simple es también la más precisa en la g
 
 \section{Conformal Prediction}
 
-Antes de presentar los resultados numéricos de cada método, la Figura \ref{fig:cp_ejemplo_intervalo} ilustra cómo se ve en la práctica un intervalo de predicción: diez días de prueba en Atacama, con el intervalo de LW-ACP (la variante finalmente seleccionada, Sección \ref{sec:lwacp_resultados}) superpuesto al precio real y a la predicción puntual de S+C-LN.
+Antes de presentar los resultados numéricos de cada método, la Figura \ref{fig:cp_ejemplo_intervalo} ilustra cómo se ve en la práctica un intervalo de predicción: diez días de prueba en Atacama, con el intervalo de LW-ACP (la variante finalmente seleccionada, Sección \ref{sec:lwacp_resultados}) superpuesto al precio real y a la predicción puntual de S+C-LN. Sobre el 5\% de observaciones fuera del intervalo esperado bajo un nivel nominal del 95\%, esta ventana contiene 12 de 240 (5.0\%), consistente con la cobertura marginal reportada más adelante, no una selección atípicamente favorable.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.95\textwidth]{imagenes/fig_cp_ejemplo_intervalo.pdf}
-    \caption{Ejemplo de intervalo de predicción LW-ACP (95\% nominal) para Atacama, 10 días del conjunto de prueba (7--17 de julio de 2025). El intervalo se angosta en las horas de precio cero (madrugada, sobreoferta solar) y se ensancha ante los \textit{spikes} de precio, como el del 9 de julio.}
+    \caption{Ejemplo de intervalo de predicción LW-ACP (95\% nominal) para Atacama, 10 días del conjunto de prueba (8--18 de julio de 2025). El eje vertical se acota en 250\,USD/MWh por legibilidad: el intervalo supera ese límite en algunas horas puntuales (por ejemplo, en torno al 9--10 de julio), consistente con que $\alpha_t$ se ensancha tras un error de cobertura reciente (Sección \ref{sec:aci_metodologia}). El intervalo se angosta en las horas de precio cero (madrugada, sobreoferta solar) y captura correctamente los \textit{spikes} de precio de mediados de mes (14--16 de julio).}
     \label{fig:cp_ejemplo_intervalo}
 \end{figure}
 
@@ -856,14 +856,14 @@ Queda fuera de esta comparación agregada, aunque se presenta en su propia secci
 \subsection{Cobertura condicional por hora y por mes}
 \label{sec:cobertura_condicional}
 
-La cobertura marginal cercana al nominal reportada hasta aquí es un promedio sobre todo el conjunto de prueba, y puede ocultar heterogeneidad sistemática si el método sub-cubre en algunas horas o meses y sobre-cubre en otras, compensándose en el promedio. Esta sección desagrega la cobertura de Split CP y LW-ACP --los dos extremos del linaje, sin y con ponderación horaria más adaptación \textit{online}-- por hora del día y por mes, promediando sobre las ocho barras.
+La cobertura marginal cercana al nominal reportada hasta aquí es un promedio sobre todo el conjunto de prueba, y puede ocultar heterogeneidad sistemática si el método sub-cubre en algunas horas o meses y sobre-cubre en otras, compensándose en el promedio. Esta sección desagrega la cobertura de Split CP, ACP y LW-ACP --el linaje completo (Sección \ref{sec:lwacp_comparativa})-- por hora del día y por mes, promediando sobre las ocho barras.
 
-La Figura \ref{fig:cp_cobertura_ancho_hora} presenta la cobertura y el ancho medio por hora del día para ambos métodos.
+La Figura \ref{fig:cp_cobertura_ancho_hora} presenta la cobertura y el ancho medio por hora del día para los tres métodos. Incluir a ACP, no solo los dos extremos del linaje, permite distinguir si la caída de cobertura en horas de transición es un efecto de la adaptación \textit{online} en sí, o específico de agregarle la ponderación horaria: la Figura \ref{fig:cp_cobertura_ancho_hora} muestra que ACP y LW-ACP caen de forma casi idéntica en esas horas (0.902 vs.\ 0.898), mientras que Split CP, sin adaptación \textit{online}, cae menos (0.943). La caída es entonces atribuible al mecanismo de adaptación \textit{online} de $\alpha_t$, compartido por ambos métodos, no a la ponderación horaria que solo LW-ACP incorpora.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{imagenes/fig_cp_cobertura_ancho_hora.pdf}
-    \caption{Cobertura empírica (izquierda) y ancho medio del intervalo (derecha) por hora del día, Split CP vs.\ LW-ACP, promediado sobre las ocho barras. LW-ACP es más angosto que Split CP casi todo el día, pero su cobertura cae marcadamente por debajo del nominal en las horas de transición solar (7--9h, 19--21h).}
+    \caption{Cobertura empírica (izquierda) y ancho medio del intervalo (derecha) por hora del día, Split CP vs.\ ACP vs.\ LW-ACP, promediado sobre las ocho barras. ACP y LW-ACP son más angostos que Split CP casi todo el día, pero ambos --no solo LW-ACP-- caen marcadamente por debajo del nominal en las horas de transición solar (7--9h, 19--21h).}
     \label{fig:cp_cobertura_ancho_hora}
 \end{figure}
 
