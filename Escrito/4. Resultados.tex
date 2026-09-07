@@ -635,6 +635,29 @@ A nivel del ensamble final, $\text{TFT}_\text{LN}$ resulta ganador en 7 de las 8
 
 La conclusión metodológica de esta sección es, entonces, más matizada que la de trabajos que reportan equivalencia estricta entre LayerNorm y DyT: en el contexto del pronóstico de precios eléctricos, $\text{TFT}_\text{LN}$ presenta una ventaja sistemática, aunque de magnitud pequeña, sobre $\text{TFT}_\text{DyT}$, particularmente marcada en la rama P+C. Esto no invalida el uso de DyT, sus diferencias con LN siguen siendo pequeñas en términos absolutos, y ambas arquitecturas exhiben patrones de error suficientemente distintos como para que su combinación en un ensamble más amplio (Stacking entre $\text{TFT}_\text{LN}$ y $\text{TFT}_\text{DyT}$, no explorado en este trabajo) sea una dirección de trabajo futuro razonable, pero sí sugiere que, si se debe elegir una única arquitectura de normalización para este problema, LayerNorm es la opción mejor respaldada por la evidencia.
 
+\subsubsection{Robustez a la semilla de inicialización}
+\label{sec:seeds_ln_dyt}
+
+La comparación anterior se realiza bajo una única semilla de inicialización por modelo. Para acotar cuánto de la diferencia observada entre LN y DyT es atribuible a la variabilidad de inicialización y no a una diferencia sistemática entre arquitecturas, se repite el entrenamiento de S+C con 5 semillas distintas para tres barras piloto, manteniendo el resto de la configuración de la Tabla \ref{tab:tft_config} sin cambios. La Tabla \ref{tab:5seeds} presenta la media y desviación estándar del MAE de prueba sobre las 5 réplicas.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrl}
+        \toprule
+        Barra & MAE$_\text{LN}$ (media $\pm$ sd) & MAE$_\text{DyT}$ (media $\pm$ sd) & ¿Se solapan? \\
+        \midrule
+        Atacama      & 6.631 $\pm$ 0.146  & 6.842 $\pm$ 0.113  & Sí \\
+        Charrúa      & 8.081 $\pm$ 0.098  & 8.208 $\pm$ 0.061  & Sí \\
+        Puerto Montt & 13.959 $\pm$ 0.295 & 13.774 $\pm$ 0.144 & Sí \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{MAE de prueba (S+C, USD/MWh) sobre 5 semillas de inicialización, media $\pm$ desviación estándar. ``¿Se solapan?'' indica si los intervalos media $\pm$ 1 desviación estándar de LN y DyT se traslapan.}
+    \label{tab:5seeds}
+\end{table}
+
+En las tres barras, los intervalos media $\pm$ 1 desviación estándar de LN y DyT se solapan completamente: la diferencia entre arquitecturas observada bajo una única semilla (Tabla \ref{tab:ln_vs_dyt_test}) es del mismo orden de magnitud que la variabilidad propia de la inicialización aleatoria. Esto no contradice la ventaja sistemática de LN establecida mediante el test de Diebold-Mariano (Sección \ref{sec:dm_ln_dyt}): ese test compara errores pareados hora a hora dentro de una misma semilla, una fuente de evidencia distinta y no afectada por la varianza entre semillas. Pero sí matiza su magnitud práctica --pequeña en comparación con el ruido de inicialización--, un matiz relevante para cualquier lectura que busque generalizar esta comparación más allá del pipeline específico de este trabajo. El resto de los experimentos de este capítulo, incluyendo las extensiones de las Secciones \ref{sec:piloto_outliers} y \ref{sec:h24_dayahead}, se entrenan sin semilla fija, igual que el pipeline principal; el control de semilla implementado para este estudio (\texttt{pl.seed\_everything}) no se propagó a esos entrenamientos posteriores.
+
 \subsection{P+C vs.\ S+C: comparación central}
 \label{sec:pc_vs_sc}
 
@@ -1309,6 +1332,105 @@ El pipeline principal S+C usa como \texttt{known\_reals} la posición solar y co
 \end{table}
 
 Las features exógenas reducen el MAE de test en las cuatro barras, pero con una magnitud muy distinta: la mejora es sustancial en ATACAMA (12.9\%) y CRUCERO (11.1\%), moderada en TARAPACA (6.2\%), y marginal en P.MONTT (2.9\%). El patrón es consistente con lo observado en la Sección 4.7.1: el costo marginal de Puerto Montt está dominado por la dinámica hidrológica de la zona centro-sur, no por el ciclo solar diario que domina en las barras del norte, por lo que la posición solar y el clima horario aportan relativamente poca información nueva por sobre la autocorrelación de la propia serie. En las barras del norte, en cambio, donde la generación fotovoltaica explica gran parte de la variabilidad diaria del precio, conocer la posición solar futura (\texttt{known\_real}) le da al modelo una ventaja real por sobre simplemente extrapolar el pasado reciente de la serie.
+
+\subsection{Piloto: entrenamiento sin recorte de outliers}
+\label{sec:piloto_outliers}
+
+La Tabla \ref{tab:piloto_outliers_h1} presenta, a horizonte $h=1$, el MAE general y el MAE condicional al régimen de precio alto (percentil 95 o superior de la serie cruda de prueba) del modelo entrenado sin recorte de outliers (Sección \ref{sec:piloto_outliers_meta} de la Metodología), comparado contra el modelo principal, para las cuatro barras piloto.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrr}
+        \toprule
+        Barra & MAE actual & MAE piloto & $\Delta$ MAE & $\Delta$ MAE p95 \\
+        \midrule
+        Atacama       & 6.70 & 6.59 & $-1.7\%$ & $-11.1\%$ \\
+        Charrúa       & 7.98 & 7.99 & $+0.1\%$ & $-11.6\%$ \\
+        Pan de Azúcar & 6.93 & 6.59 & $-4.9\%$ & $-8.0\%$  \\
+        Tarapacá      & 7.11 & 7.12 & $+0.1\%$ & $-10.8\%$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{MAE de prueba general y condicional al régimen de precio alto (percentil 95 o superior), $h=1$, USD/MWh. $\Delta$ = variación porcentual del piloto respecto al modelo actual (negativo = mejora).}
+    \label{tab:piloto_outliers_h1}
+\end{table}
+
+El MAE general queda prácticamente empatado --mejora en dos de las cuatro barras, empeora en las otras dos por menos de un 0.2\%--, pero el MAE en régimen de precio alto mejora consistentemente en las cuatro barras, entre 8.0\% y 11.6\%. Es decir, entrenar sin el recorte automático de outliers no perjudica el desempeño general y sí ayuda específicamente donde la hipótesis de la Sección \ref{sec:piloto_outliers_meta} predecía que ayudaría: en los precios más extremos, precisamente los eventos que motivan este trabajo.
+
+La Tabla \ref{tab:piloto_outliers_h24} repite la misma comparación a horizonte $h=24$ (Sección \ref{sec:h24_dayahead}), usando el MAE promedio sobre los 24 pasos del horizonte.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrr}
+        \toprule
+        Barra & MAE actual ($h=24$) & MAE piloto ($h=24$) & $\Delta$ MAE \\
+        \midrule
+        Atacama       & 13.54 & 11.58 & $-14.5\%$ \\
+        Charrúa       & 18.41 & 19.69 & $+7.0\%$  \\
+        Pan de Azúcar & 13.64 & 14.15 & $+3.7\%$  \\
+        Tarapacá      & 12.86 & 13.90 & $+8.0\%$  \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{MAE de prueba promediado sobre los 24 pasos del horizonte \textit{day-ahead}, USD/MWh. $\Delta$ = variación porcentual del piloto respecto al modelo actual.}
+    \label{tab:piloto_outliers_h24}
+\end{table}
+
+A $h=24$ el resultado se invierte en tres de las cuatro barras: solo Atacama mejora (14.5\%), mientras que Charrúa, Pan de Azúcar y Tarapacá empeoran entre 3.7\% y 8.0\%. El efecto del recorte de outliers depende, entonces, del horizonte de predicción: la variabilidad adicional que el conjunto de entrenamiento sin recortar introduce ayuda al modelo a capturar el régimen de precios altos cuando predice un solo paso hacia adelante, pero esa misma variabilidad dificulta la generalización cuando el modelo debe predecir 24 pasos simultáneos, un régimen ya de por sí más exigente (Sección \ref{sec:h24_dayahead}). Este resultado mixto, no una mejora limpia, es la razón por la que este trabajo no extiende el piloto a las ocho barras del SEN sin antes evaluar si el efecto se sostiene a $h=1$ para el resto del sistema.
+
+\subsection{Evaluación a horizonte \textit{day-ahead} ($h=24$)}
+\label{sec:h24_dayahead}
+
+La Tabla \ref{tab:h24_resumen} presenta el MAE promedio sobre los 24 pasos del horizonte, el MAE del primer y del último paso, y el \textit{skill score} promedio respecto a la persistencia estacional de 24 horas (Sección \ref{sec:baselines}), para las cinco barras y ambas arquitecturas evaluadas a $h=24$ (Sección \ref{sec:h24_dayahead_meta} de la Metodología).
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{llrrrr}
+        \toprule
+        Barra & Arq. & MAE prom.\ (24h) & MAE paso 1 & MAE paso 24 & Skill prom. \\
+        \midrule
+        Atacama       & LN  & 13.54 & 9.92  & 14.64 & $-0.096$ \\
+        Atacama       & DyT & 12.69 & 10.18 & 13.23 & $-0.028$ \\
+        Charrúa       & LN  & 18.41 & 13.71 & 20.26 & $+0.038$ \\
+        Charrúa       & DyT & 18.73 & 13.15 & 19.25 & $+0.021$ \\
+        Puerto Montt  & LN  & 38.89 & 22.47 & 41.73 & $-0.042$ \\
+        Puerto Montt  & DyT & 40.08 & 23.08 & 42.22 & $-0.074$ \\
+        Pan de Azúcar & LN  & 13.64 & 9.82  & 14.87 & $-0.036$ \\
+        Pan de Azúcar & DyT & 13.67 & 10.16 & 14.60 & $-0.039$ \\
+        Tarapacá      & LN  & 12.86 & 10.83 & 13.02 & $+0.017$ \\
+        Tarapacá      & DyT & 13.79 & 11.38 & 14.18 & $-0.054$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{MAE (USD/MWh) y \textit{skill score} promedio sobre los 24 pasos del horizonte \textit{day-ahead}, respecto a la persistencia estacional de 24 horas.}
+    \label{tab:h24_resumen}
+\end{table}
+
+En el primer paso del horizonte ($h=1$ dentro del modelo MIMO de 24 pasos) el modelo supera cómodamente a la persistencia de 24 horas en las 10 combinaciones de barra y arquitectura, con un MAE comparable al del pipeline principal de $h=1$ (Tabla \ref{tab:tft_sc_ln_resultados}). El MAE crece de forma monótona a medida que el horizonte avanza --entre 30\% y 90\% peor en el paso 24 que en el paso 1, según la barra--, un patrón esperable dado que la incertidumbre acumulada de un pronóstico a 24 horas es sustancialmente mayor que la de un pronóstico a una hora. En promedio sobre los 24 pasos, el \textit{skill score} se vuelve negativo en 7 de las 10 combinaciones: el modelo, evaluado como predictor \textit{day-ahead} completo, queda en promedio empatado o levemente peor que la persistencia estacional de 24 horas, un baseline particularmente exigente para el costo marginal eléctrico dado su marcado ciclo diario. Charrúa (LN y DyT) y Tarapacá (LN) son la excepción, con \textit{skill score} promedio levemente positivo.
+
+Este resultado no contradice el hallazgo central de este trabajo (Sección \ref{sec:pc_vs_sc}), pero delimita su alcance: la arquitectura y los hiperparámetros de S+C-LN, ajustados y validados para $h=1$ (Sección \ref{sec:ln_vs_dyt}), no generalizan automáticamente a un horizonte \textit{day-ahead} completo sin ajustes adicionales --la misma limitación de esfuerzo de ajuste asimétrico señalada en la Sección \ref{sec:ln_vs_dyt}, aquí aplicada al horizonte en vez de a la arquitectura--.
+
+\subsubsection{Efecto de la capacidad del modelo}
+
+Como seguimiento acotado a este resultado, la Tabla \ref{tab:h24_bigcap} compara el modelo original contra una variante de mayor capacidad --\texttt{hidden\_size} de 32 a 64, \texttt{hidden\_continuous\_size} de 8 a 16-- para Atacama y Puerto Montt.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Barra & MAE prom.\ (32) & MAE prom.\ (64) & Mejora & Skill (32) & Skill (64) \\
+        \midrule
+        Atacama      & 13.54 & 12.85 & $+5.1\%$ & $-0.096$ & $-0.040$ \\
+        Puerto Montt & 38.89 & 37.90 & $+2.5\%$ & $-0.042$ & $-0.015$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{MAE promedio (USD/MWh) sobre los 24 pasos del horizonte, LN, comparando \texttt{hidden\_size}=32 (original) contra 64 (mayor capacidad). Mejora = reducción porcentual del MAE promedio.}
+    \label{tab:h24_bigcap}
+\end{table}
+
+Duplicar la capacidad del modelo mejora el MAE promedio en ambas barras (2.5\%--5.1\%) y acerca el \textit{skill score} promedio a cero sin llegar a hacerlo positivo. El patrón por paso es revelador: el modelo de mayor capacidad predice peor el primer paso del horizonte (Atacama: 9.92 $\to$ 11.28\,USD/MWh; Puerto Montt: 22.47 $\to$ 27.55\,USD/MWh) pero mejor el último (Atacama: 14.64 $\to$ 13.61\,USD/MWh; Puerto Montt: 41.73 $\to$ 40.92\,USD/MWh), es decir, deja de sobre-especializarse en el paso más cercano al presente y generaliza de forma más pareja a lo largo de las 24 horas, a costa de algo de precisión en el corto plazo. La capacidad del modelo es, entonces, un factor relevante para la degradación observada en $h=24$, aunque no suficiente por sí solo para revertirla --ningún \textit{skill score} promedio cruza a valores positivos--, y una exploración más sistemática de capacidad (o de otros hiperparámetros no ajustados para este horizonte, Sección \ref{sec:h24_dayahead_meta}) queda como línea de trabajo futuro razonable dado el costo computacional medido de este experimento (aproximadamente 4 horas por barra en GPU).
 
 \subsection{Comparación con la literatura: CRUCERO y P.MONTT 2024}
 \label{sec:crucero_leon}
