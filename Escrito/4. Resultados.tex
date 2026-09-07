@@ -699,12 +699,12 @@ Este hallazgo, que la estrategia más simple es también la más precisa en la g
 
 \section{Conformal Prediction}
 
-Antes de presentar los resultados numéricos de cada método, la Figura \ref{fig:cp_ejemplo_intervalo} ilustra cómo se ve en la práctica un intervalo de predicción: un día del conjunto de prueba en Atacama, con el intervalo de LW-ACP (la variante finalmente seleccionada, Sección \ref{sec:lwacp_resultados}) superpuesto al precio real y a la predicción puntual de S+C-LN. Es un día representativo del comportamiento típico del intervalo, no necesariamente del ancho medio reportado más adelante (Sección \ref{sec:lwacp_resultados}), que promedia sobre todas las horas y los 8.298 días-hora del conjunto de prueba, incluyendo las horas de mayor volatilidad; con solo 24 observaciones, no cubrir ninguna en este día particular es un resultado perfectamente consistente con el 95\% de cobertura nominal, no evidencia de una selección atípicamente favorable.
+Antes de presentar los resultados numéricos de cada método, la Figura \ref{fig:cp_ejemplo_intervalo} ilustra cómo se ve en la práctica un intervalo de predicción: siete días del conjunto de prueba en Atacama, con el intervalo de LW-ACP (la variante finalmente seleccionada, Sección \ref{sec:lwacp_resultados}) superpuesto al precio real y a la predicción puntual de S+C-LN. Es una semana representativa del comportamiento típico del intervalo en un período de volatilidad moderada, no necesariamente del ancho medio reportado más adelante (Sección \ref{sec:lwacp_resultados}), que promedia sobre las 8.298 horas del conjunto de prueba, incluyendo las horas de mayor volatilidad que esta semana en particular no exhibe. De las 168 observaciones de esta ventana, 7 (4.2\%) caen fuera del intervalo, cercano al 5\% esperado bajo el 95\% de cobertura nominal.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.75\textwidth]{imagenes/fig_cp_ejemplo_intervalo.pdf}
-    \caption{Ejemplo de intervalo de predicción LW-ACP (95\% nominal) para Atacama, 12 de febrero de 2026. El intervalo se angosta en las horas de precio cero (mediodía, sobreoferta solar) y se ensancha en las horas de transición, capturando correctamente el \textit{peak} matutino sin dejar de ser informativo.}
+    \includegraphics[width=\textwidth]{imagenes/fig_cp_ejemplo_intervalo.pdf}
+    \caption{Ejemplo de intervalo de predicción LW-ACP (95\% nominal) para Atacama, 4--11 de marzo de 2026. El intervalo se angosta en las horas de precio cero (sobreoferta solar) y se ensancha en las horas de transición, siguiendo de cerca el ciclo diario del precio.}
     \label{fig:cp_ejemplo_intervalo}
 \end{figure}
 
