@@ -699,6 +699,15 @@ Este hallazgo, que la estrategia más simple es también la más precisa en la g
 
 \section{Conformal Prediction}
 
+Antes de presentar los resultados numéricos de cada método, la Figura \ref{fig:cp_ejemplo_intervalo} ilustra cómo se ve en la práctica un intervalo de predicción: diez días de prueba en Atacama, con el intervalo de LW-ACP (la variante finalmente seleccionada, Sección \ref{sec:lwacp_resultados}) superpuesto al precio real y a la predicción puntual de S+C-LN.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{imagenes/fig_cp_ejemplo_intervalo.pdf}
+    \caption{Ejemplo de intervalo de predicción LW-ACP (95\% nominal) para Atacama, 10 días del conjunto de prueba (7--17 de julio de 2025). El intervalo se angosta en las horas de precio cero (madrugada, sobreoferta solar) y se ensancha ante los \textit{spikes} de precio, como el del 9 de julio.}
+    \label{fig:cp_ejemplo_intervalo}
+\end{figure}
+
 \subsection{Split CP clásico}
 \label{sec:split_cp_clasico}
 
@@ -848,6 +857,15 @@ Queda fuera de esta comparación agregada, aunque se presenta en su propia secci
 \label{sec:cobertura_condicional}
 
 La cobertura marginal cercana al nominal reportada hasta aquí es un promedio sobre todo el conjunto de prueba, y puede ocultar heterogeneidad sistemática si el método sub-cubre en algunas horas o meses y sobre-cubre en otras, compensándose en el promedio. Esta sección desagrega la cobertura de Split CP y LW-ACP --los dos extremos del linaje, sin y con ponderación horaria más adaptación \textit{online}-- por hora del día y por mes, promediando sobre las ocho barras.
+
+La Figura \ref{fig:cp_cobertura_ancho_hora} presenta la cobertura y el ancho medio por hora del día para ambos métodos.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{imagenes/fig_cp_cobertura_ancho_hora.pdf}
+    \caption{Cobertura empírica (izquierda) y ancho medio del intervalo (derecha) por hora del día, Split CP vs.\ LW-ACP, promediado sobre las ocho barras. LW-ACP es más angosto que Split CP casi todo el día, pero su cobertura cae marcadamente por debajo del nominal en las horas de transición solar (7--9h, 19--21h).}
+    \label{fig:cp_cobertura_ancho_hora}
+\end{figure}
 
 Por mes, LW-ACP es marcadamente más estable que Split CP: la desviación estándar de la cobertura mensual es 0.0048 para LW-ACP frente a 0.0280 para Split CP, casi seis veces menor. Split CP oscila entre 0.899 (junio) y 0.991 (marzo), mientras que las doce cifras mensuales de LW-ACP caen todas en el rango estrecho $[0.933,\, 0.950]$. Esta es precisamente la ventaja esperada de la adaptación \textit{online} de $\alpha_t$: al reaccionar al historial reciente de cobertura, LW-ACP corrige la deriva estacional que un cuantil fijo como el de Split CP no puede seguir.
 
