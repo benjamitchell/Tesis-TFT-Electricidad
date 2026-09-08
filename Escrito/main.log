@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.4)  7 SEP 2026 02:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.4)  8 SEP 2026 01:11
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -791,8 +791,8 @@ nput line 518.
 [36] [37]) (3. Metodología.tex [38]
 Cap\'{\i }tulo 3.
 
-Overfull \hbox (3.612pt too wide) in paragraph at lines 7--8
-\OT1/cmr/m/n/12 te-books de an^^Salisis-- est^^Sa dis-po-ni-ble p^^Subli-ca-men
+Overfull \hbox (2.30646pt too wide) in paragraph at lines 7--8
+\OT1/cmr/m/n/12 te-books de an^^Sali-sis) est^^Sa dis-po-ni-ble p^^Subli-ca-men
 -te en el re-po-si-to-rio de GitHub \OT1/cmtt/m/n/12 benjamitchell/
  []
 
@@ -867,18 +867,18 @@ on input line 319.
 62] [63] [64]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 448.
+(hyperref)                removing `math shift' on input line 456.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 448.
+(hyperref)                removing `math shift' on input line 456.
 
-) (4. Resultados.tex [65]
+) (4. Resultados.tex [65] [66]
 Cap\'{\i }tulo 4.
-[66
+[67
 
 ]
-<imagenes/Posibles img/Comparativa Real vs Predicho.png, id=1351, 1151.0202pt x
+<imagenes/Posibles img/Comparativa Real vs Predicho.png, id=1355, 1151.0202pt x
  1420.8282pt>
 File: imagenes/Posibles img/Comparativa Real vs Predicho.png Graphic file (type
  png)
@@ -886,8 +886,8 @@ File: imagenes/Posibles img/Comparativa Real vs Predicho.png Graphic file (type
 Package pdftex.def Info: imagenes/Posibles img/Comparativa Real vs Predicho.png
   used on input line 42.
 (pdftex.def)             Requested size: 448.42822pt x 553.53542pt.
- [67] [68 <./imagenes/Posibles img/Comparativa Real vs Predicho.png>]
-[69] [70] [71] [72] [73] [74] [75] [76] [77] [78] [79]
+ [68] [69 <./imagenes/Posibles img/Comparativa Real vs Predicho.png>]
+[70] [71] [72] [73] [74] [75] [76] [77] [78] [79] [80]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 500.
@@ -900,7 +900,7 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 500.
 
-[80]
+[81]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 534.
@@ -925,49 +925,49 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 534.
 
-[81] [82] [83] [84] [85]
-<imagenes/fig_cp_ejemplo_intervalo.pdf, id=1510, 722.7pt x 325.215pt>
+[82] [83] [84] [85] [86]
+<imagenes/fig_cp_ejemplo_intervalo.pdf, id=1515, 722.7pt x 325.215pt>
 File: imagenes/fig_cp_ejemplo_intervalo.pdf Graphic file (type pdf)
 <use imagenes/fig_cp_ejemplo_intervalo.pdf>
 Package pdftex.def Info: imagenes/fig_cp_ejemplo_intervalo.pdf  used on input l
 ine 706.
 (pdftex.def)             Requested size: 472.03123pt x 212.41444pt.
- [86 <./imagenes/fig_cp_ejemplo_intervalo.pdf>]
-[87]
+ [87 <./imagenes/fig_cp_ejemplo_intervalo.pdf>]
+[88]
 Overfull \hbox (31.1304pt too wide) in paragraph at lines 748--749
 \OT1/cmr/m/n/12 Rid-ge au-xi-liar (pre-dic-ci^^Son de S+C-LN m^^Sas las va-ria-
 bles so-la-res \OT1/cmtt/m/n/12 elevacion[]solar \OT1/cmr/m/n/12 y \OT1/cmtt/m/
 n/12 cos[]elevacion\OT1/cmr/m/n/12 )
  []
 
-[88] [89] [90]
+[89] [90] [91]
 Overfull \hbox (27.68823pt too wide) in paragraph at lines 838--848
  [][] 
  []
 
-[91]
-<imagenes/fig_cp_cobertura_ancho_hora.pdf, id=1628, 867.24pt x 310.761pt>
+[92]
+<imagenes/fig_cp_cobertura_ancho_hora.pdf, id=1633, 867.24pt x 310.761pt>
 File: imagenes/fig_cp_cobertura_ancho_hora.pdf Graphic file (type pdf)
 <use imagenes/fig_cp_cobertura_ancho_hora.pdf>
 Package pdftex.def Info: imagenes/fig_cp_cobertura_ancho_hora.pdf  used on inpu
 t line 865.
 (pdftex.def)             Requested size: 472.03123pt x 169.14563pt.
- [92 <./imagenes/fig_cp_cobertura_ancho_hora.pdf>] [93]
-<imagenes/fig_error_dist_atacama.pdf, id=1708, 650.43pt x 361.35pt>
+ [93 <./imagenes/fig_cp_cobertura_ancho_hora.pdf>] [94]
+<imagenes/fig_error_dist_atacama.pdf, id=1712, 650.43pt x 361.35pt>
 File: imagenes/fig_error_dist_atacama.pdf Graphic file (type pdf)
 <use imagenes/fig_error_dist_atacama.pdf>
 Package pdftex.def Info: imagenes/fig_error_dist_atacama.pdf  used on input lin
 e 894.
 (pdftex.def)             Requested size: 448.42822pt x 249.13327pt.
- [94] [95 <./imagenes/fig_error_dist_atacama.pdf>]
-<imagenes/fig_phase_shift_panel_2x2.pdf, id=1806, 1003.83896pt x 660.93886pt>
+ [95] [96 <./imagenes/fig_error_dist_atacama.pdf>]
+<imagenes/fig_phase_shift_panel_2x2.pdf, id=1810, 1003.83896pt x 660.93886pt>
 File: imagenes/fig_phase_shift_panel_2x2.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_2x2.pdf>
 Package pdftex.def Info: imagenes/fig_phase_shift_panel_2x2.pdf  used on input 
 line 935.
 (pdftex.def)             Requested size: 472.03123pt x 310.79257pt.
- [96 <./imagenes/fig_phase_shift_panel_2x2.pdf>]
-[97]
+ [97 <./imagenes/fig_phase_shift_panel_2x2.pdf>]
+[98]
 Overfull \hbox (5.47888pt too wide) in paragraph at lines 998--1013
  [][] 
  []
@@ -978,7 +978,7 @@ Overfull \hbox (9.12578pt too wide) in paragraph at lines 1017--1018
 ^P do-mi-na el de-co-der: su-man-do \OT1/cmtt/m/n/12 elevacion[]solar
  []
 
-[98] [99] [100] [101] [102] [103] [104] [105] [106] [107] [108]
+[99] [100] [101] [102] [103] [104] [105] [106] [107] [108] [109]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 1399.
@@ -987,56 +987,56 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 1399.
 
-[109] [110] [111]) (conclu.tex [112]
+[110] [111] [112]) (conclu.tex [113]
 Cap\'{\i }tulo 5.
-[113
+[114
 
-] [114] [115] [116] [117] [118] [119]) (main.bbl [120] [121
+] [115] [116] [117] [118] [119] [120]) (main.bbl [121] [122
 
 ]) (Anexo.tex
-[122]
+[123]
 Ap\'{e}ndice A.
-<imagenes/fig_phase_shift_panel_cardones.pdf, id=2107, 1003.81342pt x 660.93886
+<imagenes/fig_phase_shift_panel_cardones.pdf, id=2111, 1003.81342pt x 660.93886
 pt>
 File: imagenes/fig_phase_shift_panel_cardones.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_cardones.pdf>
 Package pdftex.def Info: imagenes/fig_phase_shift_panel_cardones.pdf  used on i
 nput line 46.
 (pdftex.def)             Requested size: 472.03123pt x 310.80266pt.
-[123
+[124
 
-] [124 <./imagenes/fig_phase_shift_panel_cardones.pdf>]
-<imagenes/fig_phase_shift_panel_charrua.pdf, id=2204, 1003.10838pt x 660.861pt>
+] [125 <./imagenes/fig_phase_shift_panel_cardones.pdf>]
+<imagenes/fig_phase_shift_panel_charrua.pdf, id=2208, 1003.10838pt x 660.861pt>
 
 File: imagenes/fig_phase_shift_panel_charrua.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_charrua.pdf>
 Package pdftex.def Info: imagenes/fig_phase_shift_panel_charrua.pdf  used on in
 put line 90.
 (pdftex.def)             Requested size: 472.03123pt x 310.97781pt.
- [125
+ [126
 
-] [126 <./imagenes/fig_phase_shift_panel_charrua.pdf>]
-<imagenes/fig_phase_shift_panel_crucero.pdf, id=2302, 1003.81342pt x 660.93886p
+] [127 <./imagenes/fig_phase_shift_panel_charrua.pdf>]
+<imagenes/fig_phase_shift_panel_crucero.pdf, id=2306, 1003.81342pt x 660.93886p
 t>
 File: imagenes/fig_phase_shift_panel_crucero.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_crucero.pdf>
 Package pdftex.def Info: imagenes/fig_phase_shift_panel_crucero.pdf  used on in
 put line 134.
 (pdftex.def)             Requested size: 472.03123pt x 310.80266pt.
- [127
+ [128
 
-] [128 <./imagenes/fig_phase_shift_panel_crucero.pdf>]
-<imagenes/fig_phase_shift_panel_pazucar.pdf, id=2401, 1003.82658pt x 660.93886p
+] [129 <./imagenes/fig_phase_shift_panel_crucero.pdf>]
+<imagenes/fig_phase_shift_panel_pazucar.pdf, id=2405, 1003.82658pt x 660.93886p
 t>
 File: imagenes/fig_phase_shift_panel_pazucar.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_pazucar.pdf>
 Package pdftex.def Info: imagenes/fig_phase_shift_panel_pazucar.pdf  used on in
 put line 178.
 (pdftex.def)             Requested size: 472.03123pt x 310.79257pt.
- [129
+ [130
 
-] [130 <./imagenes/fig_phase_shift_panel_pazucar.pdf>]
-<imagenes/fig_phase_shift_panel_pmontt.pdf, id=2502, 1003.07886pt x 661.05135pt
+] [131 <./imagenes/fig_phase_shift_panel_pazucar.pdf>]
+<imagenes/fig_phase_shift_panel_pmontt.pdf, id=2506, 1003.07886pt x 661.05135pt
 >
 File: imagenes/fig_phase_shift_panel_pmontt.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_pmontt.pdf>
@@ -1044,29 +1044,29 @@ Package pdftex.def Info: imagenes/fig_phase_shift_panel_pmontt.pdf  used on inp
 ut line 222.
 (pdftex.def)             Requested size: 472.03123pt x 311.07747pt.
 
-[131
+[132
 
-] [132 <./imagenes/fig_phase_shift_panel_pmontt.pdf>]
-<imagenes/fig_phase_shift_panel_quillota.pdf, id=2597, 1003.8498pt x 660.93886p
+] [133 <./imagenes/fig_phase_shift_panel_pmontt.pdf>]
+<imagenes/fig_phase_shift_panel_quillota.pdf, id=2601, 1003.8498pt x 660.93886p
 t>
 File: imagenes/fig_phase_shift_panel_quillota.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_quillota.pdf>
 Package pdftex.def Info: imagenes/fig_phase_shift_panel_quillota.pdf  used on i
 nput line 266.
 (pdftex.def)             Requested size: 472.03123pt x 310.7825pt.
- [133
+ [134
 
-] [134 <./imagenes/fig_phase_shift_panel_quillota.pdf>]
-<imagenes/fig_phase_shift_panel_tarapaca.pdf, id=2696, 1003.83896pt x 660.93886
+] [135 <./imagenes/fig_phase_shift_panel_quillota.pdf>]
+<imagenes/fig_phase_shift_panel_tarapaca.pdf, id=2700, 1003.83896pt x 660.93886
 pt>
 File: imagenes/fig_phase_shift_panel_tarapaca.pdf Graphic file (type pdf)
 <use imagenes/fig_phase_shift_panel_tarapaca.pdf>
 Package pdftex.def Info: imagenes/fig_phase_shift_panel_tarapaca.pdf  used on i
 nput line 310.
 (pdftex.def)             Requested size: 472.03123pt x 310.79257pt.
-) [135
+) [136
 
-] [136 <./imagenes/fig_phase_shift_panel_tarapaca.pdf>] (main.aux
+] [137 <./imagenes/fig_phase_shift_panel_tarapaca.pdf>] (main.aux
 LaTeX Info: Redefining \. on input line 11.
 LaTeX Info: Redefining \% on input line 11.
 )
@@ -1078,10 +1078,10 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: A7F056D2055DE2E181FA999A7FD631EC;28330.
  ) 
 Here is how much of TeX's memory you used:
- 21699 strings out of 467871
- 380894 string characters out of 5418377
- 878889 words of memory out of 5000000
- 49779 multiletter control sequences out of 15000+600000
+ 21702 strings out of 467871
+ 380964 string characters out of 5418377
+ 878851 words of memory out of 5000000
+ 49781 multiletter control sequences out of 15000+600000
  645275 words of font info for 105 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  90i,12n,93p,2596b,798s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1113,9 +1113,9 @@ amsfonts/cm/cmti10.pfb><C:/Users/56977/AppData/Local/Programs/MiKTeX/fonts/type
 onts/type1/public/amsfonts/cm/cmtt10.pfb><C:/Users/56977/AppData/Local/Programs
 /MiKTeX/fonts/type1/public/amsfonts/cm/cmtt12.pfb><C:/Users/56977/AppData/Local
 /Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (147 pages, 6087499 bytes).
+Output written on main.pdf (148 pages, 6087982 bytes).
 PDF statistics:
- 3009 PDF objects out of 3580 (max. 8388607)
- 488 named destinations out of 1000 (max. 500000)
+ 3013 PDF objects out of 3580 (max. 8388607)
+ 489 named destinations out of 1000 (max. 500000)
  1236 words of extra memory for PDF output out of 10000 (max. 10000000)
 
