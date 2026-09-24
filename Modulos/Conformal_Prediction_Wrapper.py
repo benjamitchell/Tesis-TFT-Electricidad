@@ -9,7 +9,9 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import Ridge, QuantileRegressor
 
 import sys  
-sys.path.append(r'C:\Users\56977\OneDrive\Escritorio\AdaptiveConformalPredictionsTimeSeries') # Path al repo de mzaffran
+from pathlib import Path
+# Repo de M. Zaffran (EnbPI), clonado en la raiz del proyecto (ver README)
+sys.path.append(str(Path(__file__).resolve().parents[1] / 'AdaptiveConformalPredictionsTimeSeries'))
 from enbpi.PI_class_EnbPI import prediction_interval
 
 # ========================= CONFORMAL PREDICTION CLÁSICO ======================

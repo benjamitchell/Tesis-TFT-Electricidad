@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,7 +26,8 @@ ZOOM_CONFIG = {
 # ============================================
 
 # Cargar datos
-df = pd.read_csv('C:\\Users\\56977\\OneDrive\\Escritorio\\Tesis - copia\\Datos\\h\\2020-2026.csv', sep=';', decimal=',')
+RAIZ = Path(__file__).resolve().parents[1]
+df = pd.read_csv(RAIZ / 'Datos' / 'h' / '2020-2026.csv', sep=';', decimal=',')
 
 # Convertir tipos de datos
 df['Barra'] = df['Barra'].astype(str)

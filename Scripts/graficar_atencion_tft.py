@@ -22,7 +22,7 @@ import sys
 import os
 import gc
 
-sys.path.append(r'C:\Users\56977\OneDrive\Escritorio\Tesis - copia')
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # raiz del repo
 from Modulos.TFT_Model import cargar_modelo_entrenado
 
 # ── Configuración ──────────────────────────────────────────────────────────

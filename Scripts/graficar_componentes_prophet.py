@@ -14,8 +14,9 @@ plt.rcParams['font.size'] = 9
 plt.rcParams['font.family'] = 'serif'
 
 # Rutas
-CARPETA_MODELOS = 'C:\\Users\\56977\\OneDrive\\Escritorio\\Tesis - copia\\Modelos_Prophet\\h\\modelos'
-CARPETA_SALIDA = 'C:\\Users\\56977\\OneDrive\\Escritorio\\Tesis - copia\\Modelos_Prophet\\h\\Graficos_Prophet'
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CARPETA_MODELOS = os.path.join(RAIZ, 'Modelos_Prophet', 'h', 'modelos')
+CARPETA_SALIDA = os.path.join(RAIZ, 'Modelos_Prophet', 'h', 'Graficos_Prophet')
 os.makedirs(CARPETA_SALIDA, exist_ok=True)
 
 # ===== FUNCIONES =====

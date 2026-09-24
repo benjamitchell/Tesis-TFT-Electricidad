@@ -16,7 +16,7 @@ import json
 import pathlib
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
-BASE = pathlib.Path(r"C:\Users\56977\OneDrive\Escritorio\Tesis - copia")
+BASE = pathlib.Path(__file__).resolve().parents[1]  # raiz del repo
 TOL  = 1e-4
 
 EXCLUIR = {"_NO_SIRVE", "_LISTO"}
