@@ -31,6 +31,7 @@ Antes de presentar los modelos propuestos, se establecen líneas base ingenuas s
 La persistencia de un paso es, en las ocho barras, la línea base más difícil de superar: a resolución horaria, el precio de la hora inmediatamente anterior es más informativo que el mismo momento del día anterior o de la semana anterior, y también más informativo que los modelos AR(24) y AR(168) ajustados por OLS, que resultan sistemáticamente peores que el naive del que parten. Esto se explica porque el ajuste por mínimos cuadrados minimiza el error cuadrático, lo que produce coeficientes menores a uno y un intercepto positivo que suaviza la predicción hacia la media (óptimo para el error cuadrático, pero no para el error absoluto sobre una serie con una masa puntual considerable en cero y una cola derecha pesada). Por este motivo, se adopta la persistencia de un paso como referencia para el \textit{skill score} y el MASE (\textit{Mean Absolute Scaled Error}, Hyndman y Koehler, 2006) reportados junto al modelo de referencia S+C-LN en la Tabla \ref{tab:tft_sc_ln_resultados}: $\text{MASE} = \text{MAE}_{\text{modelo}} / \text{MAE}_{\text{persistencia}}$, y $\text{skill score} = 1 - \text{MASE}$.
 
 \section{Modelo Prophet}
+\label{sec:prophet_truncamiento_pipeline}
 \label{sec:modelo_prophet}
 
 \subsection{Desempeño por barra}
@@ -103,7 +104,7 @@ La Tabla \ref{tab:prophet_resultados} presenta los resultados numéricos de eval
 
 Los resultados muestran un desempeño heterogéneo entre barras. Las barras del norte presentan los mejores indicadores, con R$^2$ en el conjunto de prueba entre 0.41 y 0.53, lo que refleja que Prophet captura adecuadamente la estructura estacional y la tendencia decreciente asociada a la incorporación solar. Quillota y Charrúa muestran un desempeño moderado con R$^2$ de 0.33 y 0.30 respectivamente en prueba, sugiriendo que sus dinámicas de corto plazo son más difíciles de capturar con un modelo de descomposición aditiva. El caso más notable es Puerto Montt, que presenta un R$^2$ negativo de $-0.011$ en el conjunto de prueba, indicando que Prophet es peor que un predictor constante igual a la media para esta barra en el período 2025--2026. Este resultado es consistente con la naturaleza de la generación hidroeléctrica del sur, cuya variabilidad está determinada por ciclos de precipitaciones de baja frecuencia que no siguen patrones estacionales regulares. Este resultado motiva directamente la incorporación del TFT como componente complementario en el ensamble.
 
-Las predicciones de Prophet se truncan en 0 USD/MWh antes de calcular estas métricas, dado que el costo marginal no puede ser negativo (Sección 3.3.3) y Prophet, como modelo de descomposición aditiva sin restricción de dominio, predice valores negativos con frecuencia no despreciable: 29\,346 de las 442\,560 predicciones evaluadas (6.6\%, sumando entrenamiento, validación y prueba en las ocho barras) son negativas antes de truncar. El efecto sobre las métricas es sistemático y no trivial (el MAE de prueba se reduce entre 0.3, Puerto Montt, y 3.5\,USD/MWh, Atacama, y el R$^2$ de prueba mejora en las ocho barras, con la mayor ganancia en Atacama, de 0.484 a 0.526), consistente con que una fracción relevante de esas predicciones negativas ocurre en las horas de precio real cercano a 0 USD/MWh, donde el error absoluto de una predicción negativa es, por construcción, mayor que el de una predicción truncada en 0. Este truncamiento se aplica únicamente a las métricas de Prophet reportadas en esta sección; no se propaga al residuo que consume $\text{TFT}_\text{LN}$ en la rama P+C, dado que corregir ese residuo exige reentrenar el modelo de residuos sobre el nuevo objetivo, fuera del alcance de esta corrección puntual.
+Las predicciones de Prophet se truncan en 0 USD/MWh antes de calcular estas métricas, dado que el costo marginal no puede ser negativo (Sección \ref{sec:prophet_negativas}) y Prophet, como modelo de descomposición aditiva sin restricción de dominio, predice valores negativos con frecuencia no despreciable: 29\,346 de las 442\,560 predicciones evaluadas (6.6\%, sumando entrenamiento, validación y prueba en las ocho barras) son negativas antes de truncar. El efecto sobre las métricas es sistemático y no trivial (el MAE de prueba se reduce entre 0.3, Puerto Montt, y 3.5\,USD/MWh, Atacama, y el R$^2$ de prueba mejora en las ocho barras, con la mayor ganancia en Atacama, de 0.484 a 0.526), consistente con que una fracción relevante de esas predicciones negativas ocurre en las horas de precio real cercano a 0 USD/MWh, donde el error absoluto de una predicción negativa es, por construcción, mayor que el de una predicción truncada en 0. Este truncamiento se aplica únicamente a las métricas de Prophet reportadas en esta sección; no se propaga al residuo que consume $\text{TFT}_\text{LN}$ en la rama P+C, dado que corregir ese residuo exige reentrenar el modelo de residuos sobre el nuevo objetivo, fuera del alcance de esta corrección puntual.
 
 Se observa además una degradación consistente del R$^2$ entre entrenamiento y prueba en todas las barras, lo que es esperable dado el cambio estructural en el mercado eléctrico chileno durante el período de prueba 2025--2026, caracterizado por una mayor penetración renovable y episodios de curtailment más frecuentes que los observados durante el entrenamiento.
 
@@ -578,30 +579,30 @@ Para determinar si las diferencias observadas son sistemáticas u obedecen al az
         \toprule
         Barra & Rama & MAE$_\text{LN}$ & MAE$_\text{DyT}$ & DM & $p$ (dos colas) & Signif.\ (5\%) \\
         \midrule
-        Atacama       & S+C & 6.705  & 6.683  & 0.46  & $0.644$              & No \\
-        Cardones      & S+C & 6.626  & 6.777  & -2.81 & $5.0\times10^{-3}$  & Sí \\
-        Charrúa       & S+C & 7.980  & 8.275  & -5.51 & $3.6\times10^{-8}$  & Sí \\
-        Crucero       & S+C & 6.742  & 6.873  & -2.77 & $5.6\times10^{-3}$  & Sí \\
-        Pan de Azúcar & S+C & 6.925  & 6.829  & 1.59  & $0.111$              & No \\
-        Puerto Montt  & S+C & 13.684 & 14.011 & -2.73 & $6.3\times10^{-3}$  & Sí \\
-        Quillota      & S+C & 8.265  & 8.576  & -4.95 & $7.4\times10^{-7}$  & Sí \\
-        Tarapacá      & S+C & 7.115  & 6.953  & 2.89  & $3.9\times10^{-3}$  & Sí \\
-        Atacama       & P+C & 6.945  & 7.247  & -4.41 & $1.0\times10^{-5}$  & Sí \\
-        Cardones      & P+C & 7.016  & 7.106  & -1.29 & $0.196$              & No \\
-        Charrúa       & P+C & 8.524  & 8.731  & -2.93 & $3.4\times10^{-3}$  & Sí \\
-        Crucero       & P+C & 7.062  & 7.215  & -2.52 & $1.2\times10^{-2}$  & Sí \\
-        Pan de Azúcar & P+C & 7.174  & 7.311  & -2.15 & $3.1\times10^{-2}$  & Sí \\
-        Puerto Montt  & P+C & 13.939 & 13.965 & -0.23 & $0.821$              & No \\
-        Quillota      & P+C & 8.702  & 9.020  & -3.71 & $2.0\times10^{-4}$  & Sí \\
-        Tarapacá      & P+C & 7.141  & 7.498  & -5.56 & $2.7\times10^{-8}$  & Sí \\
+        Atacama       & S+C & 6.705  & 6.683  & 0.46  & $0.644$  & No \\
+        Cardones      & S+C & 6.626  & 6.777  & -2.81 & $0.005$  & Sí* \\
+        Charrúa       & S+C & 7.980  & 8.275  & -5.51 & $<0.001$ & Sí* \\
+        Crucero       & S+C & 6.742  & 6.873  & -2.77 & $0.006$  & Sí* \\
+        Pan de Azúcar & S+C & 6.925  & 6.829  & 1.59  & $0.111$  & No \\
+        Puerto Montt  & S+C & 13.684 & 14.011 & -2.73 & $0.006$  & Sí* \\
+        Quillota      & S+C & 8.265  & 8.576  & -4.95 & $<0.001$ & Sí* \\
+        Tarapacá      & S+C & 7.115  & 6.953  & 2.89  & $0.004$  & Sí* \\
+        Atacama       & P+C & 6.945  & 7.247  & -4.41 & $<0.001$ & Sí* \\
+        Cardones      & P+C & 7.016  & 7.106  & -1.29 & $0.196$  & No \\
+        Charrúa       & P+C & 8.524  & 8.731  & -2.93 & $0.003$  & Sí* \\
+        Crucero       & P+C & 7.062  & 7.215  & -2.52 & $0.012$  & Sí \\
+        Pan de Azúcar & P+C & 7.174  & 7.311  & -2.15 & $0.031$  & Sí \\
+        Puerto Montt  & P+C & 13.939 & 13.965 & -0.23 & $0.821$  & No \\
+        Quillota      & P+C & 8.702  & 9.020  & -3.71 & $<0.001$ & Sí* \\
+        Tarapacá      & P+C & 7.141  & 7.498  & -5.56 & $<0.001$ & Sí* \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Test de Diebold-Mariano (varianza Newey-West, $\text{lag}=h+1=2$) entre los errores absolutos horarios de $\text{TFT}_\text{LN}$ y $\text{TFT}_\text{DyT}$, pareados por hora del conjunto de prueba, evaluados contra la serie cruda.}
+    \caption{Test de Diebold-Mariano (varianza Newey-West, $\text{lag}=h+1=2$) entre los errores absolutos horarios de $\text{TFT}_\text{LN}$ y $\text{TFT}_\text{DyT}$, pareados por hora del conjunto de prueba, evaluados contra la serie cruda. * = significativo también tras corrección de Holm-Bonferroni para las 16 comparaciones de esta tabla ($\alpha=0.05$).}
     \label{tab:dm_ln_dyt}
 \end{table}
 
-En 12 de las 16 combinaciones la diferencia es estadísticamente significativa ($p<0.05$), es decir, no es atribuible al azar. El signo del estadístico DM muestra que $\text{TFT}_\text{LN}$ es el ganador en 11 de esas 12 combinaciones significativas; $\text{TFT}_\text{DyT}$ solo gana de forma significativa en Tarapacá bajo S+C. En la rama P+C, las 6 de 8 barras con diferencia significativa favorecen unánimemente a LN; en S+C, la ventaja es algo más mixta: 5 de las 6 barras con diferencia significativa favorecen a LN, y solo Tarapacá favorece a DyT. En las 4 combinaciones restantes (Atacama y Pan de Azúcar bajo S+C, Cardones y Puerto Montt bajo P+C) el MAE nominal favorece a uno u otro por un margen pequeño, pero la diferencia no alcanza significancia estadística una vez que se descuenta la autocorrelación serial del error horario: no hay evidencia suficiente para preferir una arquitectura sobre la otra en esos casos específicos.
+En 12 de las 16 combinaciones la diferencia es estadísticamente significativa ($p<0.05$), es decir, no es atribuible al azar. El signo del estadístico DM muestra que $\text{TFT}_\text{LN}$ es el ganador en 11 de esas 12 combinaciones significativas; $\text{TFT}_\text{DyT}$ solo gana de forma significativa en Tarapacá bajo S+C. En la rama P+C, las 6 de 8 barras con diferencia significativa favorecen unánimemente a LN; en S+C, la ventaja es algo más mixta: 5 de las 6 barras con diferencia significativa favorecen a LN, y solo Tarapacá favorece a DyT. En las 4 combinaciones restantes (Atacama y Pan de Azúcar bajo S+C, Cardones y Puerto Montt bajo P+C) el MAE nominal favorece a uno u otro por un margen pequeño, pero la diferencia no alcanza significancia estadística una vez que se descuenta la autocorrelación serial del error horario: no hay evidencia suficiente para preferir una arquitectura sobre la otra en esos casos específicos. Tratando estas 16 comparaciones como una única familia de hipótesis y aplicando corrección de Holm-Bonferroni, 10 de las 16 permanecen significativas; las dos que dejan de serlo (Crucero y Pan de Azúcar bajo P+C) tenían los $p$-valores más débiles del grupo originalmente significativo. La ventaja sistemática de LN se sostiene bajo esta corrección más estricta, aunque con menos combinaciones individuales respaldándola, consistente con la magnitud pequeña de esta ventaja ya discutida en la Sección \ref{sec:seeds_ln_dyt}.
 
 Una hipótesis para esta ventaja sistemática de LN, aunque de magnitud pequeña, es la diferencia estructural entre ambos mecanismos de normalización descrita en la Sección 2.4.4: LayerNorm recalcula la escala de activación de forma local, para cada paso temporal, mientras que DyT aplica un único escalar $\alpha$ global aprendido durante el entrenamiento. En una serie con heterocedasticidad horaria pronunciada como el costo marginal, la misma que motiva a LW-ACP en la Sección 2.6.4, esa adaptación local podría dar a LN una ventaja consistente aunque pequeña en la mayoría de las horas. Esta hipótesis es consistente con que la ventaja de LN no alcanza significancia precisamente en Puerto Montt bajo P+C, una de las barras con dinámicas de precio menos regidas por el ciclo solar diario.
 
@@ -670,43 +671,65 @@ Las secciones anteriores presentaron P+C (Prophet+Clima, con Stacking Optimizati
         \toprule
         Barra & Arq. & MAE P+C & MAE S+C & Ganador & DM & $p$-valor & Signif.\ (5\%) \\
         \midrule
-        Atacama       & LN  & 7.10  & 6.71  & S+C & 6.61  & $3.9\times10^{-11}$ & Sí \\
-        Atacama       & DyT & 7.25  & 6.68  & S+C & 8.45  & $0$                  & Sí \\
-        Cardones      & LN  & 6.73  & 6.63  & S+C & 1.93  & $0.053$              & No \\
-        Cardones      & DyT & 7.18  & 6.78  & S+C & 6.07  & $1.3\times10^{-9}$  & Sí \\
-        Charrúa       & LN  & 8.32  & 7.98  & S+C & 5.85  & $5.0\times10^{-9}$  & Sí \\
-        Charrúa       & DyT & 8.45  & 8.28  & S+C & 2.61  & $9.2\times10^{-3}$  & Sí \\
-        Crucero       & LN  & 6.86  & 6.74  & S+C & 2.22  & $0.026$              & Sí \\
-        Crucero       & DyT & 7.22  & 6.87  & S+C & 5.72  & $1.1\times10^{-8}$  & Sí \\
-        Pan de Azúcar & LN  & 7.05  & 6.93  & S+C & 1.92  & $0.055$              & No \\
-        Pan de Azúcar & DyT & 7.08  & 6.83  & S+C & 3.47  & $5.3\times10^{-4}$  & Sí \\
-        Puerto Montt  & LN  & 13.94 & 13.68 & S+C & 3.43  & $6.0\times10^{-4}$  & Sí \\
-        Puerto Montt  & DyT & 13.71 & 14.01 & P+C & -2.59 & $9.7\times10^{-3}$  & Sí \\
-        Quillota      & LN  & 8.62  & 8.26  & S+C & 5.48  & $4.3\times10^{-8}$  & Sí \\
-        Quillota      & DyT & 8.89  & 8.58  & S+C & 3.84  & $1.3\times10^{-4}$  & Sí \\
-        Tarapacá      & LN  & 7.06  & 7.11  & P+C & -1.12 & $0.263$              & No \\
-        Tarapacá      & DyT & 7.50  & 6.95  & S+C & 7.70  & $1.4\times10^{-14}$ & Sí \\
+        Atacama       & LN  & 7.10  & 6.71  & S+C & 6.61  & $<0.001$ & Sí* \\
+        Atacama       & DyT & 7.25  & 6.68  & S+C & 8.45  & $<0.001$ & Sí* \\
+        Cardones      & LN  & 6.73  & 6.63  & S+C & 1.93  & $0.053$  & No \\
+        Cardones      & DyT & 7.18  & 6.78  & S+C & 6.07  & $<0.001$ & Sí* \\
+        Charrúa       & LN  & 8.32  & 7.98  & S+C & 5.85  & $<0.001$ & Sí* \\
+        Charrúa       & DyT & 8.45  & 8.28  & S+C & 2.61  & $0.009$  & Sí \\
+        Crucero       & LN  & 6.86  & 6.74  & S+C & 2.22  & $0.026$  & Sí \\
+        Crucero       & DyT & 7.22  & 6.87  & S+C & 5.72  & $<0.001$ & Sí* \\
+        Pan de Azúcar & LN  & 7.05  & 6.93  & S+C & 1.92  & $0.055$  & No \\
+        Pan de Azúcar & DyT & 7.08  & 6.83  & S+C & 3.47  & $<0.001$ & Sí* \\
+        Puerto Montt  & LN  & 13.94 & 13.68 & S+C & 3.43  & $<0.001$ & Sí* \\
+        Puerto Montt  & DyT & 13.71 & 14.01 & P+C & -2.59 & $0.010$  & Sí \\
+        Quillota      & LN  & 8.62  & 8.26  & S+C & 5.48  & $<0.001$ & Sí* \\
+        Quillota      & DyT & 8.89  & 8.58  & S+C & 3.84  & $<0.001$ & Sí* \\
+        Tarapacá      & LN  & 7.06  & 7.11  & P+C & -1.12 & $0.263$  & No \\
+        Tarapacá      & DyT & 7.50  & 6.95  & S+C & 7.70  & $<0.001$ & Sí* \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Comparación P+C (mejor estrategia de Stacking, seleccionada en validación) vs.\ S+C, MAE de prueba en USD/MWh, para las 8 barras y ambas arquitecturas, evaluado contra la serie cruda, con test de Diebold-Mariano (varianza Newey-West) sobre los errores absolutos horarios pareados. El signo de DM favorece a S+C cuando es positivo.}
+    \caption{Comparación P+C (mejor estrategia de Stacking, seleccionada en validación) vs.\ S+C, MAE de prueba en USD/MWh, para las 8 barras y ambas arquitecturas, evaluado contra la serie cruda, con test de Diebold-Mariano (varianza Newey-West) sobre los errores absolutos horarios pareados. El signo de DM favorece a S+C cuando es positivo. * = significativo también tras corrección de Holm-Bonferroni para las 16 comparaciones de esta tabla ($\alpha=0.05$).}
     \label{tab:pc_vs_sc}
 \end{table}
 
-\textbf{S+C gana en 14 de las 16 combinaciones} por MAE nominal, con mejoras de entre 1.5\% (Cardones LN) y 7.9\% (Atacama DyT) respecto al MAE de P+C. Las únicas dos excepciones nominales son Tarapacá con LN y Puerto Montt con DyT. El test de Diebold-Mariano confirma que esta ventaja no es atribuible al azar en la mayoría de los casos: la diferencia es estadísticamente significativa en 13 de las 16 combinaciones, y S+C gana en 12 de esas 13 (92\%); la única combinación significativa a favor de P+C es Puerto Montt bajo DyT. En las 3 combinaciones restantes (Cardones y Pan de Azúcar bajo LN, Tarapacá bajo LN) la diferencia nominal de MAE no alcanza significancia estadística, es decir, no hay evidencia suficiente para preferir una rama sobre la otra en esos casos específicos --incluyendo la única excepción nominal de S+C bajo LN (Tarapacá), que en rigor no es una victoria significativa de P+C, sino una ausencia de diferencia detectable--. Este resultado es notable porque S+C es, por diseño, la estrategia más simple: prescinde de Prophet, de su ajuste por barra, y del modelo de residuos y el Stacking Optimization que P+C requiere para alcanzar su mejor desempeño. La ventaja de S+C es consistente en ambas arquitecturas y en siete de las ocho barras, lo que sugiere que la posición solar, calculada de forma determinista y exacta mediante \texttt{pvlib}, captura el ciclo diario y anual del costo marginal de manera al menos tan efectiva como la descomposición estadística de Prophet, sin acumular su error de ajuste ni requerir el paso adicional de ensamblaje. Puerto Montt, la única barra donde P+C es significativamente ganador en alguna arquitectura, es consistente con su menor dependencia del ciclo solar y su mayor dependencia de la disponibilidad hidroeléctrica, ya documentada en la Sección 4.7.1.
+\textbf{S+C gana en 14 de las 16 combinaciones} por MAE nominal, con mejoras de entre 1.5\% (Cardones LN) y 7.9\% (Atacama DyT) respecto al MAE de P+C. Las únicas dos excepciones nominales son Tarapacá con LN y Puerto Montt con DyT. El test de Diebold-Mariano confirma que esta ventaja no es atribuible al azar en la mayoría de los casos: la diferencia es estadísticamente significativa en 13 de las 16 combinaciones, y S+C gana en 12 de esas 13 (92\%); la única combinación significativa a favor de P+C es Puerto Montt bajo DyT. En las 3 combinaciones restantes (Cardones y Pan de Azúcar bajo LN, Tarapacá bajo LN) la diferencia nominal de MAE no alcanza significancia estadística, es decir, no hay evidencia suficiente para preferir una rama sobre la otra en esos casos específicos --incluyendo la única excepción nominal de S+C bajo LN (Tarapacá), que en rigor no es una victoria significativa de P+C, sino una ausencia de diferencia detectable--. Dado que estas 16 comparaciones constituyen una única familia de hipótesis, se aplica además una corrección de Holm-Bonferroni (controla la probabilidad de al menos un falso positivo en la familia, a diferencia de Bonferroni simple, sin perder potencia innecesariamente): 10 de las 16 combinaciones permanecen significativas, todas a favor de S+C (marcadas con * en la Tabla \ref{tab:pc_vs_sc}); las que dejan de serlo bajo esta corrección más estricta (Charrúa DyT, Crucero LN, Puerto Montt DyT) tenían los $p$-valores más cercanos al umbral de 0.05 dentro del grupo originalmente significativo. El resultado central, que S+C gana de forma sistemática, se sostiene bajo esta corrección más conservadora. Este resultado es notable porque S+C es, por diseño, la estrategia más simple: prescinde de Prophet, de su ajuste por barra, y del modelo de residuos y el Stacking Optimization que P+C requiere para alcanzar su mejor desempeño. La ventaja de S+C es consistente en ambas arquitecturas y en siete de las ocho barras, lo que sugiere que la posición solar, calculada de forma determinista y exacta mediante \texttt{pvlib}, captura el ciclo diario y anual del costo marginal de manera al menos tan efectiva como la descomposición estadística de Prophet, sin acumular su error de ajuste ni requerir el paso adicional de ensamblaje. Puerto Montt, la única barra donde P+C es significativamente ganador en alguna arquitectura, es consistente con su menor dependencia del ciclo solar y su mayor dependencia de la disponibilidad hidroeléctrica, ya documentada en la Sección 4.7.1.
 
 Este hallazgo, que la estrategia más simple es también la más precisa en la gran mayoría de los casos, es el resultado central de este trabajo, y motiva que S+C sea adoptada como estrategia de referencia en el resto de este capítulo. Combinado con la ventaja sistemática, aunque pequeña, de $\text{TFT}_\text{LN}$ sobre $\text{TFT}_\text{DyT}$ establecida en la Sección \ref{sec:ln_vs_dyt}, la selección final de este trabajo es \textbf{S+C-LN}: un único modelo, sin Stacking Optimization ni ajuste por barra, adoptado de forma uniforme en Conformal Prediction (Sección 4.5). Las extensiones de la Sección 4.7 retoman la comparación entre ambas arquitecturas donde es relevante para sus propios objetivos (por ejemplo, la robustez de la conclusión sobre Puerto Montt o el estudio de granularidad), en vez de asumir S+C-LN de antemano.
 
 \section{Conformal Prediction}
 
-Antes de presentar los resultados numéricos de cada método, la Figura \ref{fig:cp_ejemplo_intervalo} ilustra cómo se ve en la práctica un intervalo de predicción: siete días del conjunto de prueba en Atacama, con el intervalo de LW-ACP (la variante finalmente seleccionada, Sección \ref{sec:lwacp_resultados}) superpuesto al precio real y a la predicción puntual de S+C-LN. Es una semana representativa del comportamiento típico del intervalo en un período de volatilidad moderada, no necesariamente del ancho medio reportado más adelante (Sección \ref{sec:lwacp_resultados}), que promedia sobre las 8.298 horas del conjunto de prueba, incluyendo las horas de mayor volatilidad que esta semana en particular no exhibe. De las 168 observaciones de esta ventana, 7 (4.2\%) caen fuera del intervalo, cercano al 5\% esperado bajo el 95\% de cobertura nominal.
+Antes de presentar los resultados numéricos de cada método, la Figura \ref{fig:cp_ejemplo_intervalo} ilustra cómo se ve en la práctica un intervalo de predicción: siete días del conjunto de prueba en Atacama, con el intervalo de LW-ACP (la variante finalmente seleccionada, Sección \ref{sec:lwacp_resultados}) superpuesto al precio real y a la predicción puntual de S+C-LN, al 90\% de cobertura nominal. Es una semana representativa del comportamiento típico del intervalo en un período de volatilidad moderada, no necesariamente del ancho medio reportado más adelante (Sección \ref{sec:lwacp_resultados}), que promedia sobre las 8.298 horas del conjunto de prueba, incluyendo las horas de mayor volatilidad que esta semana en particular no exhibe. De las 168 observaciones de esta ventana, 15 (8.9\%) caen fuera del intervalo, cercano al 10\% esperado bajo el 90\% de cobertura nominal.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{imagenes/fig_cp_ejemplo_intervalo.pdf}
-    \caption{Ejemplo de intervalo de predicción LW-ACP (95\% nominal) para Atacama, 4--11 de marzo de 2026. El intervalo se angosta en las horas de precio cero (sobreoferta solar) y se ensancha en las horas de transición, siguiendo de cerca el ciclo diario del precio.}
+    \caption{Ejemplo de intervalo de predicción LW-ACP (90\% nominal) para Atacama, 4--11 de marzo de 2026. El intervalo se angosta en las horas de precio cero (sobreoferta solar) y se ensancha en las horas de transición, siguiendo de cerca el ciclo diario del precio.}
     \label{fig:cp_ejemplo_intervalo}
 \end{figure}
+
+Los anchos reportados en esta sección (del orden de 30 a 130\,USD/MWh según el método y el nivel de cobertura) solo se interpretan correctamente en relación con la volatilidad de la serie que intentan cubrir. La Tabla \ref{tab:comparacion_volatilidad} compara las estadísticas descriptivas del costo marginal chileno con las de los tres mercados eléctricos analizados por Kath y Ziel (2021) \cite{KathZiel2021}, junto con el ancho de intervalo al 90\% que reportan para cada uno. Este no es un detalle menor: Kath y Ziel enfocan explícitamente su análisis de confiabilidad y nitidez en los intervalos de 50\% y 90\%, no en 95\% (``the strict focus on both the 50\% and 90\% prediction intervals''), y la adaptación de ACI de Zaffran (2024) \cite{ConformalPrediction} usa por defecto $\alpha=0.1$ (90\%) en la gran mayoría de sus experimentos, incluida su aplicación a precios eléctricos franceses. Por esta razón, el resto de este capítulo adopta 90\% como nivel de cobertura nominal principal (Sección \ref{sec:cp_configuracion_general} del Marco Metodológico), reportando 50\% y 95\% como niveles adicionales donde es relevante.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Serie & Media & SD & CV (SD/media) & Máximo & Ancho CP 90\% \\
+        \midrule
+        Nord Pool day-ahead \cite{KathZiel2021} & 36.38 & 8.64  & 0.24 & 138.76  & 6.2 (QRA) \\
+        EPEX intraday \cite{KathZiel2021}       & 31.81 & 14.52 & 0.46 & 155.52  & 17.5 (QRA) \\
+        GEFCom \cite{KathZiel2021}               & 44.83 & 15.26 & 0.34 & 85.53   & 30.4 (QRA) \\
+        SEN, promedio 8 barras (este trabajo)    & 68.69 & 64.73 & 0.94 & 576.82--1588.95 & 40.90 (Split CP) \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Estadísticas descriptivas (USD/MWh, EUR/MWh según corresponda) y ancho de intervalo al 90\% de cobertura nominal, costo marginal chileno vs.\ los tres mercados analizados por Kath y Ziel (2021). CV: coeficiente de variación. El valor de ancho de cada mercado de Kath y Ziel corresponde a su mejor método reportado (QRA); el de este trabajo, a Split CP.}
+    \label{tab:comparacion_volatilidad}
+\end{table}
+
+El coeficiente de variación del SEN (0.94) duplica al de la serie más volátil de las tres analizadas por Kath y Ziel (GEFCom, 0.34), y su máximo histórico supera en un orden de magnitud al máximo de cualquiera de ellas. Que el ancho de intervalo del SEN sea entre 1.3 y 6.6 veces mayor que el de esos mercados es, bajo esa diferencia de escala, el resultado esperable de una calibración correcta, no evidencia de una implementación deficiente: un intervalo que ignorara esa volatilidad y reportara anchos comparables a los de Nord Pool fallaría sistemáticamente en cubrir el costo marginal chileno.
 
 \subsection{Split CP clásico}
 \label{sec:split_cp_clasico}
@@ -718,27 +741,27 @@ Consistente con la selección de S+C-LN como modelo de referencia para el resto 
     \small
     \begin{tabular}{lrrrr}
         \toprule
-        Barra & Coverage & Width & MAE & $q$ \\
+        Barra & Coverage & Width & MAE & Pinball \\
         \midrule
-        Atacama       & 0.9648 & 54.68  & 6.70  & 34.07 \\
-        Cardones      & 0.9595 & 53.58  & 6.63  & 33.25 \\
-        Charrúa       & 0.9512 & 61.23  & 7.98  & 35.51 \\
-        Crucero       & 0.9614 & 52.82  & 6.74  & 32.90 \\
-        Pan de Azúcar & 0.9588 & 57.16  & 6.93  & 35.38 \\
-        Puerto Montt  & 0.9600 & 110.41 & 13.68 & 64.05 \\
-        Quillota      & 0.9530 & 64.25  & 8.26  & 37.43 \\
-        Tarapacá      & 0.9623 & 56.23  & 7.11  & 35.24 \\
+        Atacama       & 0.9134 & 32.73 & 6.70  & 1.641 \\
+        Cardones      & 0.9153 & 33.50 & 6.63  & 1.646 \\
+        Charrúa       & 0.9026 & 40.07 & 7.98  & 1.858 \\
+        Crucero       & 0.9138 & 33.01 & 6.74  & 1.652 \\
+        Pan de Azúcar & 0.9171 & 35.84 & 6.93  & 1.688 \\
+        Puerto Montt  & 0.9117 & 75.77 & 13.68 & 3.162 \\
+        Quillota      & 0.9001 & 40.89 & 8.26  & 1.919 \\
+        Tarapacá      & 0.9160 & 35.40 & 7.11  & 1.763 \\
         \bottomrule
     \end{tabular}
-    \caption{Resultados del Split CP clásico sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.95. Width, MAE y $q$ en USD/MWh. El límite inferior de todos los intervalos se trunca en 0 USD/MWh, respetando el dominio físico del costo marginal; $q$ es el semiancho antes de truncar.}
+    \caption{Resultados del Split CP clásico sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.90. Width, MAE y Pinball en USD/MWh.}
     \label{tab:scp_resultados}
 \end{table}
 
-Los resultados muestran cobertura empírica por encima del nominal en las ocho barras. La cobertura oscila entre 0.9512 (Charrúa) y 0.9648 (Atacama), con anchos medios entre 52.8 (Crucero) y 64.3 USD/MWh (Quillota) en las siete barras del norte y centro, y un ancho considerablemente mayor en Puerto Montt (110.4 USD/MWh), consistente con su mayor dispersión de precio ya documentada en la Sección \ref{sec:pmontt_desempeno}. El caso de Charrúa es especialmente relevante: es la barra que más se acerca al nominal exacto, con una diferencia de cobertura de apenas 0.12 puntos porcentuales, consistente con que Charrúa es también la barra donde el TFT S+C tiene mayor MAE relativo entre las siete barras del norte y centro, lo que produce errores de calibración más representativos del comportamiento en prueba.
+Los resultados muestran cobertura empírica por encima del nominal en siete de las ocho barras. La cobertura oscila entre 0.9001 (Quillota) y 0.9171 (Pan de Azúcar), con anchos medios entre 32.7 (Atacama) y 40.9\,USD/MWh (Quillota) en las siete barras del norte y centro, y un ancho considerablemente mayor en Puerto Montt (75.8\,USD/MWh), consistente con su mayor dispersión de precio ya documentada en la Sección \ref{sec:pmontt_desempeno}. Quillota es la barra que más se acerca al nominal exacto, con una diferencia de cobertura de apenas 0.01 puntos porcentuales (prácticamente calibración perfecta en esta barra), mientras que Pan de Azúcar es la que más sobrecubre, con 1.71 puntos sobre el nominal.
 
 El ancho reportado en esta y las siguientes tablas de esta sección ya incorpora el truncamiento en 0 del límite inferior del intervalo, aplicado de manera uniforme a los cinco métodos (Split CP, ACI, LW Split CP, LW-ACP y CQR): dado que el costo marginal no toma valores negativos, un límite inferior negativo no aporta información y solo infla artificialmente el ancho reportado, sobre todo en horas de precio cercano a cero. El truncamiento no afecta la cobertura empírica --un intervalo $[\hat{y}-q, \hat{y}+q]$ con $\hat y - q<0$ cubre $y\geq 0$ exactamente cuando $[\max(\hat y-q,0), \hat y+q]$ también lo cubre--, por lo que las cifras de cobertura de esta sección son idénticas con o sin truncar; el efecto es puramente una reducción del ancho medio, más marcada cuanto más frecuentes son las horas de precio bajo en la barra.
 
-La sobrecobertura observada en Atacama, de hasta 1.5 puntos porcentuales sobre el nominal, es el efecto esperado de un cuantil fijo calculado sobre el período de validación: si la distribución de errores en prueba es más concentrada que en calibración, el intervalo resulta conservadoramente ancho. Esta limitación motiva las variantes adaptativas.
+La sobrecobertura observada en la mayoría de las barras, de hasta 1.7 puntos porcentuales sobre el nominal, es el efecto esperado de un cuantil fijo calculado sobre el período de validación: si la distribución de errores en prueba es más concentrada que en calibración, el intervalo resulta conservadoramente ancho. Esta limitación motiva las variantes adaptativas.
 
 Como se detalla en la Sección \ref{sec:cp_configuracion_general} del Marco Metodológico, la calibración de los cinco métodos de esta sección excluye una ventana de 11 horas de precio de falla administrativo (25--26 de febrero de 2025), verificada por el mismo valor exacto simultáneo en las ocho barras. Esta ventana cae en el conjunto de validación (calibración), no en prueba, por lo que no afecta directamente el MAE de prueba reportado en el resto de este capítulo, pero sí inflaba el cuantil de no conformidad antes de excluirla.
 
@@ -752,23 +775,53 @@ A diferencia de una formulación anterior de este trabajo, que construía un met
     \small
     \begin{tabular}{lrrrr}
         \toprule
-        Barra & Coverage & Width & MAE & $\bar{\alpha}_t$ \\
+        Barra & Coverage & Width & MAE & Pinball \\
         \midrule
-        Atacama       & 0.9467 & 49.72  & 6.70  & 0.0878 \\
-        Cardones      & 0.9465 & 47.14  & 6.63  & 0.0903 \\
-        Charrúa       & 0.9443 & 57.14  & 7.98  & 0.0825 \\
-        Crucero       & 0.9469 & 49.58  & 6.74  & 0.0890 \\
-        Pan de Azúcar & 0.9461 & 49.32  & 6.93  & 0.0905 \\
-        Puerto Montt  & 0.9471 & 105.71 & 13.68 & 0.0841 \\
-        Quillota      & 0.9446 & 58.09  & 8.26  & 0.0818 \\
-        Tarapacá      & 0.9472 & 52.88  & 7.11  & 0.0876 \\
+        Atacama       & 0.8978 & 35.86 & 6.70  & 1.579 \\
+        Cardones      & 0.8977 & 33.40 & 6.63  & 1.513 \\
+        Charrúa       & 0.8967 & 41.71 & 7.98  & 1.670 \\
+        Crucero       & 0.8983 & 34.95 & 6.74  & 1.592 \\
+        Pan de Azúcar & 0.8978 & 35.39 & 6.93  & 1.561 \\
+        Puerto Montt  & 0.8988 & 76.71 & 13.68 & 3.087 \\
+        Quillota      & 0.8960 & 42.89 & 8.26  & 1.729 \\
+        Tarapacá      & 0.8984 & 36.75 & 7.11  & 1.730 \\
         \bottomrule
     \end{tabular}
-    \caption{Resultados de ACI sobre S+C-LN (predictor puntual crudo, sin meta-modelo) con $\gamma = 0.05$ fijo, las ocho barras del SEN. Coverage nominal: 0.95. Width y MAE en USD/MWh. $\bar{\alpha}_t$: media temporal del nivel adaptado.}
+    \caption{Resultados de ACI sobre S+C-LN (predictor puntual crudo, sin meta-modelo) con $\gamma = 0.05$ fijo, las ocho barras del SEN. Coverage nominal: 0.90. Width, MAE y Pinball en USD/MWh.}
     \label{tab:aci_ln_resultados}
 \end{table}
 
-Dos patrones emergen de los resultados. Primero, la cobertura empírica se mantiene cercana al nominal en las ocho barras, con errores de cobertura entre 0.28 (Tarapacá) y 0.57 puntos porcentuales (Charrúa) --sensiblemente mejor que la sobrecobertura de 0.9--1.5 puntos de Split CP (Sección \ref{sec:split_cp_clasico})--, confirmando que la adaptación \textit{online} de $\alpha_t$ corrige el sesgo de sobrecobertura estructural del cuantil fijo. Segundo, y a diferencia de una lectura anterior de este mismo análisis --hecha antes de excluir de la calibración la ventana de precio de falla administrativo (Sección \ref{sec:split_cp_clasico})--, el ancho de intervalo de ACI \textbf{sí es sistemáticamente menor} que el de Split CP una vez que ambos comparten el mismo predictor puntual: el ancho promedio de ACI (58.7\,USD/MWh) es 8.0\% menor que el de Split CP (63.8), con una reducción que va de 4.3\% (Puerto Montt) a 13.7\% (Pan de Azúcar). El cuantil de no conformidad de un método de cuantil fijo como Split CP es especialmente sensible a un puñado de \textit{scores} de calibración inflados por un evento no representativo del mercado; la adaptación \textit{online} de $\alpha_t$, al recalcularse en cada paso de prueba en vez de fijarse una sola vez, resulta menos expuesta a ese mismo sesgo. El aporte de ACI, medido correctamente, es entonces doble: mejor calibración y un intervalo más angosto, no solo lo primero.
+Dos patrones emergen de los resultados, y uno de ellos corrige una lectura que se sostenía al 95\% de cobertura. Primero, la cobertura empírica se mantiene mucho más cerca del nominal que en Split CP: el error de cobertura va de 0.12 (Puerto Montt) a 0.40 puntos porcentuales (Quillota), frente a 0.01--1.71 puntos en Split CP (Sección \ref{sec:split_cp_clasico}), confirmando que la adaptación \textit{online} de $\alpha_t$ corrige el sesgo de sobrecobertura estructural del cuantil fijo también a este nivel. Segundo, a diferencia del resultado al 95\% (donde ACI resultaba 8.0\% más angosto que Split CP), al 90\% el ancho de intervalo de ACI es, en promedio, 3.2\% \textbf{más ancho} que el de Split CP (42.2 vs.\ 40.9\,USD/MWh), más ancho en seis de las ocho barras y prácticamente igual en Cardones y Pan de Azúcar. El nivel adaptado promedio ($\bar\alpha_t$) oscila entre 0.1279 (Quillota) y 0.1412 (Pan de Azúcar) --sistemáticamente por encima del $\alpha=0.10$ objetivo--, es decir, el mecanismo de adaptación \textit{online} converge a un nivel efectivo más laxo que el nominal para mantener la cobertura marginal correcta, lo que se traduce en un cuantil, y por lo tanto un intervalo, levemente más amplio que el cuantil fijo de Split CP a este nivel. La ventaja de ACI frente a Split CP no es entonces un ancho uniformemente menor en todo nivel de cobertura, sino una calibración consistentemente mejor que, combinada con el ancho, determina cuál método resulta preferible según la métrica agregada que se use (Sección \ref{sec:lwacp_comparativa}).
+
+\subsection{Verificación empírica de heterocedasticidad}
+\label{sec:verificacion_heterocedasticidad}
+
+Antes de presentar LW Split CP y LW-ACP, se verifica formalmente la premisa que los motiva (Sección \ref{sec:lwacp} del Marco Teórico): que el error de S+C-LN no es homocedástico. Se aplican dos pruebas complementarias sobre los residuos de validación ($y_t - \hat{y}_t$, serie cruda, excluyendo la ventana de precio de falla administrativo), el mismo conjunto que calibra $\hat{\sigma}_h$ en el pipeline de CP. El test de Levene (centrado en la mediana, robusto a no-normalidad) contrasta la igualdad de varianza entre los 24 grupos de hora del día, verificando directamente la heterocedasticidad horaria que explota la ponderación local. El test ARCH-LM de Engle, aplicado sobre la serie de residuos en orden cronológico ($\text{lag}=24$, un día), contrasta si el cuadrado de los residuos está autocorrelacionado en el tiempo, es decir, si la volatilidad se agrupa temporalmente; es la misma prueba usada en la literatura internacional sobre heterocedasticidad condicional de precios eléctricos, tanto en Alemania \cite{BenhmadPercebois2018, FletenParaschivSchurle2013} como, más cercano al contexto de este trabajo, en el mercado spot colombiano \cite{BelloBeltran2010}, lo que permite comparar directamente el resultado. La Tabla \ref{tab:heterocedasticidad} presenta ambos tests para las ocho barras.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Barra & \multicolumn{2}{c}{Levene (por hora)} & $\hat{\sigma}_h$ rango & \multicolumn{2}{c}{ARCH-LM ($\text{lag}=24$)} \\
+         & $F$ & $p$ & (USD/MWh) & Estad. & $p$ \\
+        \midrule
+        Atacama       & 12.84 & $<0.001$ & [9.7, 29.1]  & 5898.1 & $<0.001$ \\
+        Cardones      & 25.76 & $<0.001$ & [6.7, 26.8]  & 554.5  & $<0.001$ \\
+        Charrúa       & 12.31 & $<0.001$ & [10.4, 24.6] & 137.2  & $<0.001$ \\
+        Crucero       & 14.03 & $<0.001$ & [8.4, 29.3]  & 6204.4 & $<0.001$ \\
+        Pan de Azúcar & 18.84 & $<0.001$ & [7.6, 22.7]  & 255.6  & $<0.001$ \\
+        Puerto Montt  & 18.35 & $<0.001$ & [13.5, 45.6] & 348.6  & $<0.001$ \\
+        Quillota      & 13.34 & $<0.001$ & [10.0, 24.9] & 136.2  & $<0.001$ \\
+        Tarapacá      & 16.24 & $<0.001$ & [9.1, 31.6]  & 5872.5 & $<0.001$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Verificación de heterocedasticidad sobre los residuos de validación de S+C-LN (serie cruda). Levene: igualdad de varianza entre las 24 horas del día (centrado en mediana). $\hat{\sigma}_h$ rango: desviación estándar mínima y máxima entre las 24 horas. ARCH-LM: autocorrelación del cuadrado de los residuos en el tiempo, $\text{lag}=24$.}
+    \label{tab:heterocedasticidad}
+\end{table}
+
+Ambas pruebas rechazan homocedasticidad en las ocho barras, con márgenes muy por debajo de $\alpha=0.05$ incluso tras una corrección de Holm-Bonferroni para las ocho comparaciones de cada familia (que, dada la magnitud de los estadísticos, no cambia ningún resultado). La desviación estándar horaria ($\hat{\sigma}_h$) varía hasta en un factor de 3 dentro de una misma barra (Puerto Montt: de 13.5 a 45.6\,USD/MWh), consistente con la motivación original de la ponderación local. El test ARCH-LM confirma además que esta heterocedasticidad no es solo un efecto de calendario (hora del día): el error también se agrupa temporalmente, con rachas de alta o baja volatilidad que se extienden más allá de una hora puntual, la premisa que explota la adaptación \textit{online} de $\alpha_t$ en ACI y LW-ACP. Este resultado es, hasta donde se pudo verificar en la revisión de literatura de este trabajo, la primera prueba formal de heterocedasticidad condicional reportada sobre el costo marginal chileno; los antecedentes nacionales más cercanos identificados durante la revisión de este trabajo, incluyendo León et al. (2026) \cite{LeonSMPChile}, no reportan un test de esta naturaleza sobre el costo marginal.
 
 \subsection{LW Split CP}
 \label{sec:lw_split_cp}
@@ -778,25 +831,25 @@ Al igual que Split CP clásico y ACI (Secciones \ref{sec:split_cp_clasico}--\ref
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{lrrr}
+    \begin{tabular}{lrrrr}
         \toprule
-        Barra & Coverage & Width & MAE \\
+        Barra & Coverage & Width & MAE & Pinball \\
         \midrule
-        Atacama       & 0.9651 & 55.80  & 6.70  \\
-        Cardones      & 0.9588 & 54.19  & 6.63  \\
-        Charrúa       & 0.9537 & 61.79  & 7.98  \\
-        Crucero       & 0.9623 & 53.76  & 6.74  \\
-        Pan de Azúcar & 0.9601 & 56.75  & 6.93  \\
-        Puerto Montt  & 0.9597 & 109.53 & 13.68 \\
-        Quillota      & 0.9535 & 62.98  & 8.26  \\
-        Tarapacá      & 0.9612 & 56.67  & 7.11  \\
+        Atacama       & 0.9142 & 33.22 & 6.70  & 1.649 \\
+        Cardones      & 0.9137 & 33.91 & 6.63  & 1.660 \\
+        Charrúa       & 0.9023 & 39.93 & 7.98  & 1.842 \\
+        Crucero       & 0.9120 & 33.18 & 6.74  & 1.655 \\
+        Pan de Azúcar & 0.9182 & 35.96 & 6.93  & 1.684 \\
+        Puerto Montt  & 0.9118 & 73.44 & 13.68 & 3.076 \\
+        Quillota      & 0.8995 & 40.63 & 8.26  & 1.907 \\
+        Tarapacá      & 0.9144 & 35.26 & 7.11  & 1.772 \\
         \bottomrule
     \end{tabular}
-    \caption{Resultados de LW Split CP sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.95. Width y MAE en USD/MWh.}
+    \caption{Resultados de LW Split CP sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.90. Width, MAE y Pinball en USD/MWh.}
     \label{tab:lwscp_resultados}
 \end{table}
 
-La cobertura empírica se mantiene por encima del nominal en las ocho barras, entre 0.9535 (Quillota) y 0.9651 (Atacama), un patrón de sobrecobertura similar al de Split CP clásico (Sección \ref{sec:split_cp_clasico}) y esperable dado que LW Split CP hereda el mismo mecanismo de cuantil fijo, solo que aplicado sobre \textit{scores} normalizados por hora. El ancho medio, sin embargo, \textbf{no se reduce de forma consistente} respecto a Split CP clásico: sube en Atacama (+2.1\%), Cardones (+1.1\%), Charrúa (+0.9\%), Crucero (+1.8\%) y Tarapacá (+0.8\%), y baja levemente en Pan de Azúcar (-0.7\%), Puerto Montt (-0.8\%) y Quillota (-2.0\%), sin una dirección predominante (63.9 vs.\ 63.8\,USD/MWh en promedio sobre las ocho barras, +0.2\%). Esto contrasta con ACI (Sección \ref{sec:aci}), que sí reduce el ancho de forma sistemática y por un margen considerable (8.0\%): la ponderación local por hora, aplicada sola y sin la adaptación \textit{online} de $\alpha_t$, no es suficiente para capturar una ganancia de eficiencia -- la Sección \ref{sec:lwacp_comparativa} retoma esta comparación con los cinco métodos en conjunto.
+La cobertura empírica se mantiene por encima del nominal en siete de las ocho barras, entre 0.8995 (Quillota) y 0.9182 (Pan de Azúcar), un patrón de sobrecobertura similar al de Split CP clásico (Sección \ref{sec:split_cp_clasico}) y esperable dado que LW Split CP hereda el mismo mecanismo de cuantil fijo, solo que aplicado sobre \textit{scores} normalizados por hora. El ancho medio, igual que al 95\% de cobertura, \textbf{no se reduce de forma consistente} respecto a Split CP clásico: sube en Atacama, Cardones, Crucero y Pan de Azúcar, y baja en Charrúa, Puerto Montt (-3.1\%, la mayor reducción), Quillota y Tarapacá, sin una dirección predominante (40.7 vs.\ 40.9\,USD/MWh en promedio sobre las ocho barras, -0.5\%). La ponderación local por hora, aplicada sola y sin la adaptación \textit{online} de $\alpha_t$, sigue sin ser suficiente para capturar una ganancia de eficiencia sistemática a ningún nivel de cobertura -- la Sección \ref{sec:lwacp_comparativa} retoma esta comparación con los cuatro métodos en conjunto.
 
 \subsection{LW-ACP Online}
 \label{sec:lwacp_resultados}
@@ -806,88 +859,114 @@ La Tabla \ref{tab:lwacp_resultados} presenta los resultados de LW-ACP sobre S+C-
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{lrrr}
+    \begin{tabular}{lrrrr}
         \toprule
-        Barra & Coverage & Width & MAE \\
+        Barra & Coverage & Width & MAE & Pinball \\
         \midrule
-        Atacama       & 0.9471 & 49.62  & 6.70  \\
-        Cardones      & 0.9461 & 48.47  & 6.63  \\
-        Charrúa       & 0.9440 & 56.29  & 7.98  \\
-        Crucero       & 0.9471 & 49.99  & 6.74  \\
-        Pan de Azúcar & 0.9461 & 48.96  & 6.93  \\
-        Puerto Montt  & 0.9475 & 101.34 & 13.68 \\
-        Quillota      & 0.9440 & 58.04  & 8.26  \\
-        Tarapacá      & 0.9476 & 53.33  & 7.11  \\
+        Atacama       & 0.8980 & 36.08 & 6.70  & 1.598 \\
+        Cardones      & 0.8978 & 33.78 & 6.63  & 1.542 \\
+        Charrúa       & 0.8956 & 40.94 & 7.98  & 1.652 \\
+        Crucero       & 0.8984 & 35.15 & 6.74  & 1.597 \\
+        Pan de Azúcar & 0.8978 & 34.78 & 6.93  & 1.559 \\
+        Puerto Montt  & 0.8987 & 75.00 & 13.68 & 2.997 \\
+        Quillota      & 0.8958 & 43.06 & 8.26  & 1.709 \\
+        Tarapacá      & 0.8985 & 37.05 & 7.11  & 1.718 \\
         \bottomrule
     \end{tabular}
-    \caption{Resultados de LW-ACP ($\gamma = 0.05$) sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.95. Width y MAE en USD/MWh.}
+    \caption{Resultados de LW-ACP ($\gamma = 0.05$) sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.90. Width, MAE y Pinball en USD/MWh.}
     \label{tab:lwacp_resultados}
 \end{table}
 
-La cobertura empírica de LW-ACP se mantiene cerca del nominal: las ocho barras caen en el rango $[0.9440,\, 0.9476]$, es decir, entre 0.24 y 0.60 puntos porcentuales del nominal 0.95, más ajustado que la sobrecobertura de 0.1--1.5 puntos porcentuales observada en Split CP clásico y LW Split CP, aunque sin la precisión casi exacta que se obtenía con $\gamma = 0.01$ --el valor con el que se había barrido inicialmente, y que producía una desviación media de solo 0.02 puntos porcentuales, pero que no puede adoptarse sin verse influido por su desempeño en prueba (Sección \ref{sec:lwacp_comparativa})--. Esto confirma que el mecanismo de adaptación online de $\alpha_t$, heredado de ACI, corrige de manera efectiva el sesgo de sobrecobertura estructural de los métodos de cuantil fijo, sin necesidad de reentrenar ningún modelo, aunque la magnitud exacta de esa corrección depende de $\gamma$.
+La cobertura empírica de LW-ACP se mantiene cerca del nominal: las ocho barras caen en el rango $[0.8956,\, 0.8987]$, es decir, entre 0.13 y 0.44 puntos porcentuales del nominal 0.90, sensiblemente más ajustado que la sobrecobertura de 0.01--1.71 puntos porcentuales observada en Split CP clásico y LW Split CP a este mismo nivel. El nivel adaptado promedio ($\bar\alpha_t$) oscila entre 0.1279 (Quillota) y 0.1412 (Pan de Azúcar), consistente con el mismo sesgo hacia un nivel efectivo más laxo que se observa en ACI (Sección \ref{sec:aci}). Esto confirma que el mecanismo de adaptación online de $\alpha_t$, heredado de ACI, corrige de manera efectiva el sesgo de sobrecobertura estructural de los métodos de cuantil fijo también a este nivel, sin necesidad de reentrenar ningún modelo.
 
-Al mismo tiempo, LW-ACP produce los intervalos más angostos de los cinco métodos evaluados, incluyendo CQR como comparación externa (Sección \ref{sec:lwacp_comparativa}): una reducción promedio de 8.7\% respecto a Split CP clásico, con el mayor beneficio en Pan de Azúcar (14.4\%) y Cardones (9.5\%), y el menor en Tarapacá (5.2\%) y Crucero (5.4\%). La mayor parte de esta reducción ya está presente en ACI solo (8.0\% respecto a Split CP, Sección \ref{sec:aci}); la ponderación local por hora, agregada sobre la adaptación \textit{online}, aporta una reducción adicional modesta (LW-ACP es 0.8\% más angosto que ACI en promedio) pero no uniforme, angosto en cinco de las ocho barras y levemente más ancho en las otras tres (Cardones, Crucero, Tarapacá). La combinación de una cobertura cercana al nominal y el ancho más angosto de los cinco métodos muestra que, con un $\gamma$ fijado de antemano y no elegido por su resultado en prueba, LW-ACP explota dos fuentes de información distintas --la heterocedasticidad horaria conocida de antemano, vía $\hat{\sigma}_h$, y el error de cobertura reciente, vía $\alpha_t$--, aunque la segunda explica la mayor parte de la ganancia y la primera aporta un refinamiento adicional, no una fuente de eficiencia comparable por sí sola (Sección \ref{sec:lw_split_cp}).
+A diferencia de lo observado al 95\% de cobertura, donde LW-ACP producía los intervalos más angostos de los cuatro métodos, al 90\% LW-ACP es, en promedio, 2.6\% \textbf{más ancho} que Split CP (42.0 vs.\ 40.9\,USD/MWh) --el mismo efecto que revierte la ventaja de ancho de ACI a este nivel (Sección \ref{sec:aci})--, aunque sigue siendo 0.5\% más angosto que ACI solo (42.0 vs.\ 42.2), la contribución propia y modesta de la ponderación horaria sobre la adaptación \textit{online}, consistente en dirección con la observada al 95\% (0.8\%). La combinación de una cobertura más cercana al nominal que Split CP y un ancho comparable al de ACI muestra que, a este nivel también, la mayor parte de la ganancia de LW-ACP proviene de la adaptación \textit{online} de $\alpha_t$, con la ponderación horaria aportando un refinamiento adicional modesto, no una fuente de eficiencia comparable por sí sola (Sección \ref{sec:lw_split_cp}). Qué método resulta preferible en términos de ancho depende entonces del nivel de cobertura exigido: a 95\% la adaptación \textit{online} reduce tanto la desviación de cobertura como el ancho; a 90\%, la reduce solo en calibración, no en ancho crudo. La Sección \ref{sec:lwacp_comparativa} retoma esta comparación con el \textit{interval score} de Winkler, que combina ambas dimensiones y permite determinar si, aun así, la mejor calibración de LW-ACP compensa su ancho ligeramente mayor a este nivel.
 
 \subsection{Comparativa de métodos: SCP, ACP, LW-ACP y CQR}
 \label{sec:lwacp_comparativa}
 
-Con todos los métodos evaluados sobre S+C-LN y sobre el mismo predictor puntual crudo, las tres variantes principales de Split CP forman un linaje conceptual de dos pasos, más una comparación externa: Split CP (SCP) es el método base de calibración por cuantil fijo (Sección \ref{sec:split_cp_clasico}); ACP añade adaptación \textit{online} del nivel de cobertura, el mecanismo de Gibbs y Candès (2021, Sección 2.6.4), correspondiente a ACI con $\gamma = 0.05$ (Sección \ref{sec:aci}); y LW-ACP, la contribución de este trabajo, añade además ponderación local por hora (Sección \ref{sec:lwacp_resultados}, Sección \ref{sec:lwacp} del Marco Teórico). CQR se incluye como comparación externa a la familia de Conformal Prediction (Sección 2.6.2), al estimar cuantiles condicionales directamente mediante regresión cuantílica en vez de calibrar un cuantil de no conformidad. La Tabla \ref{tab:lw_comparativa} resume el ancho medio, la desviación de cobertura y el \textit{interval score} de Winkler --que penaliza conjuntamente el ancho del intervalo y la magnitud de la no-cobertura, a diferencia del ancho y la cobertura marginal por separado (Sección \ref{sec:metricas_cp})-- de los cuatro métodos, promediados sobre las ocho barras.
+Con todos los métodos evaluados sobre S+C-LN y sobre el mismo predictor puntual crudo, las tres variantes principales de Split CP forman un linaje conceptual de dos pasos, más una comparación externa: Split CP (SCP) es el método base de calibración por cuantil fijo (Sección \ref{sec:split_cp_clasico}); ACP añade adaptación \textit{online} del nivel de cobertura, el mecanismo de Gibbs y Candès (2021, Sección 2.6.4), correspondiente a ACI con $\gamma = 0.05$ (Sección \ref{sec:aci}); y LW-ACP, la contribución de este trabajo, añade además ponderación local por hora (Sección \ref{sec:lwacp_resultados}, Sección \ref{sec:lwacp} del Marco Teórico). CQR se incluye como comparación externa a la familia de Conformal Prediction (Sección \ref{sec:cqr}), al estimar cuantiles condicionales directamente mediante regresión cuantílica en vez de calibrar un cuantil de no conformidad. Esta comparación se realiza al 90\% de cobertura nominal, el nivel principal adoptado en este capítulo (Sección \ref{sec:cp_configuracion_general} del Marco Metodológico). La Tabla \ref{tab:lw_comparativa} resume el ancho medio, la desviación de cobertura, el \textit{interval score} de Winkler --que penaliza conjuntamente el ancho del intervalo y la magnitud de la no-cobertura, a diferencia del ancho y la cobertura marginal por separado (Sección \ref{sec:metricas_cp})-- y la pérdida pinball promedio (Ecuación \ref{eq:pinball_cp}), que evalúa la calibración de cada extremo del intervalo por separado en vez de tratarlo como una unidad, de los cinco métodos, promediados sobre las ocho barras.
 
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{lrrr}
+    \begin{tabular}{lrrrr}
         \toprule
-        Método & Width medio (USD/MWh) & $|$Coverage $-$ 0.95$|$ medio & Winkler medio \\
+        Método & Width & $|$Cov $-$ 0.90$|$ & Winkler & Pinball \\
         \midrule
-        Split CP (SCP)              & 63.80 & 0.0089 & 100.78 \\
-        ACP (ACI, $\gamma=0.05$)    & 58.70 & 0.0038 & 90.64 \\
-        LW-ACP ($\gamma=0.05$)      & \textbf{58.25} & \textbf{0.0038} & \textbf{89.89} \\
-        CQR                         & 67.99 & 0.0081 & 96.50 \\
+        Split CP (SCP)              & 40.90 & 0.0112 & 76.65 & 1.916 \\
+        ACP (ACI, $\gamma=0.05$)    & 42.21 & \textbf{0.0023} & 72.31 & 1.808 \\
+        LW Split CP                 & \textbf{40.69} & 0.0108 & 76.23 & 1.906 \\
+        LW-ACP ($\gamma=0.05$)      & 41.98 & 0.0024 & \textbf{71.87} & \textbf{1.797} \\
+        CQR                         & 43.04 & 0.0142 & 72.53 & 1.813 \\
         \bottomrule
     \end{tabular}
-    \caption{Comparación del linaje SCP $\to$ ACP $\to$ LW-ACP, más CQR como comparación externa, evaluados sobre S+C-LN con el mismo predictor puntual crudo (ocho barras). Width y Winkler promedio en USD/MWh; desviación absoluta media respecto a la cobertura nominal 0.95.}
+    \caption{Comparación de los cinco métodos evaluados sobre S+C-LN con el mismo predictor puntual crudo (ocho barras), al 90\% de cobertura nominal. Width, Winkler y Pinball en USD/MWh; desviación absoluta media respecto a la cobertura nominal 0.90.}
     \label{tab:lw_comparativa}
 \end{table}
 
-El linaje SCP $\to$ ACP $\to$ LW-ACP, con $\gamma = 0.05$ fijado de antemano y el mismo predictor puntual crudo en los tres métodos, muestra que casi toda la ganancia del linaje proviene de un solo mecanismo. ACP, que solo añade adaptación \textit{online} del nivel de cobertura, sin ponderación horaria ni cambio de predictor, reduce la desviación de cobertura en 57\% (de 0.0089 a 0.0038 puntos) respecto a SCP, y \textbf{también reduce el ancho medio} de forma sustancial: con 58.70\,USD/MWh resulta 8.0\% más angosto que SCP (Sección \ref{sec:aci}). LW-ACP, que agrega la ponderación por hora sobre ese mismo mecanismo \textit{online}, reduce el ancho un poco más, hasta 58.25\,USD/MWh (8.7\% respecto a SCP), con una calibración prácticamente idéntica a la de ACP solo (0.0038 en ambos). En conjunto, esto acota con precisión qué aporta cada mecanismo, y corrige una lectura anterior de este mismo análisis: la adaptación \textit{online} de $\alpha_t$ por sí sola ya explica la gran mayoría de la mejora, tanto en calibración como en ancho; la ponderación horaria por sí sola, sin adaptación \textit{online}, no aporta una reducción de ancho consistente (Sección \ref{sec:lw_split_cp}), y solo aporta un refinamiento adicional modesto cuando se combina con la adaptación \textit{online} en LW-ACP. CQR, evaluado de forma independiente de la familia CP, resulta en este caso el \textbf{más ancho} de los cuatro métodos (67.99\,USD/MWh) y con peor calibración que ACP y LW-ACP (0.0081 de desviación, más del doble): a diferencia de los tres métodos conformes, cuyo intervalo se trunca en 0 de forma directa sobre un semiancho ya angosto, los cuantiles de CQR se estiman por regresión cuantílica condicional y ya incorporan una asimetría propia que deja menos margen para que el truncamiento en 0 reduzca su ancho reportado. El \textit{interval score} de Winkler, que combina ambas dimensiones en una sola métrica, confirma este orden (LW-ACP $<$ ACP $<$ CQR $<$ SCP): LW-ACP obtiene el mejor puntaje (89.89), seguido de cerca por ACP (90.64), con CQR intermedio (96.50) y SCP claramente peor (100.78, 12\% más alto que LW-ACP). LW-ACP es entonces el único de los cuatro métodos que combina el mejor resultado en las tres métricas --ancho, calibración y Winkler-- de forma simultánea.
+Ningún método domina las cuatro métricas de forma simultánea a este nivel, a diferencia de lo que ocurre al 95\% (Tabla \ref{tab:cp_niveles_full}), donde LW-ACP sí lo hace. LW Split CP tiene el ancho medio más bajo (40.69), y ACP la mejor calibración (0.0023); pero ambos quedan por detrás de LW-ACP en Winkler (71.87) y pinball (1.797), las dos métricas que combinan ancho y calibración en una sola cifra. La razón es la misma identificada en las Secciones \ref{sec:aci} y \ref{sec:lwacp_resultados}: a 90\%, la adaptación \textit{online} de $\alpha_t$ (ACP, LW-ACP) ya no reduce el ancho crudo respecto al cuantil fijo (SCP, LW Split CP) --de hecho lo aumenta levemente, 3.2\% en ACP y 2.6\% en LW-ACP respecto a SCP--, pero sí reduce la desviación de cobertura de forma muy sustancial (79\% menos en ACP y LW-ACP que en SCP), y esa mejor calibración pesa lo suficiente en el Winkler score y en la pérdida pinball como para que ambos métodos \textit{online} terminen con mejor puntaje agregado a pesar del ancho ligeramente mayor. Entre los dos métodos \textit{online}, la ponderación horaria de LW-ACP aporta una mejora adicional pequeña pero consistente sobre ACP solo (-0.5\% en ancho, -0.6\% en Winkler y pinball), el mismo patrón, de menor magnitud, observado al 95\% (Sección \ref{sec:lwacp_resultados}). Esto confirma, con una métrica agregada y no solo con ancho o cobertura por separado, que la ganancia de LW-ACP sobre SCP es real a ambos niveles de cobertura, pero que su mecanismo difiere: a 95\% mejora ancho y calibración simultáneamente; a 90\%, solo calibración, compensando con margen un ancho levemente mayor.
 
-Queda fuera de esta comparación agregada, aunque se presenta en su propia sección, LW Split CP (Sección \ref{sec:lw_split_cp}), que pondera por hora sin adaptación \textit{online}: confirma, desde la dirección opuesta a ACP, que la ponderación horaria por sí sola no es la fuente principal de la eficiencia observada en LW-ACP.
+El ancho más bajo de LW Split CP (40.69) no se traduce en el mejor puntaje agregado porque hereda la misma sobrecobertura estructural de SCP (Sección \ref{sec:lw_split_cp}) sin el mecanismo que la corrige. CQR, calibrado al mismo nivel mediante regresión cuantílica condicional con \textit{cross-conformal} (Sección \ref{sec:cqr}), es el más ancho de los cinco métodos (43.04\,USD/MWh) y el peor calibrado (0.0142 de desviación, seis veces la de ACP y LW-ACP). Su Winkler (72.53) y su pinball (1.813) quedan, sin embargo, muy cerca de los de ACP y por debajo de los de SCP y LW Split CP: con una cobertura similar a la de SCP, la penalización por violaciones que acumula en el Winkler es menor (29.5 frente a 35.7\,USD/MWh), es decir, cuando el valor real queda fuera de su intervalo, queda fuera por menos. El truncamiento en 0 del límite inferior se aplica por igual a los cinco métodos (Sección \ref{sec:split_cp_clasico}), de modo que la diferencia de ancho no se explica por el tratamiento del límite inferior.
+
+Dado que al 90\% ningún método gana en las cuatro métricas a la vez, cabe preguntarse si existe algún nivel de cobertura donde sí ocurra. La respuesta es sí: al 95\% (Tabla \ref{tab:cp_niveles_full}), LW-ACP \textbf{sí} domina las cuatro métricas de forma simultánea, también frente a CQR (67.99\,USD/MWh de ancho, 0.0081 de desviación, Winkler 96.50 y pinball 1.206 a ese nivel). Ahí, la adaptación \textit{online} todavía reduce el ancho crudo respecto al cuantil fijo (58.26 vs.\ 63.80\,USD/MWh de SCP, 8.7\% menor, Sección \ref{sec:lwacp_comparativa}) --a diferencia de lo que ocurre a 90\%--, mientras que la calibración sigue siendo la mejor o empatada con ACP (0.0038 ambos) y el Winkler y el pinball son los más bajos de los cinco (89.89 y 1.124 respectivamente, frente a 90.64 y 1.133 de ACP). Es decir, el mismo mecanismo (adaptación \textit{online} de $\alpha_t$, más ponderación horaria) deja de reducir el ancho crudo por debajo de cierto nivel de cobertura exigido, pero nunca deja de ser la mejor opción en las métricas agregadas (Winkler, pinball) en ninguno de los tres niveles evaluados. Esto es consistente con que, a medida que el nivel de cobertura exigido baja, el cuantil de calibración se acerca a la mediana del error en vez de a su cola, donde el cuantil fijo de SCP y LW Split CP ya es naturalmente angosto y no hay mucho margen para que la adaptación \textit{online} lo reduzca más; es en la cola donde el mecanismo de ACP y LW-ACP aporta su mayor ventaja de ancho, no en el centro de la distribución.
+
+La Tabla \ref{tab:cp_niveles_full} reúne la cobertura empírica y el ancho medio de los cinco métodos en los tres niveles de cobertura nominal reportados en este trabajo (50\%, 90\% y 95\%), para cuantificar en una sola tabla la evidencia de colas pesadas ya anticipada en la Tabla \ref{tab:comparacion_volatilidad}.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        & \multicolumn{2}{c}{50\%} & \multicolumn{2}{c}{90\%} & \multicolumn{2}{c}{95\%} \\
+        Método & Cov. & Ancho & Cov. & Ancho & Cov. & Ancho \\
+        \midrule
+        Split CP    & 0.478 & 3.72 & 0.911 & 40.90 & 0.959 & 63.80 \\
+        ACP (ACI)   & 0.500 & 5.56 & 0.898 & 42.21 & 0.946 & 58.70 \\
+        LW Split CP & 0.478 & 3.75 & 0.911 & 40.69 & 0.959 & 63.93 \\
+        LW-ACP      & 0.500 & 5.61 & 0.898 & 41.98 & 0.946 & 58.26 \\
+        CQR         & 0.519 & 6.49 & 0.914 & 43.04 & 0.958 & 67.99 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Cobertura empírica y ancho medio (USD/MWh) a 50\%, 90\% y 95\% de cobertura nominal, promedio de las ocho barras.}
+    \label{tab:cp_niveles_full}
+\end{table}
+
+Si los errores del modelo fueran aproximadamente normales, reducir la cobertura nominal de 95\% a 90\% debería reducir el ancho en aproximadamente 16\% (la razón de los cuantiles normales $z_{0.95}/z_{0.975} = 1.645/1.96$). La reducción observada es sustancialmente mayor en los cinco métodos: entre 28\% (LW-ACP, de 58.26 a 41.98) y 37\% (CQR, de 67.99 a 43.04). Cubrir ese último 5\% de observaciones, las más extremas, exige un ensanchamiento del intervalo muy por encima de lo que una distribución de cola liviana requeriría, evidencia cuantitativa directa de que el error de S+C-LN tiene colas más pesadas que las de una distribución normal, consistente con la heterocedasticidad y los \textit{spikes} documentados en las Secciones \ref{sec:errores_extremos} y \ref{sec:verificacion_heterocedasticidad}.
 
 \subsection{Cobertura condicional por hora y por mes}
 \label{sec:cobertura_condicional}
 
 La cobertura marginal cercana al nominal reportada hasta aquí es un promedio sobre todo el conjunto de prueba, y puede ocultar heterogeneidad sistemática si el método sub-cubre en algunas horas o meses y sobre-cubre en otras, compensándose en el promedio. Esta sección desagrega la cobertura de Split CP, ACP y LW-ACP --el linaje completo (Sección \ref{sec:lwacp_comparativa})-- por hora del día y por mes, promediando sobre las ocho barras.
 
-La Figura \ref{fig:cp_cobertura_ancho_hora} presenta la cobertura y el ancho medio por hora del día para los tres métodos. Incluir a ACP, no solo los dos extremos del linaje, permite distinguir si la caída de cobertura en horas de transición es un efecto de la adaptación \textit{online} en sí, o específico de agregarle la ponderación horaria: la Figura \ref{fig:cp_cobertura_ancho_hora} muestra que ACP y LW-ACP caen de forma casi idéntica en esas horas (0.902 vs.\ 0.898), mientras que Split CP, sin adaptación \textit{online}, cae menos (0.943). La caída es entonces atribuible al mecanismo de adaptación \textit{online} de $\alpha_t$, compartido por ambos métodos, no a la ponderación horaria que solo LW-ACP incorpora.
+La Figura \ref{fig:cp_cobertura_ancho_hora} presenta la cobertura y el ancho medio por hora del día para los tres métodos, al 90\% de cobertura nominal. Incluir a ACP, no solo los dos extremos del linaje, permite distinguir si la caída de cobertura en horas de transición es un efecto de la adaptación \textit{online} en sí, o específico de agregarle la ponderación horaria: la Figura \ref{fig:cp_cobertura_ancho_hora} muestra que ACP y LW-ACP caen de forma casi idéntica en esas horas (0.800 vs.\ 0.799), mientras que Split CP, sin adaptación \textit{online}, cae menos (0.861). La caída es entonces atribuible al mecanismo de adaptación \textit{online} de $\alpha_t$, compartido por ambos métodos, no a la ponderación horaria que solo LW-ACP incorpora.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{imagenes/fig_cp_cobertura_ancho_hora.pdf}
-    \caption{Cobertura empírica (izquierda) y ancho medio del intervalo (derecha) por hora del día, Split CP vs.\ ACP vs.\ LW-ACP, promediado sobre las ocho barras. ACP y LW-ACP son más angostos que Split CP casi todo el día, pero ambos --no solo LW-ACP-- caen marcadamente por debajo del nominal en las horas de transición solar (7--9h, 19--21h).}
+    \caption{Cobertura empírica (izquierda) y ancho medio del intervalo (derecha) por hora del día, Split CP vs.\ ACP vs.\ LW-ACP, promediado sobre las ocho barras, al 90\% de cobertura nominal. ACP y LW-ACP caen marcadamente por debajo del nominal en las horas de transición solar (7--9h, 19--21h), más que Split CP en esas mismas horas.}
     \label{fig:cp_cobertura_ancho_hora}
 \end{figure}
 
-Por mes, LW-ACP es marcadamente más estable que Split CP: la desviación estándar de la cobertura mensual es 0.0048 para LW-ACP frente a 0.0280 para Split CP, casi seis veces menor. Split CP oscila entre 0.899 (junio) y 0.991 (marzo), mientras que las doce cifras mensuales de LW-ACP caen todas en el rango estrecho $[0.933,\, 0.950]$. Esta es precisamente la ventaja esperada de la adaptación \textit{online} de $\alpha_t$: al reaccionar al historial reciente de cobertura, LW-ACP corrige la deriva estacional que un cuantil fijo como el de Split CP no puede seguir.
+Por mes, LW-ACP es marcadamente más estable que Split CP, incluso más que al 95\% de cobertura: la desviación estándar de la cobertura mensual es 0.0039 para LW-ACP frente a 0.0473 para Split CP, más de doce veces menor. Split CP oscila entre 0.817 (junio) y 0.964 (marzo), mientras que las doce cifras mensuales de LW-ACP caen todas en el rango estrecho $[0.887,\, 0.902]$. Esta es precisamente la ventaja esperada de la adaptación \textit{online} de $\alpha_t$: al reaccionar al historial reciente de cobertura, LW-ACP corrige la deriva estacional que un cuantil fijo como el de Split CP no puede seguir.
 
-Por hora del día, sin embargo, el resultado es el opuesto: la desviación estándar de la cobertura horaria es 0.0181 para Split CP frente a 0.0370 para LW-ACP, más del doble. La brecha se concentra exactamente en las horas de transición solar (7, 8, 19, 20 y 21h) que el análisis de errores extremos (Sección \ref{sec:errores_extremos}) ya identifica como el origen del desfase de fase: ahí la cobertura promedio de LW-ACP cae a 0.898, 5.2 puntos porcentuales bajo el nominal y 4.5 puntos por debajo de Split CP (0.943) en esas mismas horas, mientras que en el resto de las horas ambos métodos son similares (0.959 LW-ACP vs.\ 0.963 Split CP). Es decir, la ponderación horaria por sí sola no logra homogeneizar la cobertura entre horas --la motivación original de $\hat\sigma_h$--, y en las horas más difíciles del día, las mismas donde se concentra el desfase de fase, LW-ACP cubre peor que el cuantil fijo sin ponderar, no mejor.
+Por hora del día, sin embargo, el resultado es el opuesto: la desviación estándar de la cobertura horaria es 0.0426 para Split CP frente a 0.0709 para LW-ACP, 1.7 veces mayor. La brecha se concentra exactamente en las horas de transición solar (7, 8, 19, 20 y 21h) que el análisis de errores extremos (Sección \ref{sec:errores_extremos}) ya identifica como el origen del desfase de fase: ahí la cobertura promedio de LW-ACP cae a 0.799, 10.1 puntos porcentuales bajo el nominal y 6.1 puntos por debajo de Split CP (0.861) en esas mismas horas, mientras que en el resto de las horas ambos métodos son similares (0.924 LW-ACP vs.\ 0.925 Split CP). Es decir, la ponderación horaria por sí sola no logra homogeneizar la cobertura entre horas --la motivación original de $\hat\sigma_h$--, y en las horas más difíciles del día, las mismas donde se concentra el desfase de fase, LW-ACP cubre peor que el cuantil fijo sin ponderar, no mejor; a este nivel la brecha es incluso algo mayor que al 95\% de cobertura.
 
 Esto es coherente con el hallazgo de la Sección \ref{sec:lwacp_comparativa}: la eficiencia de LW-ACP proviene mayoritariamente de la adaptación \textit{online} de $\alpha_t$, un mecanismo que opera sobre la dimensión temporal mes a mes, no sobre la dimensión horaria intradía. $\hat\sigma_h$ ajusta el \textit{ancho} del intervalo según la variabilidad histórica de cada hora, pero no ajusta el \textit{nivel de cobertura} por hora --ese es un único $\alpha_t$ compartido por las 24 horas del día--, por lo que un error sistemático concentrado en horas específicas, como el desfase de fase, no se corrige de la misma forma en que la adaptación \textit{online} sí corrige la deriva estacional. Esta limitación motiva directamente la variante de $\alpha_t$ indexado por hora propuesta como trabajo futuro (Conclusiones).
 
 \subsection{Selección del mejor método de CP}
 
-LW-ACP es el método de Conformal Prediction seleccionado para el pipeline final. Es el único de los cuatro métodos que combina el mejor resultado en las tres métricas evaluadas: el ancho medio más angosto (58.25\,USD/MWh, 8.7\% menor que Split CP), la mejor calibración (0.0038 de desviación media, empatado con ACP y menos de la mitad de la desviación de CQR) y el mejor \textit{interval score} de Winkler (89.89, Sección \ref{sec:lwacp_comparativa}), dentro de 0.24--0.60 puntos porcentuales del nominal en las ocho barras (Sección \ref{sec:lwacp_resultados}). A diferencia de CQR, que no ofrece garantías de cobertura marginal finita sin supuestos distribucionales y que en esta comparación resulta ser el método más ancho de los cuatro, LW-ACP hereda la garantía de cobertura marginal asintótica de la familia conforme, y logra además reducir el ancho respecto a Split CP en las ocho barras sin excepción (Sección \ref{sec:lwacp_resultados}). Esta ventaja en ancho proviene principalmente de la adaptación \textit{online} del nivel de cobertura, heredada de ACP, con un aporte adicional --menor, y consistente en cinco de las ocho barras-- de la ponderación horaria vía $\hat{\sigma}_h$ (Sección \ref{sec:lwacp_comparativa}).
+LW-ACP es el método de Conformal Prediction seleccionado para el pipeline final. Al 90\% de cobertura nominal --el nivel principal de este capítulo-- ningún método domina las cuatro métricas a la vez (Sección \ref{sec:lwacp_comparativa}): LW Split CP tiene el ancho medio más bajo (40.69\,USD/MWh) y ACP la mejor calibración (0.0023 de desviación media), pero LW-ACP obtiene el mejor resultado en las dos métricas que combinan ambas dimensiones, el \textit{interval score} de Winkler (71.87) y la pérdida pinball (1.797), con una calibración (0.0024) prácticamente idéntica a la de ACP y sensiblemente mejor que la de los dos métodos sin adaptación \textit{online} (0.0108--0.0112). Al 95\% de cobertura (Tabla \ref{tab:cp_niveles_full}) la ventaja de LW-ACP es más completa: ahí sí combina el mejor resultado en ancho, calibración y Winkler simultáneamente. En ambos niveles, la fuente principal de la ventaja de LW-ACP es la adaptación \textit{online} del nivel de cobertura heredada de ACP, con un aporte adicional menor y consistente de la ponderación horaria vía $\hat{\sigma}_h$ (Sección \ref{sec:lwacp_comparativa}). CQR, la comparación externa, resulta el método más ancho de los cinco en ambos niveles y el peor calibrado al 90\%, aunque con un Winkler cercano al de ACP a ese nivel.
 
-La cobertura condicional (Sección \ref{sec:cobertura_condicional}) matiza esta elección sin invalidarla: LW-ACP es notablemente más estable que Split CP mes a mes, pero menos uniforme hora a hora, con una brecha de cobertura concreta en las horas de transición solar donde se concentra el desfase de fase. La elección de LW-ACP se sostiene en su desempeño marginal --ancho, calibración y Winkler score-- y en su estabilidad temporal frente a la deriva estacional, no en haber resuelto la heterogeneidad horaria del error, que sigue siendo una limitación abierta.
+La cobertura condicional (Sección \ref{sec:cobertura_condicional}) matiza esta elección sin invalidarla: LW-ACP es notablemente más estable que Split CP mes a mes, pero menos uniforme hora a hora, con una brecha de cobertura concreta en las horas de transición solar donde se concentra el desfase de fase, que se verifica en ambos niveles de cobertura evaluados. La elección de LW-ACP se sostiene en su desempeño agregado --Winkler y pinball, que combinan ancho y calibración-- y en su estabilidad temporal frente a la deriva estacional, no en dominar todas las métricas por separado a todo nivel de cobertura, ni en haber resuelto la heterogeneidad horaria del error, que sigue siendo una limitación abierta.
 
 Cabe señalar una limitación metodológica del diseño experimental: el conjunto de validación cumple simultáneamente el rol de selección del mejor ensamble y de calibración del CP, lo que introduce un sesgo optimista en el cuantil de no conformidad. Este sesgo es esperablemente pequeño dado el tamaño del conjunto de calibración ($n_{\text{cal}} = 8\,298$) y la estabilidad de los residuos del ensamble, pero se reporta para transparencia metodológica.
 
 \subsection{Análisis de errores extremos}
 \label{sec:errores_extremos}
 
-La brecha entre el MAE promedio del modelo (6.89\,USD/MWh en validación para Atacama) y el semiancho de los intervalos de Split CP clásico ($q = 32.72$\,USD/MWh, Sección \ref{sec:split_cp_clasico}) sugiere que la distribución de errores del modelo no es simétrica ni de cola ligera. Para comprender el origen de esta brecha, se examina la distribución de errores absolutos en validación para las ocho barras, con Atacama como caso ilustrativo y el detalle completo del resto en el Anexo \ref{anexo:errores_extremos}.
+La brecha entre el MAE promedio del modelo (6.89\,USD/MWh en validación para Atacama) y el semiancho de los intervalos de Split CP clásico ($q = 20.27$\,USD/MWh al 90\% de cobertura nominal y $34.07$ al 95\%, Sección \ref{sec:split_cp_clasico}) sugiere que la distribución de errores del modelo no es simétrica ni de cola ligera. Para comprender el origen de esta brecha, se examina la distribución de errores absolutos en validación para las ocho barras, con Atacama como caso ilustrativo y el detalle completo del resto en el Anexo \ref{anexo:errores_extremos}.
 
 La Figura \ref{fig:error_dist_atacama} muestra la distribución de
-errores absolutos del $\text{TFT}_\text{LN}$ (S+C) en validación para Atacama. La distribución presenta una forma exponencial decreciente fuertemente concentrada: más del 90\% de las predicciones tienen un error menor a 19.8\,USD/MWh, y el percentil 95 es de 32.5\,USD/MWh. Sin embargo, la distribución exhibe una cola derecha extendida que alcanza los 162.9\,USD/MWh, marcada explícitamente en la figura. Es precisamente esta cola la que determina el cuantil de calibración del Split CP: $q = 32.72$\,USD/MWh corresponde aproximadamente al percentil 95 de la distribución de errores de validación, de modo que el ancho del intervalo queda dominado por el 5\% de los errores más grandes. Las ocho barras exhiben la misma forma general, con el máximo desplazándose entre 132.4 (Charrúa) y 241.7\,USD/MWh (Puerto Montt); ver Anexo \ref{anexo:errores_extremos} para el detalle de errores por barra.
+errores absolutos del $\text{TFT}_\text{LN}$ (S+C) en validación para Atacama. La distribución presenta una forma exponencial decreciente fuertemente concentrada: más del 90\% de las predicciones tienen un error menor a 19.8\,USD/MWh, y el percentil 95 es de 32.5\,USD/MWh. Sin embargo, la distribución exhibe una cola derecha extendida que alcanza los 162.9\,USD/MWh, marcada explícitamente en la figura. Es precisamente esta cola la que determina el cuantil de calibración del Split CP: $q$ corresponde al percentil 90 de la distribución de errores de validación cuando la cobertura nominal es 90\%, y al percentil 95 cuando es 95\%, de modo que el ancho del intervalo queda fijado por el 10\% (o el 5\%) de los errores más grandes, casi tres y casi cinco veces el MAE respectivamente. Las ocho barras exhiben la misma forma general, con el máximo desplazándose entre 132.4 (Charrúa) y 241.7\,USD/MWh (Puerto Montt); ver Anexo \ref{anexo:errores_extremos} para el detalle de errores por barra.
 
 \begin{figure}[htbp]
     \centering
@@ -944,16 +1023,18 @@ representativos de Atacama: tres desfases de fase en transiciones de amanecer o 
 Esta caracterización tiene una implicancia directa para la
 Conformal Prediction: los errores de desfase de fase son, por
 construcción, de gran amplitud instantánea pero muy localizados en el
-tiempo.  Un cuantil de calibración calculado sobre el percentil 95 de
+tiempo.  Un cuantil de calibración calculado sobre el percentil 90 (o 95) de
 todos los errores de validación necesariamente incorpora estos eventos
 extremos, resultando en anchos de intervalo que sobreestiman
-la incertidumbre en el $\sim$95\% restante de las horas donde el modelo
+la incertidumbre en el resto de las horas, donde el modelo
 opera sin desfase.  Esta es la causa fundamental de la brecha entre el
 MAE y el semiancho del intervalo observada en las ocho barras
 (Tabla \ref{tab:scp_resultados}): ambas métricas son estadísticamente correctas, pero
 describen regímenes distintos de la misma distribución de errores. Esta
 brecha estructural, presente de forma consistente en todo el SEN, es a su vez la motivación central de las variantes
 adaptativas de CP presentadas en las secciones anteriores.
+
+Si el recorte automático de outliers en entrenamiento influye en estos errores extremos se analiza en la Sección \ref{sec:piloto_outliers}: entrenar sin ese recorte reduce el error máximo en las ocho barras y el error en el percentil 99 en siete de ellas.
 
 \section{Análisis de interpretabilidad del TFT}
  
@@ -1267,31 +1348,31 @@ La Tabla \ref{tab:granularidad_cp} presenta los resultados de Conformal Predicti
         & & & \multicolumn{2}{c}{Split CP} & \multicolumn{2}{c}{LW-ACP} \\
         Barra & Arq. & Granularidad & Coverage & Width & Coverage & Width \\
         \midrule
-        ATACAMA  & DyT & Día     & 0.9256 & 81.21  & --     & --     \\
-        ATACAMA  & DyT & Horario & 0.9640 & 53.40  & 0.9472 & 48.68  \\
-        ATACAMA  & DyT & 15 min  & 0.8942 & 25.95  & 0.9177 & 34.25  \\
-        ATACAMA  & LN  & Día     & 0.9223 & 72.93  & --     & --     \\
-        ATACAMA  & LN  & Horario & 0.9648 & 54.68  & 0.9471 & 49.62  \\
-        ATACAMA  & LN  & 15 min  & 0.9001 & 27.02  & 0.9187 & 34.21  \\
-        CARDONES & DyT & Día     & 0.8997 & 64.32  & --     & --     \\
-        CARDONES & DyT & Horario & 0.9601 & 53.76  & 0.9461 & 48.72  \\
-        CARDONES & DyT & 15 min  & 0.8926 & 27.31  & 0.9161 & 36.22  \\
-        CARDONES & LN  & Día     & 0.9288 & 69.26  & --     & --     \\
-        CARDONES & LN  & Horario & 0.9595 & 53.58  & 0.9461 & 48.47  \\
-        CARDONES & LN  & 15 min  & 0.8975 & 29.11  & 0.9162 & 36.30  \\
-        P.MONTT  & DyT & Día     & 0.9547 & 136.38 & --     & --     \\
-        P.MONTT  & DyT & Horario & 0.9566 & 108.95 & 0.9466 & 97.89  \\
-        P.MONTT  & DyT & 15 min  & 0.9377 & 61.19  & 0.9380 & 57.50  \\
-        P.MONTT  & LN  & Día     & 0.9676 & 133.57 & --     & --     \\
-        P.MONTT  & LN  & Horario & 0.9600 & 110.41 & 0.9475 & 101.34 \\
-        P.MONTT  & LN  & 15 min  & 0.9389 & 63.57  & 0.9384 & 58.56  \\
+        ATACAMA  & DyT & Día     & 0.8479 & 52.29  & --     & --     \\
+        ATACAMA  & DyT & Horario & 0.9212 & 33.93  & 0.8984 & 34.43  \\
+        ATACAMA  & DyT & 15 min  & 0.8066 & 12.35  & 0.8733 & 24.74  \\
+        ATACAMA  & LN  & Día     & 0.8220 & 46.79  & --     & --     \\
+        ATACAMA  & LN  & Horario & 0.9134 & 32.73  & 0.8980 & 36.08  \\
+        ATACAMA  & LN  & 15 min  & 0.8193 & 12.29  & 0.8736 & 24.81  \\
+        CARDONES & DyT & Día     & 0.8155 & 51.21  & --     & --     \\
+        CARDONES & DyT & Horario & 0.9153 & 33.36  & 0.8979 & 33.94  \\
+        CARDONES & DyT & 15 min  & 0.8134 & 12.94  & 0.8705 & 26.47  \\
+        CARDONES & LN  & Día     & 0.8188 & 47.38  & --     & --     \\
+        CARDONES & LN  & Horario & 0.9153 & 33.50  & 0.8978 & 33.78  \\
+        CARDONES & LN  & 15 min  & 0.8166 & 12.22  & 0.8709 & 26.46  \\
+        P.MONTT  & DyT & Día     & 0.8900 & 106.24 & --     & --     \\
+        P.MONTT  & DyT & Horario & 0.9141 & 75.97  & 0.8988 & 71.05  \\
+        P.MONTT  & DyT & 15 min  & 0.8793 & 27.12  & 0.8899 & 38.92  \\
+        P.MONTT  & LN  & Día     & 0.9223 & 108.80 & --     & --     \\
+        P.MONTT  & LN  & Horario & 0.9117 & 75.77  & 0.8987 & 75.00  \\
+        P.MONTT  & LN  & 15 min  & 0.8747 & 25.78  & 0.8896 & 39.70  \\
         \bottomrule
     \end{tabular}
-    \caption{Conformal Prediction por granularidad, evaluado contra la serie cruda sin recorte de outliers, con el piso $\hat\sigma_h \geq \hat\sigma_{\text{global}}$ de la Sección \ref{sec:lw_split_cp} ya aplicado. Coverage nominal: 0.95. Width en USD/MWh. LW-ACP no aplica a Día (sin heterocedasticidad horaria intradiaria que explotar).}
+    \caption{Conformal Prediction por granularidad, evaluado contra la serie cruda sin recorte de outliers, con el piso $\hat\sigma_h \geq \hat\sigma_{\text{global}}$ de la Sección \ref{sec:lw_split_cp} ya aplicado. Coverage nominal: 0.90. Width en USD/MWh. LW-ACP no aplica a Día (sin heterocedasticidad horaria intradiaria que explotar).}
     \label{tab:granularidad_cp}
 \end{table}
 
-En general el ancho del intervalo se reduce al aumentar la resolución. Una versión anterior de esta tabla, calculada antes de introducir el piso $\hat\sigma_h \geq \hat\sigma_{\text{global}}$ (Sección \ref{sec:lw_split_cp}), mostraba un caso anómalo en ATACAMA a 15 minutos, con un ancho de LW-ACP de hasta 104\,USD/MWh, casi el triple que a resolución Horaria. Ese caso se examina en detalle a continuación, junto con el efecto del piso sobre él.
+En general el ancho del intervalo se reduce al aumentar la resolución. La cobertura, en cambio, solo queda cerca del nominal en la resolución Horaria: en Día y en 15 minutos Split CP sub-cubre en Atacama y Cardones (0.81--0.85 frente a 0.90), consistente con ventanas de calibración más cortas y estacionalmente sesgadas en esas dos granularidades (310 días con una observación diaria, y 107 días a 15 minutos), y a 15 minutos LW-ACP recupera parte de esa brecha (0.87--0.89) a costa de un intervalo más ancho. Una versión anterior de esta tabla, calculada al 95\% de cobertura nominal y antes de introducir el piso $\hat\sigma_h \geq \hat\sigma_{\text{global}}$ (Sección \ref{sec:lw_split_cp}), mostraba un caso anómalo en ATACAMA a 15 minutos, con un ancho de LW-ACP de hasta 104\,USD/MWh, casi el triple que a resolución Horaria. Ese caso se examina en detalle a continuación, junto con el efecto del piso sobre él.
 
 \subsubsection{Inestabilidad de $\hat\sigma_h$ en 15 minutos, y su corrección}
 
@@ -1299,7 +1380,7 @@ Los métodos LW Split CP y LW-ACP normalizan cada \textit{score} de calibración
 
 No era solo la resolución: también contribuía el confound estacional del período histórico. El conjunto de calibración de 15 minutos cubre apenas 107 días (28 de noviembre de 2025 a 16 de marzo de 2026), un período que cae íntegramente en temporada de alta generación solar (verano y comienzos de otoño en Chile), lo que favorece que varias horas del bloque solar registren precio cero en el 100\% de las observaciones de calibración. El conjunto de calibración de Horario, en cambio, cubre 345 días e incluye meses de invierno, donde el precio en esas mismas horas sí toma valores positivos con cierta frecuencia, lo que evita que $\hat\sigma_h$ colapse de la misma forma.
 
-El piso $\hat\sigma_h \geq \hat\sigma_{\text{global}}$, introducido en la Sección \ref{sec:lw_split_cp} para un problema análogo detectado en la resolución Horaria, \textbf{resuelve también este caso}: con el piso aplicado, más el truncamiento en 0 del límite inferior ya incorporado en la Tabla \ref{tab:granularidad_cp}, el ancho de LW-ACP en ATACAMA a 15 minutos baja de $\sim$104 a 34.2\,USD/MWh (LN) y 34.3\,USD/MWh (DyT), en línea con el resto de las combinaciones de esa granularidad y sin el comportamiento degenerado observado antes. Esto es evidencia de que el piso no es un parche específico para las dos barras horarias donde se detectó originalmente, sino una corrección general y necesaria del mecanismo de normalización de $\hat\sigma_h$ (Ecuación \eqref{eq:sigma_h}), aplicable en cualquier escenario donde una hora del día pueda quedar con varianza de calibración casi nula --ya sea por curtailment sostenido, como en 15 minutos, o por contaminación puntual de la calibración, como en el caso horario original--.
+El piso $\hat\sigma_h \geq \hat\sigma_{\text{global}}$, introducido en la Sección \ref{sec:lw_split_cp} para un problema análogo detectado en la resolución Horaria, \textbf{resuelve también este caso}: con el piso aplicado, más el truncamiento en 0 del límite inferior ya incorporado en la Tabla \ref{tab:granularidad_cp}, el ancho de LW-ACP en ATACAMA a 15 minutos baja, al 95\% de cobertura nominal en que se detectó el problema, de $\sim$104 a 34.2\,USD/MWh (LN) y 34.3\,USD/MWh (DyT), y queda en 24.8 y 24.7\,USD/MWh al 90\% reportado en la tabla, en línea con el resto de las combinaciones de esa granularidad y sin el comportamiento degenerado observado antes. Esto es evidencia de que el piso no es un parche específico para las dos barras horarias donde se detectó originalmente, sino una corrección general y necesaria del mecanismo de normalización de $\hat\sigma_h$ (Ecuación \eqref{eq:sigma_h}), aplicable en cualquier escenario donde una hora del día pueda quedar con varianza de calibración casi nula --ya sea por curtailment sostenido, como en 15 minutos, o por contaminación puntual de la calibración, como en el caso horario original--.
 
 \subsubsection{Comparación justa Horario vs. 15 minutos (misma ventana calendario)}
 
@@ -1354,28 +1435,79 @@ Las features exógenas reducen el MAE de prueba en las cuatro barras, pero con u
 \subsection{Piloto: entrenamiento sin recorte de outliers}
 \label{sec:piloto_outliers}
 
-La Tabla \ref{tab:piloto_outliers_h1} presenta, a horizonte $h=1$, el MAE general y el MAE condicional al régimen de precio alto (percentil 95 o superior de la serie cruda de prueba) del modelo entrenado sin recorte de outliers (Sección \ref{sec:piloto_outliers_meta} de la Metodología), comparado contra el modelo principal, para las cuatro barras piloto.
+La Tabla \ref{tab:piloto_outliers_h1} presenta, a horizonte $h=1$, el MAE general y el MAE condicional al régimen de precio alto (percentil 95 o superior de la serie cruda de prueba) del modelo entrenado sin recorte de outliers (Sección \ref{sec:piloto_outliers_meta} de la Metodología), comparado contra el modelo principal, para las ocho barras del SEN (las cuatro barras originales del piloto y las cuatro restantes, en las que se extendió el procedimiento). Además de las variaciones porcentuales, se reporta el valor $p$ de la prueba de Diebold-Mariano sobre el error absoluto (Sección \ref{sec:dm_ln_dyt}) y el valor $p$ de un \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto. Ambos modelos se evalúan contra la serie cruda, sobre las mismas fechas de prueba.
 
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{lrrrr}
+    \begin{tabular}{lrrrrrr}
         \toprule
-        Barra & MAE actual & MAE piloto & $\Delta$ MAE & $\Delta$ MAE p95 \\
+        Barra & MAE actual & MAE piloto & $\Delta$ MAE & $p$ (DM) & $\Delta$ MAE p95 & $p$ (\textit{boot.}) \\
         \midrule
-        Atacama       & 6.70 & 6.59 & $-1.7\%$ & $-11.1\%$ \\
-        Charrúa       & 7.98 & 7.99 & $+0.1\%$ & $-11.6\%$ \\
-        Pan de Azúcar & 6.93 & 6.59 & $-4.9\%$ & $-8.0\%$  \\
-        Tarapacá      & 7.11 & 7.12 & $+0.1\%$ & $-10.8\%$ \\
+        Atacama       & 6.70  & 6.59  & $-1.7\%$ & 0.329    & $-11.1\%$ & 0.058 \\
+        Cardones      & 6.63  & 6.64  & $+0.2\%$ & 0.885    & $-5.7\%$  & 0.668 \\
+        Charrúa       & 7.98  & 7.99  & $+0.1\%$ & 0.912    & $-11.6\%$ & 0.263 \\
+        Crucero       & 6.74  & 6.59  & $-2.3\%$ & 0.151    & $-4.2\%$  & 0.718 \\
+        Pan de Azúcar & 6.93  & 6.59  & $-4.9\%$ & $<0.001$ & $-8.0\%$  & 0.032 \\
+        Puerto Montt  & 13.68 & 13.79 & $+0.8\%$ & 0.190    & $+1.9\%$  & 0.463 \\
+        Quillota      & 8.26  & 7.93  & $-4.0\%$ & $<0.001$ & $-15.6\%$ & 0.034 \\
+        Tarapacá      & 7.11  & 7.12  & $+0.1\%$ & 0.952    & $-10.8\%$ & 0.062 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{MAE de prueba general y condicional al régimen de precio alto (percentil 95 o superior), $h=1$, USD/MWh. $\Delta$ = variación porcentual del piloto respecto al modelo actual (negativo = mejora).}
+    \caption{MAE de prueba general y condicional al régimen de precio alto (percentil 95 o superior), $h=1$, USD/MWh, sobre la serie cruda. $\Delta$ = variación porcentual del piloto respecto al modelo actual (negativo = mejora). $p$ (DM) = valor $p$ de la prueba de Diebold-Mariano sobre el error absoluto; $p$ (\textit{boot.}) = valor $p$ del \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto.}
     \label{tab:piloto_outliers_h1}
 \end{table}
 
-El MAE general queda prácticamente empatado (mejora en dos de las cuatro barras, empeora en las otras dos por menos de un 0.2\%), pero el MAE en régimen de precio alto mejora consistentemente en las cuatro barras, entre 8.0\% y 11.6\%. Es decir, entrenar sin el recorte automático de outliers no perjudica el desempeño general y sí ayuda específicamente donde la hipótesis de la Sección \ref{sec:piloto_outliers_meta} predecía que ayudaría: en los precios más extremos, precisamente los eventos que motivan este trabajo.
+A $h=1$ y sobre las ocho barras, el MAE general queda prácticamente empatado: el piloto mejora en cuatro barras y empeora en las otras cuatro por menos de un 1\%. La prueba de Diebold-Mariano detecta una mejora significativa solo en Pan de Azúcar y Quillota (ambas con $p<0.001$, que sobreviven a una corrección de Holm-Bonferroni para las ocho comparaciones de esta familia) y no detecta ninguna diferencia significativa a favor del modelo actual; es decir, entrenar sin el recorte automático de outliers no perjudica el desempeño general. Con pérdida cuadrática el piloto reduce el RMSE en siete de las ocho barras, pero la diferencia solo es significativa en Quillota ($p<0.001$); Puerto Montt empeora de forma nominalmente significativa ($p=0.022$) pero no sobrevive la misma corrección de Holm-Bonferroni para las ocho comparaciones, por lo que se reporta como evidencia débil, no concluyente.
 
-La Tabla \ref{tab:piloto_outliers_h24} repite la misma comparación a horizonte $h=24$ (Sección \ref{sec:h24_dayahead}), usando el MAE promedio sobre los 24 pasos del horizonte.
+El MAE en régimen de precio alto mejora en siete de las ocho barras, entre 4.2\% y 15.6\%, y empeora un 1.9\% en Puerto Montt. Sin embargo, según el \textit{bootstrap} por bloques de días, solo Pan de Azúcar y Quillota son significativas al 5\% sin corregir (Atacama y Tarapacá quedan en el límite, con $p\approx0.06$); bajo una corrección de Holm-Bonferroni para esta misma familia de ocho comparaciones, ninguna de las dos sobrevive ($p_\text{Holm}$ mínimo requerido $0.00625$ para la más pequeña, frente a $p\approx0.032$--$0.034$ observado). La consistencia entre barras (siete de ocho) arroja una prueba de signos con $p=0.07$, evidencia que además está sobreestimada, porque las ocho barras comparten sistema y período y no son observaciones independientes. La lectura prudente es que la mejora en régimen de precio alto es consistente en su dirección y de magnitud apreciable, pero no individualmente significativa en ninguna barra una vez que se corrige por comparaciones múltiples; la evidencia más sólida de esta sección sigue siendo la del MAE general (Pan de Azúcar y Quillota, que sí sobreviven la corrección, Tabla \ref{tab:piloto_outliers_h1}).
+
+La mejora es más nítida en los errores más grandes. La Tabla \ref{tab:piloto_extremos} muestra que el MAE en el percentil 99 o superior baja en siete de las ocho barras (por ejemplo, de 63.4 a 43.7\,USD/MWh en Atacama), el promedio de los 20 mayores errores baja en siete y el error máximo baja en las ocho, con reducciones de entre 32\% y 37\% en las barras del norte de picos más marcados (Atacama, Cardones, Crucero y Tarapacá). Puerto Montt es la única barra donde el MAE en el percentil 99 y el promedio de los 20 mayores errores no mejoran. Este patrón es coherente con la hipótesis de la Sección \ref{sec:piloto_outliers_meta}: sin el recorte a cuatro desviaciones estándar en entrenamiento, el modelo subestima menos los picos de precio.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        & \multicolumn{2}{c}{MAE $\geq$ p99} & \multicolumn{2}{c}{Promedio top-20} & \multicolumn{2}{c}{Error máximo} \\
+        Barra & Actual & Piloto & Actual & Piloto & Actual & Piloto \\
+        \midrule
+        Atacama       & 63.4 & 43.7 & 189.8 & 129.8 & 447.7 & 304.0 \\
+        Cardones      & 50.9 & 41.8 & 159.4 & 112.7 & 415.6 & 261.9 \\
+        Charrúa       & 41.6 & 21.9 & 100.5 & 97.7  & 127.9 & 125.5 \\
+        Crucero       & 63.9 & 53.8 & 192.5 & 142.3 & 457.5 & 302.6 \\
+        Pan de Azúcar & 47.6 & 37.3 & 141.3 & 112.1 & 257.1 & 245.1 \\
+        Puerto Montt  & 27.9 & 30.7 & 164.5 & 166.3 & 238.7 & 226.9 \\
+        Quillota      & 43.9 & 20.1 & 107.1 & 101.0 & 160.3 & 133.3 \\
+        Tarapacá      & 69.4 & 52.3 & 205.0 & 146.8 & 489.5 & 309.6 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Errores extremos de prueba, $h=1$, USD/MWh, sobre la serie cruda: MAE en las horas de precio en el percentil 99 o superior, promedio de los 20 mayores errores absolutos y error máximo, para el modelo actual (con recorte de outliers en entrenamiento) y el piloto (sin recorte).}
+    \label{tab:piloto_extremos}
+\end{table}
+
+En cuanto a la Conformal Prediction, la Tabla \ref{tab:piloto_cp} muestra que quitar el recorte no modifica de forma apreciable la cobertura ni el ancho de los intervalos, pero sí reduce el puntaje de Winkler en torno a un 3\% (de 71.9 a 69.7 en LW-ACP y de 76.6 a 74.4 en Split CP), en las ocho barras con LW-ACP y en siete con Split CP (la excepción es Puerto Montt). La cobertura en las horas de precio alto mejora apenas (de 0.754 a 0.759 en LW-ACP y de 0.562 a 0.581 en Split CP) y permanece en ambos modelos muy por debajo del nivel nominal de 0.90: el tratamiento de outliers reduce las excedencias más grandes, pero no corrige el déficit de cobertura condicional en el régimen alto, una limitación de la cobertura marginal y no del recorte.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{llrrrr}
+        \toprule
+        Método & Modelo & Cobertura & Ancho & Winkler & Cobertura p95 \\
+        \midrule
+        Split CP & Actual & 0.911 & 40.9 & 76.6 & 0.562 \\
+        Split CP & Piloto & 0.913 & 41.2 & 74.4 & 0.581 \\
+        LW-ACP   & Actual & 0.898 & 42.0 & 71.9 & 0.754 \\
+        LW-ACP   & Piloto & 0.898 & 41.5 & 69.7 & 0.759 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Conformal Prediction ($\alpha=0.10$, $\gamma=0.05$ en LW-ACP, calibración en validación, evaluación sobre la serie cruda), promedio de las ocho barras. Ancho y puntaje de Winkler en USD/MWh. Cobertura p95 = cobertura en las horas de precio en el percentil 95 o superior.}
+    \label{tab:piloto_cp}
+\end{table}
+
+La matriz completa, que cruza este tratamiento con un modelo global entrenado sobre las ocho barras a la vez, se presenta en el Anexo \ref{anexo:sensibilidad_outliers}.
+
+La Tabla \ref{tab:piloto_outliers_h24} repite la misma comparación a horizonte $h=24$ (Sección \ref{sec:h24_dayahead}), para las cuatro barras originales del piloto, usando el MAE promedio sobre los 24 pasos del horizonte.
 
 \begin{table}[htbp]
     \centering
@@ -1394,7 +1526,7 @@ La Tabla \ref{tab:piloto_outliers_h24} repite la misma comparación a horizonte 
     \label{tab:piloto_outliers_h24}
 \end{table}
 
-A $h=24$ el resultado se invierte en tres de las cuatro barras: solo Atacama mejora (14.5\%), mientras que Charrúa, Pan de Azúcar y Tarapacá empeoran entre 3.7\% y 8.0\%. El efecto del recorte de outliers depende, entonces, del horizonte de predicción: la variabilidad adicional que el conjunto de entrenamiento sin recortar introduce ayuda al modelo a capturar el régimen de precios altos cuando predice un solo paso hacia adelante, pero esa misma variabilidad dificulta la generalización cuando el modelo debe predecir 24 pasos simultáneos, un régimen ya de por sí más exigente (Sección \ref{sec:h24_dayahead}). Este resultado mixto, no una mejora limpia, es la razón por la que este trabajo no extiende el piloto a las ocho barras del SEN sin antes evaluar si el efecto se sostiene a $h=1$ para el resto del sistema.
+A $h=24$ el resultado se invierte en tres de las cuatro barras: solo Atacama mejora (14.5\%), mientras que Charrúa, Pan de Azúcar y Tarapacá empeoran entre 3.7\% y 8.0\%. El efecto del recorte de outliers depende, entonces, del horizonte de predicción: la variabilidad adicional que el conjunto de entrenamiento sin recortar introduce ayuda al modelo a capturar el régimen de precios altos cuando predice un solo paso hacia adelante, pero esa misma variabilidad dificulta la generalización cuando el modelo debe predecir 24 pasos simultáneos, un régimen ya de por sí más exigente (Sección \ref{sec:h24_dayahead}). Este resultado mixto es la razón por la que la evaluación a $h=24$ no se extiende a las ocho barras: el piloto se extendió únicamente a $h=1$, donde el efecto es consistente, y a $h=24$ queda como evidencia exploratoria de cuatro barras.
 
 \subsection{Evaluación a horizonte \textit{day-ahead} ($h=24$)}
 \label{sec:h24_dayahead}
@@ -1449,6 +1581,71 @@ Como seguimiento acotado a este resultado, la Tabla \ref{tab:h24_bigcap} compara
 \end{table}
 
 Duplicar la capacidad del modelo mejora el MAE promedio en ambas barras (2.5\%--5.1\%) y acerca el \textit{skill score} promedio a cero sin llegar a hacerlo positivo. El patrón por paso es revelador: el modelo de mayor capacidad predice peor el primer paso del horizonte (Atacama: 9.92 $\to$ 11.28\,USD/MWh; Puerto Montt: 22.47 $\to$ 27.55\,USD/MWh) pero mejor el último (Atacama: 14.64 $\to$ 13.61\,USD/MWh; Puerto Montt: 41.73 $\to$ 40.92\,USD/MWh), es decir, deja de sobre-especializarse en el paso más cercano al presente y generaliza de forma más pareja a lo largo de las 24 horas, a costa de algo de precisión en el corto plazo. La capacidad del modelo es, entonces, un factor relevante para la degradación observada en $h=24$, aunque no suficiente por sí solo para revertirla (ningún \textit{skill score} promedio cruza a valores positivos), y una exploración más sistemática de capacidad (o de otros hiperparámetros no ajustados para este horizonte, Sección \ref{sec:h24_dayahead_meta}) queda como línea de trabajo futuro razonable dado el costo computacional medido de este experimento (entre 4 y 5 horas por barra en GPU).
+
+\subsubsection{Conformal Prediction a horizonte day-ahead}
+\label{sec:h24_cp}
+
+La degradación del MAE con el paso del horizonte (Tabla \ref{tab:h24_resumen}) no distingue si el modelo, además de errar más en promedio, pierde también la calibración de sus intervalos de predicción. Para responderlo, se calibra Split CP de forma independiente en cada uno de los 24 pasos --un cuantil de no conformidad por paso, calculado sobre el conjunto de validación de ese mismo paso y evaluado en su propio conjunto de prueba, contra la serie cruda-- para las cinco barras con modelo $h=24$ entrenado (Atacama, Charrúa, Pan de Azúcar, Puerto Montt, Tarapacá), LN. Se reportan 90\% y 95\% de cobertura nominal, consistente con el resto de este capítulo (Sección \ref{sec:cp_configuracion_general} del Marco Metodológico). La Tabla \ref{tab:h24_cp} y la Figura \ref{fig:h24_mae_ancho} presentan los resultados, promediados sobre las cinco barras.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{rrrrrr}
+        \toprule
+        Paso ($h$) & MAE & Cov.\ 90\% & Ancho 90\% & Cov.\ 95\% & Ancho 95\% \\
+        \midrule
+        1  & 13.35 & 0.922 & 65.99 & 0.961 & 92.11 \\
+        6  & 19.06 & 0.921 & 89.69 & 0.963 & 123.40 \\
+        12 & 20.12 & 0.920 & 93.58 & 0.962 & 126.94 \\
+        18 & 20.53 & 0.918 & 93.98 & 0.962 & 129.29 \\
+        24 & 20.91 & 0.916 & 93.12 & 0.958 & 125.96 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{MAE y resultados de Split CP (calibrado por paso) a 90\% y 95\% de cobertura nominal, promedio de cinco barras, por paso del horizonte \textit{day-ahead}. MAE y Ancho en USD/MWh.}
+    \label{tab:h24_cp}
+\end{table}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{imagenes/fig_h24_mae_ancho.pdf}
+    \caption{MAE (izquierda) y ancho medio y cobertura empírica de Split CP al 90\% nominal (derecha) por paso del horizonte \textit{day-ahead}, promedio de cinco barras.}
+    \label{fig:h24_mae_ancho}
+\end{figure}
+
+La cobertura empírica se mantiene dentro de una banda estrecha en los 24 pasos, tanto al 90\% (0.916--0.923) como al 95\% (0.958--0.963), pese a que el MAE crece 56.6\% entre el paso 1 y el paso 24 (13.35 a 20.91\,USD/MWh). Calibrar el cuantil de no conformidad de forma independiente en cada paso --en vez de usar un único cuantil global para los 24-- absorbe correctamente esa degradación sin perder validez marginal en ningún punto del horizonte, la misma lógica que motiva ponderar por hora del día en LW Split CP y LW-ACP (Sección \ref{sec:lwacp}), aplicada aquí al paso del horizonte en vez de a la hora del día.
+
+El ancho del intervalo, en cambio, no crece de forma indefinida: aumenta con fuerza entre el paso 1 y aproximadamente el paso 11--13 (66.0 a 93.6\,USD/MWh al 90\%, un incremento de 42\%), y luego se estabiliza, con una leve declinación hacia el paso 24 (93.1\,USD/MWh, 0.5\% menor que el máximo del paso 19). Este aplanamiento es consistente con la naturaleza cíclica y de reversión a la media del costo marginal: la incertidumbre sobre el precio de la hora 15 de \textit{mañana} eventualmente satura en vez de seguir creciendo sin límite hacia el precio de la hora 15 de \textit{pasado mañana}, como ocurriría si la serie se comportara como una caminata aleatoria sin estructura periódica. Que el ancho se estabilice, y no solo el MAE, es evidencia adicional --ahora desde la perspectiva de la incertidumbre calibrada, no solo del error puntual-- de que el horizonte \textit{day-ahead} completo es alcanzable sin que la degradación observada en la Tabla \ref{tab:h24_resumen} se traduzca en una pérdida de validez o en intervalos impracticablemente anchos.
+
+\subsubsection{Análisis de errores extremos a horizonte day-ahead}
+\label{sec:h24_errores_extremos}
+
+La Sección \ref{sec:errores_extremos} identificó, para $h=1$, que la gran mayoría de los errores extremos del modelo (80--100\% según la barra) corresponden a un desfase de fase de aproximadamente una hora en las transiciones solares, no a eventos estructurales. Para verificar si este mismo mecanismo explica los errores extremos del horizonte \textit{day-ahead}, se repite exactamente la misma metodología --los 20 errores absolutos más grandes del conjunto de validación, probando desplazamientos entre $-3$ y $+3$ horas y clasificando como desfase de fase si la reducción de error supera el 60\%-- en Atacama (la misma barra ilustrativa de la Sección \ref{sec:errores_extremos}), para cada uno de los 24 pasos del modelo $h=24$. La Tabla \ref{tab:h24_errores_extremos} presenta los resultados en cinco pasos representativos.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{rrrrrrr}
+        \toprule
+        Paso ($h$) & MAE & P95 & Máximo & Desfase & Transición solar & Red.\ mediana \\
+        \midrule
+        1  & 10.89 & 42.39 & 476.09 & 11/20 & 2/20 & 98.2\% \\
+        2  & 12.48 & 48.81 & 490.58 &  7/20 & 2/20 & 96.3\% \\
+        4  & 13.60 & 53.83 & 519.05 &  8/20 & 2/20 & 84.3\% \\
+        12 & 14.67 & 55.49 & 519.28 &  8/20 & 2/20 & 84.3\% \\
+        24 & 15.16 & 57.24 & 519.22 &  8/20 & 3/20 & 84.3\% \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Síntesis del análisis de errores extremos del modelo $h=24$ en validación, Atacama, cinco pasos representativos del horizonte. MAE, P95 y Máximo en USD/MWh, sobre los errores de validación de ese paso (no comparables directamente con el MAE de prueba de la Tabla \ref{tab:h24_resumen}). Desfase de fase y Transición solar: de los 20 mayores errores. Reducción mediana: entre los casos clasificados como desfase de fase.}
+    \label{tab:h24_errores_extremos}
+\end{table}
+
+El resultado es cualitativamente distinto al de $h=1$. Desde el paso 2 en adelante, solo 7--8 de los 20 mayores errores se clasifican como desfase de fase (35--40\%), muy por debajo del 80--100\% observado en el pipeline de $h=1$ (Tabla \ref{tab:sintesis_errores}), y solo 2--3 de 20 ocurren en horas de transición solar (10--15\%, frente a 50--75\% en la mayoría de las barras a $h=1$). La reducción mediana de error entre los casos que sí son desfase (84.3\%, estable desde el paso 4) sigue siendo alta y comparable a $h=1$, pero ya no son la mayoría de los casos extremos.
+
+La causa se identificó inspeccionando las fechas de los 20 mayores errores en cada paso: 13 de los 20, de forma consistente en los 24 pasos, corresponden al 25 y 26 de febrero de 2025, coincidiendo con el apagón nacional del SEN del 25 de febrero de 2025 --un evento de indisponibilidad masiva e imprevisible, ajeno a cualquier variable climática o de calendario disponible como predictor--. En el pipeline de $h=1$, estas mismas fechas aparecen solo ocasionalmente entre los 20 mayores errores y con una magnitud moderada (p.\ ej.\ $\sim$100\,USD/MWh en Cardones, Anexo \ref{anexo:errores_extremos}), porque el modelo de un paso recibe información del mismo día y puede reaccionar parcialmente dentro de la hora siguiente al evento. El modelo $h=24$, en cambio, pronostica el día completo a partir de información disponible el día anterior, sin ninguna posibilidad de anticipar un apagón no programado; el error resultante es catastrófico y sostenido durante gran parte del día siguiente (hasta 519\,USD/MWh, más de tres veces el máximo de 162.9\,USD/MWh del pipeline de $h=1$ en la misma barra), y aparece repetido en el conjunto de validación de todos los pasos porque las mismas horas del 25--26 de febrero forman parte del conjunto de validación de cada paso.
+
+Esto no es una deficiencia del modelo, sino una limitación inherente a cualquier pronóstico \textit{day-ahead}: ningún predictor, sin importar su arquitectura, puede anticipar 24 horas antes un apagón no programado. El mecanismo de desfase de fase de aproximadamente una hora, dominante a $h=1$, sigue presente a $h=24$ (84.3\% de reducción mediana entre los casos clasificados como tal), pero deja de ser la causa principal de los errores más extremos, desplazado por un evento estructural único y no recurrente. Dado que febrero de 2025 cae dentro del conjunto de validación (junio 2024--mayo 2025, Sección \ref{sec:cp_configuracion_general}) y no del conjunto de prueba (mayo 2025--abril 2026), este evento infla el cuantil de calibración de Split CP --contribuyendo al ancho de intervalo reportado en la Sección \ref{sec:h24_cp}-- sin afectar directamente la cobertura empírica medida en prueba, el mismo efecto ya documentado para el desfase de fase a $h=1$ (Sección \ref{sec:split_cp_clasico}), aunque aquí originado por un evento aislado en vez de un patrón diario recurrente.
 
 \subsection{Comparación con la literatura: CRUCERO y P.MONTT 2024}
 \label{sec:crucero_leon}

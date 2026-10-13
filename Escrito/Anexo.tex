@@ -311,3 +311,56 @@ Esta sección presenta el detalle completo del análisis de errores extremos int
     \caption{Casos extremos de error del $\text{TFT}_\text{LN}$ (S+C), Tarapacá.}
     \label{fig:phase_shift_panel_tarapaca}
 \end{figure}
+
+
+\section{Sensibilidad al tratamiento de outliers y a la granularidad del modelo}
+\label{anexo:sensibilidad_outliers}
+
+Esta sección complementa el piloto de entrenamiento sin recorte de outliers (Sección \ref{sec:piloto_outliers}) cruzándolo con una segunda dimensión: la granularidad del modelo. Se comparan cuatro modelos S+C-LN a $h=1$: el modelo por barra con recorte de outliers en entrenamiento (el modelo principal de este trabajo), el modelo por barra sin recorte (el piloto extendido a las ocho barras), y dos modelos globales, es decir, un único TFT entrenado sobre las ocho barras a la vez con la barra como covariable estática categórica, uno con y otro sin recorte de outliers en entrenamiento (Sección \ref{sec:piloto_outliers_meta}). Los cuatro comparten arquitectura, hiperparámetros, \textit{features} y fechas de corte, y se evalúan sobre las mismas fechas de prueba contra la serie cruda, excluyendo la ventana de precio administrativo. La Tabla \ref{tab:matriz_outliers_granularidad} resume el promedio de las ocho barras.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        Modelo & MAE & MAE p95 & MAE p99 & Top-20 & Máximo & Winkler \\
+        \midrule
+        Por barra, con recorte & 8.005 & 30.1 & 51.1 & 157.5 & 324.3 & 71.9 \\
+        Por barra, sin recorte & 7.905 & 27.6 & 37.7 & 126.1 & 238.6 & 69.7 \\
+        Global, con recorte    & 7.967 & 30.7 & 51.6 & 163.2 & 324.7 & 71.6 \\
+        Global, sin recorte    & 7.984 & 29.2 & 41.4 & 130.9 & 244.0 & 70.5 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Matriz de cuatro modelos S+C-LN a $h=1$ (recorte de outliers en entrenamiento $\times$ granularidad), promedio de las ocho barras, USD/MWh, sobre la serie cruda. MAE p95 y p99 = MAE en las horas de precio en el percentil 95 o superior y 99 o superior; Top-20 = promedio de los 20 mayores errores absolutos; Máximo = error absoluto máximo; Winkler = puntaje de Winkler de LW-ACP ($\alpha=0.10$, $\gamma=0.05$).}
+    \label{tab:matriz_outliers_granularidad}
+\end{table}
+
+\paragraph{Efecto del recorte.} Quitar el recorte de outliers en entrenamiento mejora los errores extremos en ambas granularidades: el MAE en el percentil 99 baja un 26\% en el modelo por barra (de 51.1 a 37.7) y un 20\% en el global (de 51.6 a 41.4), y el error máximo promedio baja alrededor de un 25\% en ambos (de 324 a 239 y a 244). Que el efecto aparezca en dos familias de modelos entrenadas de forma independiente le da más peso a la hipótesis de la Sección \ref{sec:piloto_outliers_meta} que el resultado de una sola corrida. En el modelo global, sin embargo, la diferencia no es significativa barra por barra: la prueba de Diebold-Mariano no detecta ninguna barra donde el global sin recorte gane al global con recorte, y en Puerto Montt empeora de forma significativa ($\mathrm{DM}=3.81$, $p=0.0001$); el \textit{bootstrap} por bloques de días tampoco detecta cambios significativos en el MAE de régimen alto en ninguna barra. El efecto se observa en el agregado, no de forma individual.
+
+\paragraph{Efecto de la granularidad.} El modelo global no supera al modelo por barra. La Tabla \ref{tab:global_vs_barra_sin} compara ambos sin recorte, barra por barra: el modelo por barra gana de forma significativa en cuatro barras (Charrúa, Crucero, Pan de Azúcar y Quillota) y el global solo en Puerto Montt, las cinco sobreviven una corrección de Holm-Bonferroni para esta familia de ocho comparaciones. Frente al modelo principal de este trabajo (por barra, con recorte), el global sin recorte empata en siete barras y pierde nominalmente en Charrúa ($\mathrm{DM}=2.18$, $p=0.029$), sin ganar en ninguna; sin embargo, esa diferencia en Charrúa no sobrevive la misma corrección para esta segunda familia de ocho comparaciones ($p$ mínimo requerido $0.00625$), por lo que, en rigor, el global sin recorte empata con el modelo principal en las ocho barras.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrr}
+        \toprule
+        Barra & MAE global & MAE por barra & DM & $p$ \\
+        \midrule
+        Atacama       & 6.58  & 6.59  & $-0.17$ & 0.868    \\
+        Cardones      & 6.68  & 6.64  & $0.67$  & 0.501    \\
+        Charrúa       & 8.19  & 7.99  & $2.86$  & 0.004    \\
+        Crucero       & 6.80  & 6.59  & $3.20$  & 0.001    \\
+        Pan de Azúcar & 6.81  & 6.59  & $3.14$  & 0.002    \\
+        Puerto Montt  & 13.52 & 13.79 & $-2.66$ & 0.008    \\
+        Quillota      & 8.23  & 7.93  & $4.42$  & $<0.001$ \\
+        Tarapacá      & 7.06  & 7.12  & $-0.85$ & 0.396    \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Modelo global contra modelo por barra, ambos sin recorte de outliers en entrenamiento, MAE de prueba a $h=1$ (USD/MWh) sobre la serie cruda. DM = estadístico de Diebold-Mariano sobre el error absoluto con varianza de Newey-West, con el modelo global como primer argumento (negativo favorece al global, positivo al modelo por barra).}
+    \label{tab:global_vs_barra_sin}
+\end{table}
+
+\paragraph{Conformal Prediction.} Con LW-ACP al 90\% de cobertura nominal, la cobertura es de 0.898 en los cuatro modelos y el ancho medio varía entre 41.0 y 42.0\,USD/MWh; las diferencias se concentran en el puntaje de Winkler, donde los dos modelos sin recorte obtienen el menor valor (por barra, 69.7; global, 70.5) frente a los dos con recorte (global, 71.6; por barra, 71.9), el mismo sentido que el error extremo. La cobertura en las horas de precio en el percentil 95 o superior permanece cerca de 0.75 en los cuatro (entre 0.751 y 0.759), muy por debajo del nominal, por lo que ninguna de las variantes corrige el déficit de cobertura condicional en el régimen alto.
+
+\paragraph{Síntesis.} El tratamiento de outliers en entrenamiento pesa más que la granularidad del modelo. La mejor combinación es el modelo por barra sin recorte, aunque el MAE general mejora solo un 1.3\% respecto del modelo principal (de 8.005 a 7.905); su beneficio principal está en los errores más grandes. Como cautela, cada configuración corresponde a una única corrida de entrenamiento y las ocho barras comparten sistema y período, por lo que las comparaciones agregadas sobreestiman la evidencia independiente.

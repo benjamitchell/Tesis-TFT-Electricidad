@@ -473,14 +473,14 @@ Sea $\{M_k\}_{k=1}^K$ un conjunto de $K$ modelos base, donde cada modelo $M_k$ p
     \label{eq:stacking_lineal}
 \end{equation}
 
-estimados minimizando el error cuadrático medio sobre un conjunto de validación:
+estimados, en la formulación clásica del Stacking, minimizando el error cuadrático medio sobre un conjunto de validación:
 
 \begin{equation}
     \hat{\boldsymbol{\alpha}} = \operatorname*{arg\,min}_{\boldsymbol{\alpha}} \sum_{t \in \mathcal{V}} \left(y_t - \boldsymbol{\alpha}^\top \tilde{\mathbf{z}}_t\right)^2
     \label{eq:stacking_opt}
 \end{equation}
 
-donde $\mathcal{V}$ denota el conjunto de índices de validación; en la práctica esta minimización se resuelve mediante métodos analíticos (mínimos cuadrados) o metaheurísticos (Sección 3.5.2).
+donde $\mathcal{V}$ denota el conjunto de índices de validación. Esta es la formulación de referencia; el objetivo que efectivamente se adopta en este trabajo se describe más abajo, en la Sección 2.5.3, y difiere de ella en la función de pérdida y en el número de componentes.
 
 La ganancia teórica del Stacking sobre cualquiera de los modelos base individuales depende de la diversidad de los errores de predicción. Si $\varepsilon_t^{(k)} = y_t - \hat{y}_t^{(k)}$ denota el error del modelo $k$ en el instante $t$, el error del ensamble es $\varepsilon_t^{\text{stack}} = \sum_{k=1}^K \alpha_k\, \varepsilon_t^{(k)}$ y, asumiendo $\sum_k \alpha_k = 1$, su varianza es:
 
@@ -488,7 +488,7 @@ La ganancia teórica del Stacking sobre cualquiera de los modelos base individua
     \text{Var}\!\left(\varepsilon_t^{\text{stack}}\right) = \boldsymbol{\alpha}^\top \boldsymbol{\Sigma}\, \boldsymbol{\alpha}
 \end{equation}
 
-donde $\boldsymbol{\Sigma} \in \mathbb{R}^{K \times K}$ es la matriz de covarianzas de los errores, con $\Sigma_{ij} = \text{Cov}(\varepsilon_t^{(i)}, \varepsilon_t^{(j)})$: esta varianza solo se reduce por debajo de la de los modelos base individuales cuando sus errores están poco correlacionados, y no se reduce en absoluto si están perfectamente correlacionados \cite{Dietterich}. Esta observación justifica la importancia de seleccionar modelos base estructuralmente distintos. Cuando los modelos base presentan predicciones muy correlacionadas, la matriz de diseño $\tilde{\mathbf{Z}} = (\tilde{\mathbf{z}}_t)_{t \in \mathcal{V}}$ puede ser casi singular, lo que hace preferible la estimación regularizada mediante regresión de Ridge:
+donde $\boldsymbol{\Sigma} \in \mathbb{R}^{K \times K}$ es la matriz de covarianzas de los errores, con $\Sigma_{ij} = \text{Cov}(\varepsilon_t^{(i)}, \varepsilon_t^{(j)})$: esta varianza solo se reduce por debajo de la de los modelos base individuales cuando sus errores están poco correlacionados, y no se reduce en absoluto si están perfectamente correlacionados \cite{Dietterich}. Esta observación justifica la importancia de seleccionar modelos base estructuralmente distintos. Cuando los modelos base presentan predicciones muy correlacionadas, la matriz de diseño $\tilde{\mathbf{Z}} = (\tilde{\mathbf{z}}_t)_{t \in \mathcal{V}}$ puede ser casi singular, lo que en la formulación clásica haría preferible la estimación regularizada mediante regresión de Ridge (esta alternativa se compara en la Sección 3.5.2, pero no es el método adoptado en este trabajo):
 
 \begin{equation}
     \hat{\boldsymbol{\alpha}} = \left(\tilde{\mathbf{Z}}^\top \tilde{\mathbf{Z}} + \lambda \mathbf{I}\right)^{-1} \tilde{\mathbf{Z}}^\top \mathbf{y}_\mathcal{V}
@@ -539,7 +539,7 @@ Finalmente, la predicción puntual $\hat{y}_t^{(b),\,\text{Stack}}$ de la mejor 
 
 \section{Conformal Prediction}
 
-La \textit{Predicción Conforme} o \textit{Conformal Prediction} (CP) es un marco estadístico para construir intervalos de predicción con garantías de cobertura finita sin supuestos distribucionales sobre los datos, más allá de la intercambiabilidad \cite{VovkCP}. A diferencia de los métodos probabilísticos clásicos, cuyas garantías son asintóticas o requieren supuestos paramétricos sobre el modelo, CP produce intervalos válidos para cualquier algoritmo de predicción subyacente, incluyendo redes neuronales, modelos de ensamble y modelos híbridos como el propuesto en este trabajo.
+La \textit{Predicción Conforme} o \textit{Conformal Prediction} (CP) es un marco estadístico para construir intervalos de predicción con garantías de cobertura finita sin supuestos distribucionales sobre los datos, más allá de la intercambiabilidad \cite{VovkCP, AngelopoulosBates2021}. A diferencia de los métodos probabilísticos clásicos, cuyas garantías son asintóticas o requieren supuestos paramétricos sobre el modelo, CP produce intervalos válidos para cualquier algoritmo de predicción subyacente, incluyendo redes neuronales, modelos de ensamble y modelos híbridos como el propuesto en este trabajo.
 
 Formalmente, dado un nivel de no-cobertura $\alpha \in (0,1)$ fijado por el usuario, el objetivo es construir un intervalo de predicción $C_{n,\alpha}(x_{n+1})$ tal que:
 
@@ -550,7 +550,7 @@ Formalmente, dado un nivel de no-cobertura $\alpha \in (0,1)$ fijado por el usua
 
 Un intervalo que satisface \eqref{eq:cp_coverage} se denomina \textit{marginalmente válido}. Al mismo tiempo, se exige que el intervalo sea \textit{eficiente}, es decir, lo más estrecho posible: intervalos excesivamente anchos son válidos pero no informativos. El equilibrio entre validez y eficiencia es el criterio central para comparar las distintas variantes de CP \cite{ConformalPrediction}.
 
-La propiedad de intercambiabilidad es el supuesto base de CP: una secuencia aleatoria $(Z_1, \ldots, Z_n)$ es intercambiable si su distribución conjunta es invariante bajo cualquier permutación de los índices. Este supuesto es más débil que la independencia e idéntica distribución (i.i.d.), pero excluye las series temporales, donde la dependencia temporal viola la intercambiabilidad. Esta limitación motiva las variantes adaptativas de CP descritas en las siguientes Secciones.
+La propiedad de intercambiabilidad es el supuesto base de CP: una secuencia aleatoria $(Z_1, \ldots, Z_n)$ es intercambiable si su distribución conjunta es invariante bajo cualquier permutación de los índices. Este supuesto es más débil que la independencia e idéntica distribución (i.i.d.), pero excluye las series temporales, donde la dependencia temporal viola la intercambiabilidad. Esta limitación motiva las variantes adaptativas de CP descritas en las siguientes Secciones. Kath y Ziel (2021) \cite{KathZiel2021} aplican CP directamente sobre precios eléctricos day-ahead e intradiarios en tres mercados europeos y proponen \textit{Normalized CP} (NCP), una variante que normaliza el \textit{score} de no conformidad dividiéndolo por la predicción de un segundo modelo entrenado específicamente para estimar el error esperado, a diferencia de la ponderación horaria fija de LW Split CP y LW-ACP (Sección \ref{sec:lwacp}), que responde directamente a la heterocedasticidad por hora del día del costo marginal en el SEN sin requerir entrenar un modelo adicional. Su principal hallazgo empírico es que ningún método (CP, NCP o QRA) domina en los tres mercados evaluados: el mejor método depende del mercado y del modelo puntual subyacente, evidencia consistente con la heterogeneidad entre barras del SEN observada en este trabajo.
 
 \subsection{Split Conformal Prediction (SCP)}
 
@@ -592,6 +592,7 @@ La cota superior en \eqref{eq:scp_validity} muestra que la cobertura excede el n
 La principal limitación de SCP es que produce intervalos de ancho constante, independiente de las covariables $x_{n+1}$: el cuantil $\hat{q}_{1-\alpha}(\mathcal{S})$ es un escalar global, lo que implica que el intervalo tendrá el mismo ancho para instantes con alta volatilidad que para instantes con precios estables. En el contexto del SEN, donde los spikes del costo marginal concentran la incertidumbre en regímenes específicos, esta rigidez reduce la eficiencia del intervalo. La segunda limitación, más fundamental para series temporales, es que la garantía \eqref{eq:scp_validity} requiere intercambiabilidad, supuesto que no se cumple en datos con dependencia temporal.
 
 \subsection{Regresión Cuantílica Conformada (CQR)}
+\label{sec:cqr}
 
 La \textit{Conformalized Quantile Regression} (CQR), propuesta por Romano et al. (2019) \cite{RomanoCQR}, aborda la limitación de ancho constante de SCP reemplazando el predictor puntual $\hat{\mu}$ por un par de modelos de regresión cuantílica, $\hat{q}_{\alpha/2}$ y $\hat{q}_{1-\alpha/2}$, ajustados de modo que el intervalo se adapte a la covariable $x$ desde el propio modelo base, sin requerir una estimación de escala externa.
 
@@ -615,7 +616,7 @@ En la implementación utilizada en este trabajo, los modelos de regresión cuant
 
 \subsection{Conformal Prediction con Ensemble (EnbPI)}
 
-\textit{Ensemble Prediction Interval} o \textit{EnbPI}, fue propuesto por Xu y Xie (2021) \cite{XuCP} como una adaptación de CP a series temporales mediante \textit{bootstrap} de un ensamble de modelos, cuyos residuos \textit{leave-one-out} se acumulan en una ventana deslizante de \textit{scores} de calibración que se actualiza secuencialmente sin reajustar el modelo subyacente. Xu y Xie (2021) proponen además la variante \textit{EnbPI V2} \cite{ConformalPrediction}, que agrega por media en todas las fases del procedimiento en lugar de mezclar media y cuantil, mejorando la cobertura empírica. Este trabajo no implementa EnbPI: su mecanismo de \textit{bootstrap} está diseñado para un modelo base entrenable con múltiples réplicas, mientras que S+C-LN, la estrategia de referencia adoptada (Sección 4.4.5), es una única predicción del TFT sin ensamble subyacente que bootstrapear.
+\textit{Ensemble Prediction Interval} o \textit{EnbPI}, fue propuesto por Xu y Xie (2021) \cite{XuCP} como una adaptación de CP a series temporales mediante \textit{bootstrap} de un ensamble de modelos, cuyos residuos \textit{leave-one-out} se acumulan en una ventana deslizante de \textit{scores} de calibración que se actualiza secuencialmente sin reajustar el modelo subyacente. Xu y Xie (2021) proponen además la variante \textit{EnbPI V2} \cite{ConformalPrediction}, que agrega por media en todas las fases del procedimiento en lugar de mezclar media y cuantil, mejorando la cobertura empírica. Este trabajo no implementa EnbPI, y la razón no es que el método requiera un ensamble preexistente: EnbPI construye su propio ensamble mediante \textit{bootstrap} del modelo base, entrenando $B$ réplicas del predictor. La razón es computacional. Cada réplica del TFT exige un entrenamiento completo por barra, del orden de 3 a 3.5 horas de GPU según las estimaciones de la sección de limitaciones, de modo que $B$ réplicas por barra exceden el presupuesto de cómputo disponible en este trabajo. EnbPI queda, por lo tanto, como comparación pendiente y se declara explícitamente en las conclusiones. O'Connor et al. (2025) \cite{OConnorCP2025} aplican EnbPI junto a otras variantes de CP sobre precios eléctricos day-ahead y de balance en tiempo real, y reportan que supera a Split CP y a modelos de regresión cuantílica clásicos, lo que respalda que valga la pena esa comparación pendiente, más allá de su costo computacional.
 
 \subsection{Adaptive Conformal Inference (ACI)}
 
@@ -653,7 +654,7 @@ En su formulación original, ACI reajusta el modelo de predicción puntual $\hat
 \subsection{CP ponderado localmente: LW Split CP y LW-ACP}
 \label{sec:lwacp}
 
-Todas las variantes anteriores comparten una limitación: el cuantil de no conformidad $q$ se calcula sobre un único conjunto de \textit{scores} de calibración, tratando la incertidumbre del modelo como homogénea a lo largo de todo el horizonte de predicción. En el SEN, sin embargo, el error del modelo no es homocedástico en el tiempo: la volatilidad del costo marginal se concentra sistemáticamente en las horas de transición solar (entrada y salida del bloque fotovoltaico), mientras que las horas de mediodía, con generación solar estable, presentan errores sustancialmente menores. Un intervalo de ancho fijo o adaptado únicamente al historial global de errores está necesariamente mal calibrado en algún subconjunto de horas: demasiado ancho cuando la volatilidad es baja, demasiado angosto cuando es alta.
+Todas las variantes anteriores comparten una limitación: el cuantil de no conformidad $q$ se calcula sobre un único conjunto de \textit{scores} de calibración, tratando la incertidumbre del modelo como homogénea a lo largo de todo el horizonte de predicción. En el SEN, sin embargo, el error del modelo no es homocedástico en el tiempo: la volatilidad del costo marginal se concentra sistemáticamente en las horas de transición solar (entrada y salida del bloque fotovoltaico), mientras que las horas de mediodía, con generación solar estable, presentan errores sustancialmente menores. Un intervalo de ancho fijo o adaptado únicamente al historial global de errores está necesariamente mal calibrado en algún subconjunto de horas: demasiado ancho cuando la volatilidad es baja, demasiado angosto cuando es alta. Esta premisa se verifica formalmente, no solo de forma descriptiva, en la Sección \ref{sec:verificacion_heterocedasticidad}, mediante un test de Levene (heterocedasticidad entre horas del día) y un test ARCH-LM de Engle (agrupamiento temporal de la volatilidad), este último el mismo empleado en la literatura internacional sobre heterocedasticidad condicional de precios eléctricos \cite{BenhmadPercebois2018, FletenParaschivSchurle2013, BelloBeltran2010}. Benhmad y Percebois (2018) \cite{BenhmadPercebois2018} documentan efectos ARCH significativos en el mercado alemán y encuentran, además, que la solar fotovoltaica \textit{reduce} la volatilidad durante su bloque de generación mientras la eólica la aumenta, un patrón consistente con la concentración del error en las horas de \textit{transición} del bloque solar, no en su interior, observada en este trabajo (Sección \ref{sec:errores_extremos}). Bello-Rodríguez y Beltrán-Ahumada (2010) \cite{BelloBeltran2010} reportan el mismo tipo de evidencia para el mercado spot colombiano, el antecedente latinoamericano más cercano identificado en la revisión de literatura de este trabajo, aunque sobre los retornos del precio y no sobre su nivel.
 
 Esta observación motiva la construcción de \textit{scores} de no conformidad \textit{normalizados}, una técnica clásica en la literatura de CP para producir intervalos adaptados a la heterocedasticidad de los datos \cite{VovkCP}. En lugar de calibrar directamente sobre el residuo absoluto $s_t = |y_t - \hat{y}_t|$, se normaliza cada score por una estimación local de la escala del error, $\hat{\sigma}(x_t)$, específica del contexto del punto $t$:
 
@@ -715,3 +716,12 @@ Cobertura y longitud media son, sin embargo, dos métricas separadas: nada impid
 \end{equation}
 
 donde $C_t(x_t) = [l_t, u_t]$. Un intervalo que cubre $y_t$ solo aporta su longitud al puntaje; uno que no cubre suma además una penalización proporcional a la distancia entre $y_t$ y el límite violado, escalada por $2/\alpha$ para que la penalización sea comparable en magnitud al costo de ensanchar el intervalo lo suficiente como para haber evitado esa falla. Un puntaje de Winkler medio más bajo indica un mejor equilibrio conjunto entre eficiencia y calibración que comparar ancho y cobertura por separado, precisamente porque no permite que una mejora en una dimensión oculte un deterioro en la otra.
+
+Una métrica adicional, estándar en la literatura de CP aplicado a mercados eléctricos \cite{KathZiel2021}, complementa esta evaluación. La \textit{pérdida pinball} promedio evalúa cada extremo del intervalo como un cuantil independiente, $l_t$ al nivel $\alpha/2$ y $u_t$ al nivel $1-\alpha/2$, mediante la pérdida lineal-lineal $L_\tau(e) = \tau\max(e,0) + (1-\tau)\max(-e,0)$ (la misma función, aplicada aquí a cada límite del intervalo en vez de a la predicción puntual, como en la Sección \ref{sec:perdida_asimetrica}):
+
+\begin{equation}
+    \overline{PB}(\alpha) = \frac{1}{2}\left[\frac{1}{T_1}\sum_{t} L_{\alpha/2}(y_t - l_t) + \frac{1}{T_1}\sum_{t} L_{1-\alpha/2}(y_t - u_t)\right]
+    \label{eq:pinball_cp}
+\end{equation}
+
+A diferencia del Winkler score, que trata el intervalo como una unidad, la pérdida pinball evalúa la calibración de cada extremo por separado, lo que la hace sensible a asimetrías entre el límite inferior y el superior que el Winkler score, simétrico en $\alpha$, no distingue.

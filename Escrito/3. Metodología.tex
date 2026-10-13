@@ -181,6 +181,32 @@ La Figura \ref{fig:prophet_pred48} ilustra las predicciones de Prophet para un h
 
 Las predicciones a 48 horas confirman que Prophet captura correctamente la estructura del ciclo diario, reproduciendo la caída característica durante el bloque solar y el alza en horas de menor generación renovable. Sin embargo, se observa que en algunas barras la predicción alcanza valores negativos, lo que constituye una limitación física del modelo: el costo marginal no puede ser negativo en el SEN, pero Prophet, al ser un modelo de descomposición aditiva sin restricciones de dominio, puede extrapolar fuera del rango físicamente válido cuando la componente estacional supera a la tendencia. Esta limitación es inherente a la formulación de Prophet y refuerza la necesidad del TFT como componente complementario, cuya arquitectura de red neuronal le permite aprender implícitamente los límites del rango observado. Las predicciones de Prophet reportadas en el Capítulo 4 se truncan en 0 USD/MWh para evitar que esta limitación degrade artificialmente sus métricas de evaluación (Sección \ref{sec:modelo_prophet}); el residuo que consume $\text{TFT}_\text{LN}$ en la rama P+C, en cambio, se calcula sobre la predicción sin truncar, dado que truncarlo exigiría reentrenar el modelo de residuos sobre el nuevo objetivo.
 
+\subsection{Predicciones negativas de Prophet}
+\label{sec:prophet_negativas}
+
+Prophet es un modelo aditivo sin restricción de signo, por lo que puede producir predicciones negativas aun cuando el costo marginal no puede serlo. La Tabla \ref{tab:prophet_negativas} cuantifica esta situación sobre el conjunto de prueba, evaluado contra la serie cruda: la proporción de predicciones negativas varía entre 1.7\% en Puerto Montt y 23.2\% en Atacama, y truncarlas en 0 USD/MWh reduce el MAE de Prophet en todas las barras, entre 0.5\% (Puerto Montt) y 17.5\% (Atacama). Las métricas de Prophet reportadas en el Capítulo 4 aplican esta truncación, pero el ensamble y el modelo de residuos que consumen estas predicciones no, como se discute en la Sección \ref{sec:prophet_truncamiento_pipeline}.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lrrrr}
+        \toprule
+        Barra & \% negativas & MAE sin truncar & MAE truncado & $\Delta$ MAE \\
+        \midrule
+        Atacama       & 23.2 & 19.86 & 16.39 & $-17.5\%$ \\
+        Cardones      & 14.3 & 21.45 & 19.95 & $-7.0\%$ \\
+        Charrúa       & 8.4  & 25.35 & 24.51 & $-3.3\%$ \\
+        Crucero       & 11.6 & 23.07 & 22.10 & $-4.2\%$ \\
+        Pan de Azúcar & 8.5  & 23.10 & 22.44 & $-2.9\%$ \\
+        Puerto Montt  & 1.7  & 48.15 & 47.89 & $-0.5\%$ \\
+        Quillota      & 10.9 & 24.28 & 23.22 & $-4.4\%$ \\
+        Tarapacá      & 13.9 & 23.18 & 21.86 & $-5.7\%$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Predicciones negativas de Prophet (modelo solo, sin variables exógenas) y efecto de truncarlas en 0 USD/MWh sobre el MAE de prueba, contra la serie cruda, USD/MWh.}
+    \label{tab:prophet_negativas}
+\end{table}
+
 \section{Temporal Fusion Transformer}
 
 \subsection{Construcción de features y dataloaders}
@@ -330,7 +356,7 @@ La Predicción Conforme se aplica sobre la predicción puntual de S+C-LN, la est
 \subsection{Configuración general}
 \label{sec:cp_configuracion_general}
 
-Todas las variantes se evalúan con nivel de cobertura nominal $1 - \alpha = 0.95$ y operan sobre la escala original de los costos marginales en USD/MWh. El conjunto de calibración es el conjunto de validación descrito en la Tabla \ref{tab:division}, que cubre el período junio 2024--mayo 2025 con $n_{\text{cal}} = 8\,298$ observaciones por barra; el conjunto de evaluación es el conjunto de prueba, con $n_{\text{prueba}} = 8\,298$ observaciones horarias por barra, cubriendo mayo 2025--abril 2026. Se excluye del conjunto de calibración una ventana de 11 horas (25--26 de febrero de 2025) en la que las ocho barras registraron simultáneamente el mismo valor exacto (576.82\,USD/MWh): un precio de falla administrativo aplicado uniformemente a todo el sistema, no un precio de mercado dependiente de las variables que el modelo puntual utiliza como predictores (Sección \ref{sec:split_cp_clasico}). El límite inferior de todos los intervalos, sin excepción, se trunca en 0 USD/MWh para respetar el dominio físico del costo marginal; el truncamiento no altera la cobertura empírica reportada, solo reduce el ancho medio en la magnitud correspondiente a la porción del intervalo que caía por debajo de 0 antes de truncar (Sección \ref{sec:split_cp_clasico}).
+Todas las variantes se evalúan con nivel de cobertura nominal $1 - \alpha = 0.90$ y operan sobre la escala original de los costos marginales en USD/MWh. Este nivel, y no 95\%, es el que reporta como principal la literatura de CP aplicada a mercados eléctricos citada en este trabajo: Kath y Ziel (2021) \cite{KathZiel2021} enfocan explícitamente sus resultados en los intervalos de 50\% y 90\%, y la adaptación de Zaffran (2024) \cite{ConformalPrediction} usa por defecto $\alpha = 0.1$ en la gran mayoría de sus experimentos. El Capítulo 4 reporta además 50\% y 95\% como niveles adicionales, el segundo por ser un estándar más general en estadística aplicada y para mantener comparabilidad con una primera versión de este trabajo. El conjunto de calibración es el conjunto de validación descrito en la Tabla \ref{tab:division}, que cubre el período junio 2024--mayo 2025 con $n_{\text{cal}} = 8\,298$ observaciones por barra; el conjunto de evaluación es el conjunto de prueba, con $n_{\text{prueba}} = 8\,298$ observaciones horarias por barra, cubriendo mayo 2025--abril 2026. Se excluye del conjunto de calibración una ventana de 11 horas (25--26 de febrero de 2025) en la que las ocho barras registraron simultáneamente el mismo valor exacto (576.82\,USD/MWh): un precio de falla administrativo aplicado uniformemente a todo el sistema, no un precio de mercado dependiente de las variables que el modelo puntual utiliza como predictores (Sección \ref{sec:split_cp_clasico}). El límite inferior de todos los intervalos, sin excepción, se trunca en 0 USD/MWh para respetar el dominio físico del costo marginal; el truncamiento no altera la cobertura empírica reportada, solo reduce el ancho medio en la magnitud correspondiente a la porción del intervalo que caía por debajo de 0 antes de truncar (Sección \ref{sec:split_cp_clasico}).
 
 Los \textit{scores} de no conformidad utilizados en todas las variantes son los residuos absolutos del modelo de predicción puntual:
 
@@ -449,9 +475,15 @@ Para aislar cuánto aporta la información exógena (posición solar y clima) po
 
 El recorte automático de outliers descrito en la Sección 3.2.1 (umbral de 4 desviaciones estándar sobre el conjunto de entrenamiento) se diseñó para eliminar valores de magnitud excepcional sin afectar los \textit{spikes} estructurales del mercado. Una inspección posterior del conjunto de entrenamiento sugirió que, en varias barras, ese umbral recorta no solo eventos aislados sino un patrón sostenido en el tiempo, concentrado en el invierno de 2022 (varias semanas de precios altos, no observaciones puntuales), lo que plantea la posibilidad de que parte de la señal removida sea información legítima sobre el régimen de precios altos y no ruido de medición.
 
+Esta hipótesis tiene un antecedente externo: Kath y Ziel (2021) \cite{KathZiel2021} prueban explícitamente remover outliers (mediante el método de Tukey basado en el rango intercuartílico) antes de calibrar Conformal Prediction sobre tres mercados eléctricos europeos, y encuentran que el desempeño (cobertura, ancho y puntaje de Winkler) empeora entre un 5\% y un 10\%, por lo que optan por dejar los outliers sin remover en su serie final; es la misma dirección de efecto que se evalúa aquí, aunque sobre un mecanismo de predicción y un mercado distintos.
+
 Para evaluar esta hipótesis se entrena un piloto de S+C-LN sin el recorte automático de outliers en el conjunto de entrenamiento (Validación y Prueba ya se evaluaban contra la serie cruda desde el pipeline principal, Sección \ref{sec:baselines}), para cuatro barras (Atacama, Charrúa, Pan de Azúcar, Tarapacá). La única exclusión manual retenida corresponde a tres horas de Pan de Azúcar (19 de marzo de 2020, 17--19h, valores entre 860 y 1589 USD/MWh frente a una media de la barra de aproximadamente 71 USD/MWh), un error de medición aislado y verificable, no un patrón de mercado. El modelo Prophet de la rama P+C se reentrena también con este nuevo conjunto de entrenamiento para las mismas cuatro barras; el resto del pipeline (clima, posición solar, hiperparámetros) permanece idéntico al modelo principal.
 
 El piloto se evalúa a $h=1$ (idéntico al pipeline principal) y a $h=24$ (idéntico a la Sección \ref{sec:h24_dayahead}), para determinar si el efecto del recorte de outliers depende del horizonte de predicción. Además del MAE general de prueba, se reporta el MAE condicional al régimen de precio alto (percentil 95 o superior de la serie cruda de prueba), el régimen que la hipótesis del recorte sistemático busca capturar mejor.
+
+Dado el resultado a $h=1$ del piloto de cuatro barras (Sección \ref{sec:piloto_outliers}), el mismo procedimiento se extendió a las cuatro barras restantes (Cardones, Crucero, Puerto Montt y Quillota), de modo que la evaluación a $h=1$ cubre las ocho barras del SEN; la evaluación a $h=24$ se mantiene en las cuatro barras originales. Sobre las ocho barras se agregan tres análisis, siempre contra la serie cruda, sobre el mismo conjunto de fechas de prueba para ambos modelos y excluyendo la ventana de precio administrativo ya omitida de las métricas principales: (i) la prueba de Diebold-Mariano con varianza de Newey-West (Sección \ref{sec:dm_ln_dyt}), sobre el error absoluto y sobre el cuadrático; (ii) un análisis de errores extremos, que reporta el MAE en el percentil 99 o superior, el promedio de los 20 mayores errores absolutos y el error máximo, junto con un \textit{bootstrap} por bloques de días (5\,000 remuestreos) del cambio en el MAE de régimen alto; y (iii) el desempeño de la Conformal Prediction (Split CP y LW-ACP con $\gamma=0.05$ y $\alpha=0.10$, los mismos parámetros del análisis principal, calibrados en validación contra la serie cruda, Sección \ref{sec:cp_configuracion_general}), con cobertura, ancho y puntaje de Winkler, globales y condicionales al régimen alto.
+
+Como complemento, el mismo tratamiento se cruza con la granularidad del modelo. Un \textit{modelo global} es un único TFT entrenado sobre las ocho barras a la vez, con la barra como covariable estática categórica (\texttt{serie\_id}) y con la misma arquitectura, hiperparámetros, \textit{features} y fechas de corte que los modelos por barra. Se entrenan dos modelos globales, uno con el recorte de outliers en entrenamiento y otro sin él, y se evalúan barra por barra sobre las mismas fechas de prueba, lo que completa una matriz de cuatro modelos (con o sin recorte, por barra o global) cuyos resultados se presentan en el Anexo \ref{anexo:sensibilidad_outliers}.
 
 \subsection{Evaluación a horizonte \textit{day-ahead} ($h=24$)}
 \label{sec:h24_dayahead_meta}

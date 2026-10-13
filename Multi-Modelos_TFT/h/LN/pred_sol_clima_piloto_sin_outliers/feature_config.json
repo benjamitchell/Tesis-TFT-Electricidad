@@ -18,8 +18,12 @@
   "batch_size": 128,
   "lista_barras": [
     "ATACAMA",
+    "CARDONES",
     "CHARRUA",
+    "CRUCERO",
     "P.AZUCAR",
+    "P.MONTT",
+    "QUILLOTA",
     "TARAPACA"
   ]
 }

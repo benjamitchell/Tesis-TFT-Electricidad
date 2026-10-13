@@ -17,10 +17,10 @@ Code, data and LaTeX source for my thesis:
 
 <p align="center">
   <img src="docs/figures/lw_acp_interval_atacama.png" width="760"
-       alt="One week of hourly marginal cost at the Atacama busbar: the real series, the S+C forecast, and the 95% LW-ACP prediction interval, which narrows to almost zero width during the midday hours when the price collapses to zero and widens at the solar transitions">
+       alt="One week of hourly marginal cost at the Atacama busbar: the real series, the S+C forecast, and the 90% LW-ACP prediction interval, which narrows to almost zero width during the midday hours when the price collapses to zero and widens at the solar transitions">
 </p>
-<p align="center"><sub>One week at the Atacama busbar (March 2026): real cost (blue), forecast (red) and the
-95% LW-ACP interval, which narrows when solar oversupply drives the price to zero and widens at
+<p align="center"><sub>One week at the Atacama busbar (March 2026): real cost (black), forecast (red) and the
+90% LW-ACP interval (shaded), which narrows when solar oversupply drives the price to zero and widens at
 the solar transitions. Axis labels are in Spanish, as in the thesis.</sub></p>
 
 ## The problem
@@ -75,20 +75,27 @@ publishes operationally, S+C-LN reduces the mean absolute error by **52–61%**:
 Compared with recent classical machine learning work on the same market, the model reduces MAE by
 **20–34%** on the busbars evaluated by both.
 
-**Sharper uncertainty, same coverage.** LW-ACP gives intervals up to 16% narrower than classical
-Split Conformal Prediction, with empirical coverage within half a percentage point of the 95%
-target at all eight busbars:
+**Better-calibrated uncertainty.** Intervals are reported at 90% nominal coverage, the level
+used by the Conformal Prediction literature for electricity markets. At that level LW-ACP has the
+best Winkler interval score and pinball loss of the five methods, with empirical coverage within
+half a percentage point of the target at all eight busbars. No single method wins every metric:
+online adaptation cuts the coverage deviation by 79% but makes the interval about 3% wider than
+the fixed quantile.
 
-| Method | Mean width (USD/MWh) | Mean \|coverage − 0.95\| | Mean Winkler score |
-|---|---:|---:|---:|
-| Split CP | 63.80 | 0.0089 | 100.78 |
-| ACP (γ = 0.05) | 58.70 | 0.0038 | 90.64 |
-| **LW-ACP (γ = 0.05)** | **58.25** | **0.0038** | **89.89** |
-| CQR | 67.99 | 0.0081 | 96.50 |
+| Method | Mean width (USD/MWh) | Mean \|coverage − 0.90\| | Mean Winkler score | Mean pinball loss |
+|---|---:|---:|---:|---:|
+| Split CP | 40.90 | 0.0112 | 76.65 | 1.916 |
+| LW Split CP | **40.69** | 0.0108 | 76.23 | 1.906 |
+| ACP (γ = 0.05) | 42.21 | **0.0023** | 72.31 | 1.808 |
+| **LW-ACP (γ = 0.05)** | 41.98 | 0.0024 | **71.87** | **1.797** |
+| CQR | 43.04 | 0.0142 | 72.53 | 1.813 |
+
+At 95% nominal coverage LW-ACP is also the narrowest (58.25 USD/MWh, 8.7% narrower than Split CP),
+with the lowest Winkler score (89.89).
 
 <p align="center">
   <img src="docs/figures/cp_coverage_width_by_hour.png" width="760"
-       alt="Empirical coverage and mean interval width by hour of day for Split CP, ACP and LW-ACP, averaged over the eight busbars">
+       alt="Empirical coverage and mean interval width by hour of day at 90% nominal coverage for Split CP, ACP and LW-ACP, averaged over the eight busbars">
 </p>
 
 **Where the model fails.** Most of the largest errors are a **phase shift of about one hour** in

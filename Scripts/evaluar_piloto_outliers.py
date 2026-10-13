@@ -33,7 +33,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Modulos.TFT_Model import TFTBridge
 from Modulos.Evaluacion_TFT import extraer_todas_predicciones_modelo, recalcular_metricas_serie_cruda
 
-BARRAS = ["ATACAMA", "CHARRUA", "P.AZUCAR", "TARAPACA"]
+BARRAS = ["ATACAMA", "CARDONES", "CHARRUA", "CRUCERO", "P.AZUCAR", "P.MONTT", "QUILLOTA", "TARAPACA"]
 EXPERIMENTO_PRECIOS = "Multi-TFT_Precios"
 ORIGEN_ACTUAL = "Multi-Modelos_TFT/h/LN/pred_sol_clima"
 ORIGEN_PILOTO = "Multi-Modelos_TFT/h/LN/pred_sol_clima_piloto_sin_outliers"
