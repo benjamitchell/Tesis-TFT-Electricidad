@@ -311,25 +311,25 @@
     \begin{table}
         \centering
         \tiny
-        \begin{tabular}{lrrr}
+        \begin{tabular}{lrrrrr}
             \toprule
-            \textbf{Barra} & \textbf{MAE TFT} & \textbf{MAE CEN} & \textbf{Mejora} \\
+            \textbf{Barra} & \textbf{MAE CEN} & \textbf{MAE 1 h} & \textbf{vs.\ CEN} & \textbf{MAE 24 h} & \textbf{vs.\ CEN} \\
             \midrule
-            Puerto Montt  & \textbf{13.68} & 32.98 & 58.5\% \\
-            Crucero       & \textbf{6.74}  & 17.10 & 60.6\% \\
-            Cardones      & \textbf{6.63}  & 14.52 & 54.4\% \\
-            Pan de Azúcar & \textbf{6.93}  & 15.09 & 54.1\% \\
-            Charrúa       & \textbf{7.98}  & 17.01 & 53.1\% \\
-            Quillota      & \textbf{8.26}  & 17.26 & 52.1\% \\
+            Puerto Montt  & 32.98 & 13.68 & $-58.5\%$ & 38.89 & $+17.9\%$ \\
+            Crucero       & 17.10 & 6.74  & $-60.6\%$ & --    & --        \\
+            Cardones      & 14.52 & 6.63  & $-54.4\%$ & --    & --        \\
+            Pan de Azúcar & 15.09 & 6.93  & $-54.1\%$ & 13.64 & $-9.6\%$  \\
+            Charrúa       & 17.01 & 7.98  & $-53.1\%$ & 18.41 & $+8.2\%$  \\
+            Quillota      & 17.26 & 8.26  & $-52.1\%$ & --    & --        \\
             \bottomrule
         \end{tabular}
     \end{table}
     \vspace{0.3em}
     \begin{itemize}
         \item Se compara S+C-LN contra el \textit{costo marginal programado} que el CEN publica operacionalmente (vía API pública), ambos evaluados contra el costo marginal real.
-        \item Reducción de MAE entre \textbf{52.1\% y 60.6\%} (promedio 55.5\%) en las 6 barras donde se identificó el mnemotécnico, incluyendo Puerto Montt, el caso menos favorable.
-        \item No es evidencia de que el CEN pronostique mal: su costo marginal programado resuelve un problema distinto (despacho óptimo del sistema, con restricciones físicas), no un pronóstico estadístico puntual.
-        \item Sí evidencia que un pronóstico dedicado, sin esas restricciones operativas, puede superar sistemáticamente la cifra que circula en el mercado antes del despacho real.
+        \item A una hora, el modelo reduce el MAE entre 52\% y 61\%, pero usa el precio de la hora anterior; el programado se fija antes de la operación.
+        \item A 24 horas (igual anticipación) gana en Pan de Azúcar y pierde en Charrúa y Puerto Montt.
+        \item La ventaja a una hora es el valor del precio recién observado, no un mejor modelo del sistema que la Programación de la Operación.
     \end{itemize}
 \end{frame}
 
@@ -372,7 +372,7 @@
         \item \textbf{La estrategia más simple es la más precisa}: S+C supera a P+C, con la posición solar dominando el decoder del TFT.
         \item \textbf{LW-ACP} combina ponderación horaria y adaptación \textit{online}, logrando el mejor Winkler y pinball al 90\% con cobertura calibrada, y los intervalos más angostos al 95\%.
         \item Los errores más extremos siguen un patrón mecanístico común (desfase de fase de $\sim$1h), no ruido aleatorio disperso.
-        \item El modelo supera de forma sistemática tanto al costo marginal programado del CEN como a literatura reciente de ML clásico.
+        \item A una hora supera a la literatura reciente de ML clásico al mismo horizonte; a 24 horas la calibración de los intervalos se mantiene, pero la predicción puntual no supera a la persistencia.
         \item Puerto Montt permanece como un caso no resuelto, estructuralmente distinto al resto del SEN.
     \end{enumerate}
 \end{frame}

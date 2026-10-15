@@ -58,22 +58,26 @@ All numbers are test-set results taken from the thesis.
 13 of them statistically significant. The solar position signal is at least as informative as
 Prophet's statistical decomposition.
 
-**It beats the system operator's own forecast.** Against the scheduled marginal cost that the CEN
-publishes operationally, S+C-LN reduces the mean absolute error by **52–61%**:
+**Forecast horizon.** The main model forecasts the marginal cost **one hour ahead**, using the
+price observed up to the previous hour. That is the same horizon as the closest Chilean precedent,
+and against it the model reduces MAE by **20–34%** on the busbars evaluated by both.
 
-| Busbar | MAE (this work) | MAE (CEN) | Improvement |
+**Against the system operator's schedule.** The CEN publishes a programmed marginal cost before
+real operation. With one hour of lead time the model has 52–61% lower error, but most of that
+comes from seeing the latest observed price. With a day of lead time (the 24-hour model, trained
+for five busbars) the picture is mixed:
+
+| Busbar | MAE (CEN) | MAE, 1 h ahead | MAE, 24 h ahead |
 |---|---:|---:|---:|
-| Crucero | 6.74 | 17.10 | 60.6% |
-| Puerto Montt | 13.68 | 32.98 | 58.5% |
-| Cardones | 6.63 | 14.52 | 54.4% |
-| Pan de Azúcar | 6.93 | 15.09 | 54.1% |
-| Charrúa | 7.98 | 17.01 | 53.1% |
-| Quillota | 8.26 | 17.26 | 52.1% |
+| Pan de Azúcar | 15.09 | 6.93 | 13.64 |
+| Charrúa | 17.01 | 7.98 | 18.41 |
+| Puerto Montt | 32.98 | 13.68 | 38.89 |
+| Crucero | 17.10 | 6.74 | not trained |
+| Cardones | 14.52 | 6.63 | not trained |
+| Quillota | 17.26 | 8.26 | not trained |
 
-<sub>MAE in USD/MWh over the full test set (8,298 hours per busbar).</sub>
-
-Compared with recent classical machine learning work on the same market, the model reduces MAE by
-**20–34%** on the busbars evaluated by both.
+<sub>MAE in USD/MWh over the full test set. At 24 hours the point forecast does not beat
+daily persistence at most busbars, while the prediction intervals stay calibrated.</sub>
 
 **Better-calibrated uncertainty.** Intervals are reported at 90% nominal coverage, the level
 used by the Conformal Prediction literature for electricity markets. At that level LW-ACP has the
