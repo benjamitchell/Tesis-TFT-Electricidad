@@ -105,8 +105,8 @@ with the lowest Winkler score (89.89).
 **Where the model fails.** Most of the largest errors are a **phase shift of about one hour** in
 the daily solar transition (the model predicts the price jump one hour early or late), a pattern
 that appears at all eight busbars. Puerto Montt, driven by hydro generation, remains unresolved:
-none of the hydrological features tried improved on the general strategy. LayerNorm beats Dynamic
-Tanh consistently, but by a small margin.
+none of the hydrological features tried improved on the general strategy. LayerNorm and Dynamic
+Tanh are practically equivalent: LayerNorm's small one-hour edge does not hold at 24 hours.
 
 <p align="center">
   <img src="docs/figures/phase_shift_errors.png" width="760"

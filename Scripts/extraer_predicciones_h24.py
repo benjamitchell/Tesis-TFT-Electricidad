@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+"""
+extraer_predicciones_h24.py - Extrae y guarda en cache las predicciones por paso (h=1..24)
+de los modelos day-ahead S+C, LN y DyT, en validacion y prueba, para las 5 barras con
+modelo h24. Una sola inferencia por modelo (mismo patron que Scripts/evaluar_h24.py).
+
+Las pruebas de la Seccion "conclusiones a 24 horas" (heterocedasticidad, Conformal
+Prediction y LN vs DyT) leen este cache en vez de re-inferir.
+
+Salida: Multi-Modelos_TFT/h/{arq}/pred_sol_clima_h24/Resultados/predicciones_por_paso.pkl
+        dict[barra][h]["val"|"test"] = {"fechas": DatetimeIndex, "y_pred": ndarray}
+
+Uso:
+    python Scripts/extraer_predicciones_h24.py
+"""
+import os
+import sys
+import gc
+import pickle
+import warnings
+
+warnings.filterwarnings("ignore")
+sys.stdout.reconfigure(encoding="utf-8")
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from evaluar_h24 import cargar_modelo
+from Modulos.Evaluacion_TFT import extraer_todas_predicciones_modelo, inferir_raw_modelo
+
+BARRAS = ["ATACAMA", "CHARRUA", "P.AZUCAR", "P.MONTT", "TARAPACA"]
+ARQUITECTURAS = ["LN", "DyT"]
+N_HORIZONTES = 24
+
+
+def main():
+    for arq in ARQUITECTURAS:
+        carpeta = f"Multi-Modelos_TFT/h/{arq}/pred_sol_clima_h24"
+        carpeta_norm = f"Multi-Modelos_TFT/h/{arq}/pred_sol_clima"
+        salida = os.path.join(carpeta, "Resultados", "predicciones_por_paso.pkl")
+        if os.path.exists(salida):
+            print(f"[{arq}] ya existe {salida}, se omite")
+            continue
+
+        with open(os.path.join(carpeta, "dataloaders_precios.pkl"), "rb") as f:
+            dataloaders = pickle.load(f)
+        with open(os.path.join(carpeta_norm, "datasets_norm.pkl"), "rb") as f:
+            datasets_norm = pickle.load(f)
+        with open(os.path.join(carpeta, "scalers.pkl"), "rb") as f:
+            scalers = pickle.load(f)
+
+        resultado = {}
+        for barra in BARRAS:
+            modelo = cargar_modelo(carpeta, barra, arq)
+            raw = inferir_raw_modelo(modelo, dataloaders[barra]["test"])
+            resultado[barra] = {}
+            for h in range(1, N_HORIZONTES + 1):
+                r = extraer_todas_predicciones_modelo(barra, modelo, dataloaders[barra]["test"],
+                                                      datasets_norm, scalers, horizonte=h, raw=raw)
+                resultado[barra][h] = {c: {"fechas": r[c]["fechas"], "y_pred": r[c]["y_pred"]}
+                                       for c in ("val", "test")}
+            print(f"[{arq}] {barra} listo", flush=True)
+            del raw, modelo
+            gc.collect()
+
+        os.makedirs(os.path.dirname(salida), exist_ok=True)
+        with open(salida, "wb") as f:
+            pickle.dump(resultado, f)
+        print(f"[{arq}] guardado {salida}")
+
+
+if __name__ == "__main__":
+    main()

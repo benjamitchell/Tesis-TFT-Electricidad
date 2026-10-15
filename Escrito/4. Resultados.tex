@@ -634,7 +634,7 @@ La Tabla \ref{tab:comparativa_stacking} presenta la comparación al nivel releva
 
 A nivel del ensamble final, $\text{TFT}_\text{LN}$ resulta ganador en 7 de las 8 barras, con Puerto Montt como única excepción a favor de $\text{TFT}_\text{DyT}$. Esto es consistente con la ventaja sistemática de LN detectada por el test de Diebold-Mariano: al ganar de forma típica hora a hora en la mayoría de las barras, LN también tiende a ganar el MAE agregado una vez que sus predicciones se combinan con las de Prophet en el Stacking. Las diferencias absolutas siguen siendo modestas (0.03--0.45\,USD/MWh sobre un MAE típico de 6--9\,USD/MWh), pero ya no son atribuibles únicamente a la variabilidad de inicialización, dado lo mostrado en la Tabla \ref{tab:dm_ln_dyt}.
 
-La conclusión metodológica de esta sección es, entonces, más matizada que la de trabajos que reportan equivalencia estricta entre LayerNorm y DyT: en el contexto del pronóstico de precios eléctricos, $\text{TFT}_\text{LN}$ presenta una ventaja sistemática, aunque de magnitud pequeña, sobre $\text{TFT}_\text{DyT}$, particularmente marcada en la rama P+C. Esto no invalida el uso de DyT, sus diferencias con LN siguen siendo pequeñas en términos absolutos, y ambas arquitecturas exhiben patrones de error suficientemente distintos como para que su combinación en un ensamble más amplio (Stacking entre $\text{TFT}_\text{LN}$ y $\text{TFT}_\text{DyT}$, no explorado en este trabajo) sea una dirección de trabajo futuro razonable, pero sí sugiere que, si se debe elegir una única arquitectura de normalización para este problema, LayerNorm es la opción mejor respaldada por la evidencia.
+La conclusión metodológica de esta sección es, entonces, más matizada que la de trabajos que reportan equivalencia estricta entre LayerNorm y DyT: en el contexto del pronóstico de precios eléctricos, $\text{TFT}_\text{LN}$ presenta una ventaja sistemática, aunque de magnitud pequeña, sobre $\text{TFT}_\text{DyT}$, particularmente marcada en la rama P+C. Esto no invalida el uso de DyT, sus diferencias con LN siguen siendo pequeñas en términos absolutos, y ambas arquitecturas exhiben patrones de error suficientemente distintos como para que su combinación en un ensamble más amplio (Stacking entre $\text{TFT}_\text{LN}$ y $\text{TFT}_\text{DyT}$, no explorado en este trabajo) sea una dirección de trabajo futuro razonable, pero sí sugiere que, si se debe elegir una única arquitectura de normalización para este problema, LayerNorm es la opción mejor respaldada por la evidencia a una hora. Esa preferencia es, sin embargo, débil: no supera la variabilidad entre semillas (Sección \ref{sec:seeds_ln_dyt}) ni se mantiene a 24 horas (Sección \ref{sec:h24_conclusiones}).
 
 \subsubsection{Robustez a la semilla de inicialización}
 \label{sec:seeds_ln_dyt}
@@ -696,7 +696,7 @@ Las secciones anteriores presentaron P+C (Prophet+Clima, con Stacking Optimizati
 
 \textbf{S+C gana en 14 de las 16 combinaciones} por MAE nominal, con mejoras de entre 1.5\% (Cardones LN) y 7.9\% (Atacama DyT) respecto al MAE de P+C. Las únicas dos excepciones nominales son Tarapacá con LN y Puerto Montt con DyT. El test de Diebold-Mariano confirma que esta ventaja no es atribuible al azar en la mayoría de los casos: la diferencia es estadísticamente significativa en 13 de las 16 combinaciones, y S+C gana en 12 de esas 13 (92\%); la única combinación significativa a favor de P+C es Puerto Montt bajo DyT. En las 3 combinaciones restantes (Cardones y Pan de Azúcar bajo LN, Tarapacá bajo LN) la diferencia nominal de MAE no alcanza significancia estadística, es decir, no hay evidencia suficiente para preferir una rama sobre la otra en esos casos específicos --incluyendo la única excepción nominal de S+C bajo LN (Tarapacá), que en rigor no es una victoria significativa de P+C, sino una ausencia de diferencia detectable--. Dado que estas 16 comparaciones constituyen una única familia de hipótesis, se aplica además una corrección de Holm-Bonferroni (controla la probabilidad de al menos un falso positivo en la familia, a diferencia de Bonferroni simple, sin perder potencia innecesariamente): 10 de las 16 combinaciones permanecen significativas, todas a favor de S+C (marcadas con * en la Tabla \ref{tab:pc_vs_sc}); las que dejan de serlo bajo esta corrección más estricta (Charrúa DyT, Crucero LN, Puerto Montt DyT) tenían los $p$-valores más cercanos al umbral de 0.05 dentro del grupo originalmente significativo. El resultado central, que S+C gana de forma sistemática, se sostiene bajo esta corrección más conservadora. Este resultado es notable porque S+C es, por diseño, la estrategia más simple: prescinde de Prophet, de su ajuste por barra, y del modelo de residuos y el Stacking Optimization que P+C requiere para alcanzar su mejor desempeño. La ventaja de S+C es consistente en ambas arquitecturas y en siete de las ocho barras, lo que sugiere que la posición solar, calculada de forma determinista y exacta mediante \texttt{pvlib}, captura el ciclo diario y anual del costo marginal de manera al menos tan efectiva como la descomposición estadística de Prophet, sin acumular su error de ajuste ni requerir el paso adicional de ensamblaje. Puerto Montt, la única barra donde P+C es significativamente ganador en alguna arquitectura, es consistente con su menor dependencia del ciclo solar y su mayor dependencia de la disponibilidad hidroeléctrica, ya documentada en la Sección 4.7.1.
 
-Este hallazgo, que la estrategia más simple es también la más precisa en la gran mayoría de los casos, es el resultado central de este trabajo, y motiva que S+C sea adoptada como estrategia de referencia en el resto de este capítulo. Combinado con la ventaja sistemática, aunque pequeña, de $\text{TFT}_\text{LN}$ sobre $\text{TFT}_\text{DyT}$ establecida en la Sección \ref{sec:ln_vs_dyt}, la selección final de este trabajo es \textbf{S+C-LN}: un único modelo, sin Stacking Optimization ni ajuste por barra, adoptado de forma uniforme en Conformal Prediction (Sección 4.5). Las extensiones de la Sección 4.7 retoman la comparación entre ambas arquitecturas donde es relevante para sus propios objetivos (por ejemplo, la robustez de la conclusión sobre Puerto Montt o el estudio de granularidad), en vez de asumir S+C-LN de antemano.
+Este hallazgo, que la estrategia más simple es también la más precisa en la gran mayoría de los casos, es el resultado central de este trabajo, y motiva que S+C sea adoptada como estrategia de referencia en el resto de este capítulo. Combinado con la ventaja pequeña de $\text{TFT}_\text{LN}$ sobre $\text{TFT}_\text{DyT}$ a una hora (Sección \ref{sec:ln_vs_dyt}), la selección final de este trabajo es \textbf{S+C-LN}: un único modelo, sin Stacking Optimization ni ajuste por barra, adoptado de forma uniforme en Conformal Prediction (Sección 4.5). Las extensiones de la Sección 4.7 retoman la comparación entre ambas arquitecturas donde es relevante para sus propios objetivos (por ejemplo, la robustez de la conclusión sobre Puerto Montt o el estudio de granularidad), en vez de asumir S+C-LN de antemano.
 
 \section{Conformal Prediction}
 
@@ -1647,6 +1647,80 @@ El resultado es cualitativamente distinto al de $h=1$. Desde el paso 2 en adelan
 La causa se identificó inspeccionando las fechas de los 20 mayores errores en cada paso: 13 de los 20, de forma consistente en los 24 pasos, corresponden al 25 y 26 de febrero de 2025, coincidiendo con el apagón nacional del SEN del 25 de febrero de 2025 --un evento de indisponibilidad masiva e imprevisible, ajeno a cualquier variable climática o de calendario disponible como predictor--. En el pipeline de $h=1$, estas mismas fechas aparecen solo ocasionalmente entre los 20 mayores errores y con una magnitud moderada (p.\ ej.\ $\sim$100\,USD/MWh en Cardones, Anexo \ref{anexo:errores_extremos}), porque el modelo de un paso recibe información del mismo día y puede reaccionar parcialmente dentro de la hora siguiente al evento. El modelo $h=24$, en cambio, pronostica el día completo a partir de información disponible el día anterior, sin ninguna posibilidad de anticipar un apagón no programado; el error resultante es catastrófico y sostenido durante gran parte del día siguiente (hasta 519\,USD/MWh, más de tres veces el máximo de 162.9\,USD/MWh del pipeline de $h=1$ en la misma barra), y aparece repetido en el conjunto de validación de todos los pasos porque las mismas horas del 25--26 de febrero forman parte del conjunto de validación de cada paso.
 
 Esto no es una deficiencia del modelo, sino una limitación inherente a cualquier pronóstico \textit{day-ahead}: ningún predictor, sin importar su arquitectura, puede anticipar 24 horas antes un apagón no programado. El mecanismo de desfase de fase de aproximadamente una hora, dominante a $h=1$, sigue presente a $h=24$ (84.3\% de reducción mediana entre los casos clasificados como tal), pero deja de ser la causa principal de los errores más extremos, desplazado por un evento estructural único y no recurrente. Dado que febrero de 2025 cae dentro del conjunto de validación (junio 2024--mayo 2025, Sección \ref{sec:cp_configuracion_general}) y no del conjunto de prueba (mayo 2025--abril 2026), este evento infla el cuantil de calibración de Split CP --contribuyendo al ancho de intervalo reportado en la Sección \ref{sec:h24_cp}-- sin afectar directamente la cobertura empírica medida en prueba, el mismo efecto ya documentado para el desfase de fase a $h=1$ (Sección \ref{sec:split_cp_clasico}), aunque aquí originado por un evento aislado en vez de un patrón diario recurrente.
+
+\subsubsection{¿Se mantienen las conclusiones a 24 horas?}
+\label{sec:h24_conclusiones}
+
+Las conclusiones de este trabajo se obtuvieron a una hora de anticipación, usado como escenario controlado para comparar estrategias, arquitecturas y métodos de cuantificación de incertidumbre (Capítulo 1). Esta sección pone a prueba tres de ellas con el modelo a 24 horas, sin entrenar ningún modelo nuevo: la heterocedasticidad horaria del error, el orden de los métodos de Conformal Prediction y la comparación entre LayerNorm y DyT. Se usan las cinco barras con modelo a 24 horas y cada prueba se aplica por separado en cada uno de los 24 pasos del horizonte, con la misma metodología que a una hora y corrección de Holm-Bonferroni sobre las cinco barras de cada paso.
+
+\paragraph{Heterocedasticidad horaria.} La Tabla \ref{tab:h24_hetero} repite el test de Levene de la Sección \ref{sec:verificacion_heterocedasticidad} sobre los residuos de validación de cada paso, agrupados por la hora del día pronosticada.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lrrrrr}
+        \toprule
+        & \multicolumn{2}{c}{Levene $F$} & & \multicolumn{2}{c}{$\hat\sigma_h$ máx./mín.} \\
+        Barra & 1 hora & 24 h (rango) & Pasos signif. & 1 hora & 24 h, paso 24 \\
+        \midrule
+        Atacama       & 12.84 & 11.7--17.4 & 24/24 & 3.0 & 2.2 \\
+        Charrúa       & 12.31 & 1.4--6.1   & 16/24 & 2.4 & 1.6 \\
+        Pan de Azúcar & 18.84 & 11.7--14.5 & 24/24 & 3.0 & 1.7 \\
+        Puerto Montt  & 18.35 & 9.3--13.6  & 24/24 & 3.4 & 2.0 \\
+        Tarapacá      & 16.24 & 23.8--27.5 & 24/24 & 3.5 & 2.6 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Test de Levene entre las 24 horas del día sobre los residuos de validación, modelo a una hora (Tabla \ref{tab:heterocedasticidad}) y modelo a 24 horas en cada uno de sus 24 pasos. Pasos signif.: pasos con $p<0.05$ tras corrección de Holm-Bonferroni sobre las cinco barras. $\hat\sigma_h$ máx./mín.: razón entre la mayor y la menor desviación estándar horaria del residuo.}
+    \label{tab:h24_hetero}
+\end{table}
+
+En cuatro de las cinco barras la heterocedasticidad horaria se mantiene en los 24 pasos, con estadísticos del mismo orden que a una hora. El contraste entre horas se suaviza (la razón entre la hora más y la menos dispersa baja de 3.0--3.5 a 1.7--2.6), porque a 24 horas el error crece en todas las horas y no solo en las de transición. Charrúa es la excepción: su estadístico cae a 1.4--6.1 y en ocho pasos intermedios deja de ser significativo. El test ARCH-LM resulta significativo en las 120 combinaciones de barra y paso, pero a 24 horas es menos informativo que a una hora, porque los pronósticos de un mismo paso emitidos en horas consecutivas comparten información y eso induce autocorrelación en el residuo aunque la volatilidad no se agrupe.
+
+\paragraph{Métodos de Conformal Prediction.} La Tabla \ref{tab:h24_cp_metodos} compara los cuatro métodos de la Sección \ref{sec:lwacp_comparativa}, calibrados por separado en cada paso, al 90\% de cobertura nominal.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Método & Cobertura & $|$Cov $-$ 0.90$|$ & Ancho & Winkler & Pinball \\
+        \midrule
+        Split CP    & 0.920 & 0.020 & 90.19 & 153.04 & 3.826 \\
+        LW Split CP & 0.920 & 0.020 & 90.14 & 150.76 & 3.769 \\
+        ACI         & 0.896 & \textbf{0.004} & 73.99 & 113.81 & 2.845 \\
+        LW-ACP      & 0.896 & \textbf{0.004} & \textbf{73.51} & \textbf{112.73} & \textbf{2.818} \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Conformal Prediction sobre el modelo a 24 horas, calibrado por paso, 90\% de cobertura nominal, promedio de las cinco barras y los 24 pasos. Ancho, Winkler y pinball en USD/MWh.}
+    \label{tab:h24_cp_metodos}
+\end{table}
+
+El orden de la Sección \ref{sec:lwacp_comparativa} se mantiene y se refuerza. LW-ACP obtiene el menor Winkler promedio en cada uno de los 24 pasos, y en las 120 combinaciones de barra y paso el mejor método es siempre uno de los dos con adaptación \textit{online}: LW-ACP en 68 y ACI en 52. A diferencia de lo observado a una hora al 90\%, donde la adaptación \textit{online} ensanchaba levemente el intervalo, a 24 horas además lo angosta un 18.5\% respecto a Split CP, que sobrecubre más (0.920), con una desviación de cobertura casi cinco veces menor y un Winkler 26.3\% más bajo. Es el mismo patrón observado a una hora al 95\% de cobertura: el mecanismo \textit{online} aporta más ancho cuanto más pesa la cola del error que debe cubrir el cuantil fijo. La ponderación horaria vuelve a aportar un refinamiento pequeño (0.9\% menos Winkler que ACI) y no uniforme: LW-ACP es mejor en Puerto Montt en los 24 pasos y en Charrúa y Tarapacá en 19, mientras que en Atacama y Pan de Azúcar ACI queda levemente por delante.
+
+\paragraph{LayerNorm contra DyT.} La Tabla \ref{tab:h24_ln_dyt} aplica el test de Diebold-Mariano al error absoluto promedio de los 24 pasos de cada pronóstico emitido, con varianza Newey-West truncada en 25 rezagos porque pronósticos consecutivos comparten 23 horas.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrrl}
+        \toprule
+        Barra & MAE LN & MAE DyT & DM & $p$ & Resultado \\
+        \midrule
+        Atacama       & 13.55 & 12.69 & $2.54$  & 0.011 & DyT* \\
+        Charrúa       & 18.43 & 18.72 & $-0.53$ & 0.596 & Empate \\
+        Pan de Azúcar & 13.64 & 13.67 & $-0.06$ & 0.949 & Empate \\
+        Puerto Montt  & 38.94 & 40.12 & $-0.96$ & 0.336 & Empate \\
+        Tarapacá      & 12.87 & 13.79 & $-2.69$ & 0.007 & LN* \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Diebold-Mariano entre los modelos a 24 horas con LayerNorm y con DyT, error absoluto promedio de los 24 pasos de cada pronóstico, conjunto de prueba, contra la serie cruda. DM negativo favorece a LN. * significativo tras Holm-Bonferroni sobre las cinco barras.}
+    \label{tab:h24_ln_dyt}
+\end{table}
+
+A diferencia de lo observado a una hora, donde LN ganaba en 11 de las 12 combinaciones significativas (Sección \ref{sec:dm_ln_dyt}), a 24 horas la comparación queda dividida: LN gana en Tarapacá, DyT en Atacama y las tres barras restantes empatan. Por paso, de 120 combinaciones de barra y paso, 29 son significativas a favor de LN y 11 a favor de DyT, estas últimas todas en Atacama. Incluso la preferencia por barra cambia de dirección: Tarapacá, la única barra donde DyT ganaba a una hora en S+C, es donde LN gana a 24 horas. Junto con el estudio de semillas (Sección \ref{sec:seeds_ln_dyt}), esto indica que la ventaja de LN a una hora es real pero pequeña y no se traslada a otro horizonte: para este problema, ambas arquitecturas son prácticamente equivalentes.
+
+\paragraph{Síntesis.} De las tres conclusiones puestas a prueba, dos se sostienen a 24 horas: la heterocedasticidad horaria del error (en cuatro de cinco barras) y la superioridad de los métodos con adaptación \textit{online}, con LW-ACP en primer lugar, que a este horizonte además produce los intervalos más angostos. La tercera, la ventaja de LayerNorm sobre DyT, no se sostiene. La conclusión central del trabajo, que la posición solar supera a la descomposición de Prophet, no se pudo poner a prueba de esta forma, porque requiere entrenar la estrategia P+C a 24 horas.
 
 \subsection{Comparación con la literatura: CRUCERO y P.MONTT 2024}
 \label{sec:crucero_leon}
