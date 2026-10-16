@@ -963,10 +963,10 @@ Cabe señalar una limitación metodológica del diseño experimental: el conjunt
 \subsection{Análisis de errores extremos}
 \label{sec:errores_extremos}
 
-La brecha entre el MAE promedio del modelo (6.89\,USD/MWh en validación para Atacama) y el semiancho de los intervalos de Split CP clásico ($q = 20.27$\,USD/MWh al 90\% de cobertura nominal y $34.07$ al 95\%, Sección \ref{sec:split_cp_clasico}) sugiere que la distribución de errores del modelo no es simétrica ni de cola ligera. Para comprender el origen de esta brecha, se examina la distribución de errores absolutos en validación para las ocho barras, con Atacama como caso ilustrativo y el detalle completo del resto en el Anexo \ref{anexo:errores_extremos}.
+La brecha entre el MAE promedio del modelo (6.89\,USD/MWh en validación para Atacama) y el semiancho de los intervalos de Split CP clásico ($q = 20.27$\,USD/MWh al 90\% de cobertura nominal y $34.07$ al 95\%, Sección \ref{sec:split_cp_clasico}) sugiere que la distribución de errores del modelo no es simétrica ni de cola ligera. Para comprender el origen de esta brecha, se examina la distribución de errores absolutos en validación para las ocho barras, con Atacama como caso ilustrativo; el detalle de las otras siete barras está disponible en el repositorio público del trabajo (archivo \texttt{docs/errores\_extremos\_top20\_por\_barra.csv}).
 
 La Figura \ref{fig:error_dist_atacama} muestra la distribución de
-errores absolutos del $\text{TFT}_\text{LN}$ (S+C) en validación para Atacama. La distribución presenta una forma exponencial decreciente fuertemente concentrada: más del 90\% de las predicciones tienen un error menor a 19.8\,USD/MWh, y el percentil 95 es de 32.5\,USD/MWh. Sin embargo, la distribución exhibe una cola derecha extendida que alcanza los 162.9\,USD/MWh, marcada explícitamente en la figura. Es precisamente esta cola la que determina el cuantil de calibración del Split CP: $q$ corresponde al percentil 90 de la distribución de errores de validación cuando la cobertura nominal es 90\%, y al percentil 95 cuando es 95\%, de modo que el ancho del intervalo queda fijado por el 10\% (o el 5\%) de los errores más grandes, casi tres y casi cinco veces el MAE respectivamente. Las ocho barras exhiben la misma forma general, con el máximo desplazándose entre 132.4 (Charrúa) y 241.7\,USD/MWh (Puerto Montt); ver Anexo \ref{anexo:errores_extremos} para el detalle de errores por barra.
+errores absolutos del $\text{TFT}_\text{LN}$ (S+C) en validación para Atacama. La distribución presenta una forma exponencial decreciente fuertemente concentrada: más del 90\% de las predicciones tienen un error menor a 19.8\,USD/MWh, y el percentil 95 es de 32.5\,USD/MWh. Sin embargo, la distribución exhibe una cola derecha extendida que alcanza los 162.9\,USD/MWh, marcada explícitamente en la figura. Es precisamente esta cola la que determina el cuantil de calibración del Split CP: $q$ corresponde al percentil 90 de la distribución de errores de validación cuando la cobertura nominal es 90\%, y al percentil 95 cuando es 95\%, de modo que el ancho del intervalo queda fijado por el 10\% (o el 5\%) de los errores más grandes, casi tres y casi cinco veces el MAE respectivamente. Las ocho barras exhiben la misma forma general, con el máximo desplazándose entre 132.4 (Charrúa) y 241.7\,USD/MWh (Puerto Montt).
 
 \begin{figure}[htbp]
     \centering
@@ -977,7 +977,7 @@ errores absolutos del $\text{TFT}_\text{LN}$ (S+C) en validación para Atacama. 
 \end{figure}
 
 Una primera hipótesis ante una cola de este tipo es que los errores
-extremos correspondan a eventos inusuales de la propia serie temporal: spikes de costo marginal asociados a indisponibilidades, eventos climáticos o cambios regulatorios que el modelo no puede anticipar por construcción, dado que no dispone de información futura sobre dichos eventos. Bajo esa hipótesis, los errores grandes serían inherentes a la naturaleza del problema y no reflejarían una deficiencia del modelo. Para evaluar esta hipótesis, se examinan en detalle los 20 errores absolutos más grandes del conjunto de validación de cada barra: se recalcula el error tras desplazar la predicción entre $-3$ y $+3$ horas respecto de su posición original, y se retiene el desplazamiento que minimiza el error resultante; si la reducción de error alcanzada supera el 60\%, el caso se clasifica como \textit{desfase de fase}, y como \textit{evento estructural} en caso contrario. El Anexo \ref{anexo:errores_extremos} presenta la tabla completa de los 20 mayores errores para cada barra; la Tabla \ref{tab:sintesis_errores} resume los resultados a nivel de todo el SEN.
+extremos correspondan a eventos inusuales de la propia serie temporal: spikes de costo marginal asociados a indisponibilidades, eventos climáticos o cambios regulatorios que el modelo no puede anticipar por construcción, dado que no dispone de información futura sobre dichos eventos. Bajo esa hipótesis, los errores grandes serían inherentes a la naturaleza del problema y no reflejarían una deficiencia del modelo. Para evaluar esta hipótesis, se examinan en detalle los 20 errores absolutos más grandes del conjunto de validación de cada barra: se recalcula el error tras desplazar la predicción entre $-3$ y $+3$ horas respecto de su posición original, y se retiene el desplazamiento que minimiza el error resultante; si la reducción de error alcanzada supera el 60\%, el caso se clasifica como \textit{desfase de fase}, y como \textit{evento estructural} en caso contrario. La lista completa de los 20 mayores errores de cada barra, con su clasificación, está disponible en el repositorio público del trabajo (archivo \texttt{docs/errores\_extremos\_top20\_por\_barra.csv}); la Tabla \ref{tab:sintesis_errores} resume los resultados a nivel de todo el SEN.
 
 \begin{table}[htbp]
     \centering
@@ -997,7 +997,7 @@ extremos correspondan a eventos inusuales de la propia serie temporal: spikes de
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Síntesis del análisis de errores extremos en validación, las ocho barras del SEN. MAE, P95 y Máximo en USD/MWh. \textit{Desfase de fase}: cuántos de los 20 mayores errores se clasifican como tal (vs.\ \textit{evento estructural}). \textit{Transición solar}: cuántos de los 20 ocurren en las horas 07:00--08:00 o 19:00--21:00. Detalle completo por barra en el Anexo \ref{anexo:errores_extremos}.}
+    \caption{Síntesis del análisis de errores extremos en validación, las ocho barras del SEN. MAE, P95 y Máximo en USD/MWh. \textit{Desfase de fase}: cuántos de los 20 mayores errores se clasifican como tal (vs.\ \textit{evento estructural}). \textit{Transición solar}: cuántos de los 20 ocurren en las horas 07:00--08:00 o 19:00--21:00. Detalle por barra en el repositorio del trabajo.}
     \label{tab:sintesis_errores}
 \end{table}
 
@@ -1007,7 +1007,7 @@ eventos inusuales en la serie: en las ocho barras, entre el 80\% y el 100\% de l
 Puerto Montt es la excepción que confirma la regla: sus 20 mayores errores se clasifican \emph{todos} como desfase de fase (reducción mediana del 98\%, la más alta del grupo), pero solo 1 de 20 ocurre en las horas de transición solar 07:00--08:00 o 19:00--21:00, frente a 8--15 de 20 en las siete barras restantes. Esto es consistente con el resto de la caracterización de Puerto Montt en este capítulo (Sección \ref{sec:pmontt_desempeno}): el desfase de fase es un patrón general del modelo, no específico del ciclo solar, y en Puerto Montt se manifiesta alrededor de la dinámica hidrológica de la zona en vez de las transiciones de amanecer/atardecer.
 
 La Figura \ref{fig:phase_shift_panel} ilustra cuatro casos
-representativos de Atacama: tres desfases de fase en transiciones de amanecer o atardecer, y un evento estructural, un spike abrupto en la serie real que el modelo suaviza, consistente con un evento de indisponibilidad o redespacho no capturado por las covariables disponibles. Los paneles equivalentes para las siete barras restantes se presentan en el Anexo \ref{anexo:errores_extremos}.
+representativos de Atacama: tres desfases de fase en transiciones de amanecer o atardecer, y un evento estructural, un spike abrupto en la serie real que el modelo suaviza, consistente con un evento de indisponibilidad o redespacho no capturado por las covariables disponibles. Los paneles equivalentes para las siete barras restantes están en el repositorio del trabajo (\texttt{Escrito/imagenes/fig\_phase\_shift\_panel\_*.pdf}).
 
 \begin{figure}[htbp]
     \centering
@@ -1506,7 +1506,7 @@ En cuanto a la Conformal Prediction, la Tabla \ref{tab:piloto_cp} muestra que qu
     \label{tab:piloto_cp}
 \end{table}
 
-La matriz completa, que cruza este tratamiento con un modelo global entrenado sobre las ocho barras a la vez, se presenta en el Anexo \ref{anexo:sensibilidad_outliers}.
+La matriz completa, que cruza este tratamiento con un modelo global entrenado sobre las ocho barras a la vez, se presenta al final de esta sección (Sección \ref{sec:matriz_outliers}).
 
 La Tabla \ref{tab:piloto_outliers_h24} repite la misma comparación a horizonte $h=24$ (Sección \ref{sec:h24_dayahead}), para las cuatro barras originales del piloto, usando el MAE promedio sobre los 24 pasos del horizonte.
 
@@ -1528,6 +1528,58 @@ La Tabla \ref{tab:piloto_outliers_h24} repite la misma comparación a horizonte 
 \end{table}
 
 A $h=24$ el resultado se invierte en tres de las cuatro barras: solo Atacama mejora (14.5\%), mientras que Charrúa, Pan de Azúcar y Tarapacá empeoran entre 3.7\% y 8.0\%. El efecto del recorte de outliers depende, entonces, del horizonte de predicción: la variabilidad adicional que el conjunto de entrenamiento sin recortar introduce ayuda al modelo a capturar el régimen de precios altos cuando predice un solo paso hacia adelante, pero esa misma variabilidad dificulta la generalización cuando el modelo debe predecir 24 pasos simultáneos, un régimen ya de por sí más exigente (Sección \ref{sec:h24_dayahead}). Este resultado mixto es la razón por la que la evaluación a $h=24$ no se extiende a las ocho barras: el piloto se extendió únicamente a $h=1$, donde el efecto es consistente, y a $h=24$ queda como evidencia exploratoria de cuatro barras.
+
+\subsubsection{Tratamiento de outliers y modelo global}
+\label{sec:matriz_outliers}
+
+Esta subsección cruza el piloto de entrenamiento sin recorte de outliers con una segunda dimensión: la granularidad del modelo. Se comparan cuatro modelos S+C-LN a $h=1$: el modelo por barra con recorte de outliers en entrenamiento (el modelo principal de este trabajo), el modelo por barra sin recorte (el piloto extendido a las ocho barras), y dos modelos globales, es decir, un único TFT entrenado sobre las ocho barras a la vez con la barra como covariable estática categórica, uno con y otro sin recorte de outliers en entrenamiento (Sección \ref{sec:piloto_outliers_meta}). Los cuatro comparten arquitectura, hiperparámetros, \textit{features} y fechas de corte, y se evalúan sobre las mismas fechas de prueba contra la serie cruda, excluyendo la ventana de precio administrativo. La Tabla \ref{tab:matriz_outliers_granularidad} resume el promedio de las ocho barras.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        Modelo & MAE & MAE p95 & MAE p99 & Top-20 & Máximo & Winkler \\
+        \midrule
+        Por barra, con recorte & 8.005 & 30.1 & 51.1 & 157.5 & 324.3 & 71.9 \\
+        Por barra, sin recorte & 7.905 & 27.6 & 37.7 & 126.1 & 238.6 & 69.7 \\
+        Global, con recorte    & 7.967 & 30.7 & 51.6 & 163.2 & 324.7 & 71.6 \\
+        Global, sin recorte    & 7.984 & 29.2 & 41.4 & 130.9 & 244.0 & 70.5 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Matriz de cuatro modelos S+C-LN a $h=1$ (recorte de outliers en entrenamiento $\times$ granularidad), promedio de las ocho barras, USD/MWh, sobre la serie cruda. MAE p95 y p99 = MAE en las horas de precio en el percentil 95 o superior y 99 o superior; Top-20 = promedio de los 20 mayores errores absolutos; Máximo = error absoluto máximo; Winkler = puntaje de Winkler de LW-ACP ($\alpha=0.10$, $\gamma=0.05$).}
+    \label{tab:matriz_outliers_granularidad}
+\end{table}
+
+\paragraph{Efecto del recorte.} Quitar el recorte de outliers en entrenamiento mejora los errores extremos en ambas granularidades: el MAE en el percentil 99 baja un 26\% en el modelo por barra (de 51.1 a 37.7) y un 20\% en el global (de 51.6 a 41.4), y el error máximo promedio baja alrededor de un 25\% en ambos (de 324 a 239 y a 244). Que el efecto aparezca en dos familias de modelos entrenadas de forma independiente le da más peso a la hipótesis de la Sección \ref{sec:piloto_outliers_meta} que el resultado de una sola corrida. En el modelo global, sin embargo, la diferencia no es significativa barra por barra: la prueba de Diebold-Mariano no detecta ninguna barra donde el global sin recorte gane al global con recorte, y en Puerto Montt empeora de forma significativa ($\mathrm{DM}=3.81$, $p=0.0001$); el \textit{bootstrap} por bloques de días tampoco detecta cambios significativos en el MAE de régimen alto en ninguna barra. El efecto se observa en el agregado, no de forma individual.
+
+\paragraph{Efecto de la granularidad.} El modelo global no supera al modelo por barra. La Tabla \ref{tab:global_vs_barra_sin} compara ambos sin recorte, barra por barra: el modelo por barra gana de forma significativa en cuatro barras (Charrúa, Crucero, Pan de Azúcar y Quillota) y el global solo en Puerto Montt, las cinco sobreviven una corrección de Holm-Bonferroni para esta familia de ocho comparaciones. Frente al modelo principal de este trabajo (por barra, con recorte), el global sin recorte empata en siete barras y pierde nominalmente en Charrúa ($\mathrm{DM}=2.18$, $p=0.029$), sin ganar en ninguna; sin embargo, esa diferencia en Charrúa no sobrevive la misma corrección para esta segunda familia de ocho comparaciones ($p$ mínimo requerido $0.00625$), por lo que, en rigor, el global sin recorte empata con el modelo principal en las ocho barras.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrr}
+        \toprule
+        Barra & MAE global & MAE por barra & DM & $p$ \\
+        \midrule
+        Atacama       & 6.58  & 6.59  & $-0.17$ & 0.868    \\
+        Cardones      & 6.68  & 6.64  & $0.67$  & 0.501    \\
+        Charrúa       & 8.19  & 7.99  & $2.86$  & 0.004    \\
+        Crucero       & 6.80  & 6.59  & $3.20$  & 0.001    \\
+        Pan de Azúcar & 6.81  & 6.59  & $3.14$  & 0.002    \\
+        Puerto Montt  & 13.52 & 13.79 & $-2.66$ & 0.008    \\
+        Quillota      & 8.23  & 7.93  & $4.42$  & $<0.001$ \\
+        Tarapacá      & 7.06  & 7.12  & $-0.85$ & 0.396    \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Modelo global contra modelo por barra, ambos sin recorte de outliers en entrenamiento, MAE de prueba a $h=1$ (USD/MWh) sobre la serie cruda. DM = estadístico de Diebold-Mariano sobre el error absoluto con varianza de Newey-West, con el modelo global como primer argumento (negativo favorece al global, positivo al modelo por barra).}
+    \label{tab:global_vs_barra_sin}
+\end{table}
+
+\paragraph{Conformal Prediction.} Con LW-ACP al 90\% de cobertura nominal, la cobertura es de 0.898 en los cuatro modelos y el ancho medio varía entre 41.0 y 42.0\,USD/MWh; las diferencias se concentran en el puntaje de Winkler, donde los dos modelos sin recorte obtienen el menor valor (por barra, 69.7; global, 70.5) frente a los dos con recorte (global, 71.6; por barra, 71.9), el mismo sentido que el error extremo. La cobertura en las horas de precio en el percentil 95 o superior permanece cerca de 0.75 en los cuatro (entre 0.751 y 0.759), muy por debajo del nominal, por lo que ninguna de las variantes corrige el déficit de cobertura condicional en el régimen alto.
+
+\paragraph{Síntesis.} El tratamiento de outliers en entrenamiento pesa más que la granularidad del modelo. La mejor combinación es el modelo por barra sin recorte, aunque el MAE general mejora solo un 1.3\% respecto del modelo principal (de 8.005 a 7.905); su beneficio principal está en los errores más grandes. Como cautela, cada configuración corresponde a una única corrida de entrenamiento y las ocho barras comparten sistema y período, por lo que las comparaciones agregadas sobreestiman la evidencia independiente.
 
 \subsection{Evaluación a horizonte \textit{day-ahead} ($h=24$)}
 \label{sec:h24_dayahead}
@@ -1644,7 +1696,7 @@ La Sección \ref{sec:errores_extremos} identificó, para $h=1$, que la gran mayo
 
 El resultado es cualitativamente distinto al de $h=1$. Desde el paso 2 en adelante, solo 7--8 de los 20 mayores errores se clasifican como desfase de fase (35--40\%), muy por debajo del 80--100\% observado en el pipeline de $h=1$ (Tabla \ref{tab:sintesis_errores}), y solo 2--3 de 20 ocurren en horas de transición solar (10--15\%, frente a 50--75\% en la mayoría de las barras a $h=1$). La reducción mediana de error entre los casos que sí son desfase (84.3\%, estable desde el paso 4) sigue siendo alta y comparable a $h=1$, pero ya no son la mayoría de los casos extremos.
 
-La causa se identificó inspeccionando las fechas de los 20 mayores errores en cada paso: 13 de los 20, de forma consistente en los 24 pasos, corresponden al 25 y 26 de febrero de 2025, coincidiendo con el apagón nacional del SEN del 25 de febrero de 2025 --un evento de indisponibilidad masiva e imprevisible, ajeno a cualquier variable climática o de calendario disponible como predictor--. En el pipeline de $h=1$, estas mismas fechas aparecen solo ocasionalmente entre los 20 mayores errores y con una magnitud moderada (p.\ ej.\ $\sim$100\,USD/MWh en Cardones, Anexo \ref{anexo:errores_extremos}), porque el modelo de un paso recibe información del mismo día y puede reaccionar parcialmente dentro de la hora siguiente al evento. El modelo $h=24$, en cambio, pronostica el día completo a partir de información disponible el día anterior, sin ninguna posibilidad de anticipar un apagón no programado; el error resultante es catastrófico y sostenido durante gran parte del día siguiente (hasta 519\,USD/MWh, más de tres veces el máximo de 162.9\,USD/MWh del pipeline de $h=1$ en la misma barra), y aparece repetido en el conjunto de validación de todos los pasos porque las mismas horas del 25--26 de febrero forman parte del conjunto de validación de cada paso.
+La causa se identificó inspeccionando las fechas de los 20 mayores errores en cada paso: 13 de los 20, de forma consistente en los 24 pasos, corresponden al 25 y 26 de febrero de 2025, coincidiendo con el apagón nacional del SEN del 25 de febrero de 2025 --un evento de indisponibilidad masiva e imprevisible, ajeno a cualquier variable climática o de calendario disponible como predictor--. En el pipeline de $h=1$, estas mismas fechas aparecen solo ocasionalmente entre los 20 mayores errores y con una magnitud moderada (p.\ ej.\ $\sim$100\,USD/MWh en Cardones), porque el modelo de un paso recibe información del mismo día y puede reaccionar parcialmente dentro de la hora siguiente al evento. El modelo $h=24$, en cambio, pronostica el día completo a partir de información disponible el día anterior, sin ninguna posibilidad de anticipar un apagón no programado; el error resultante es catastrófico y sostenido durante gran parte del día siguiente (hasta 519\,USD/MWh, más de tres veces el máximo de 162.9\,USD/MWh del pipeline de $h=1$ en la misma barra), y aparece repetido en el conjunto de validación de todos los pasos porque las mismas horas del 25--26 de febrero forman parte del conjunto de validación de cada paso.
 
 Esto no es una deficiencia del modelo, sino una limitación inherente a cualquier pronóstico \textit{day-ahead}: ningún predictor, sin importar su arquitectura, puede anticipar 24 horas antes un apagón no programado. El mecanismo de desfase de fase de aproximadamente una hora, dominante a $h=1$, sigue presente a $h=24$ (84.3\% de reducción mediana entre los casos clasificados como tal), pero deja de ser la causa principal de los errores más extremos, desplazado por un evento estructural único y no recurrente. Dado que febrero de 2025 cae dentro del conjunto de validación (junio 2024--mayo 2025, Sección \ref{sec:cp_configuracion_general}) y no del conjunto de prueba (mayo 2025--abril 2026), este evento infla el cuantil de calibración de Split CP --contribuyendo al ancho de intervalo reportado en la Sección \ref{sec:h24_cp}-- sin afectar directamente la cobertura empírica medida en prueba, el mismo efecto ya documentado para el desfase de fase a $h=1$ (Sección \ref{sec:split_cp_clasico}), aunque aquí originado por un evento aislado en vez de un patrón diario recurrente.
 
