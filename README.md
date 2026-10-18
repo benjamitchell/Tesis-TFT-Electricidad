@@ -54,9 +54,11 @@ April 2026, about 55,000 hours per busbar, using data from the
 
 All numbers are test-set results taken from the thesis.
 
-**The simpler strategy wins.** S+C beats P+C in **14 of 16** busbar-architecture combinations,
-13 of them statistically significant. The solar position signal is at least as informative as
-Prophet's statistical decomposition.
+**The simpler strategy wins.** One hour ahead, S+C beats P+C in **14 of 16** busbar-architecture
+combinations, 13 of them statistically significant. At 24 hours the two tie (one busbar each, three
+with no significant difference), so there S+C's edge is reaching the same accuracy with one model
+instead of Prophet, two TFTs and a stacking step. The solar position signal is at least as
+informative as Prophet's statistical decomposition.
 
 **Forecast horizon.** The main model forecasts the marginal cost **one hour ahead**, using the
 price observed up to the previous hour. That is the same horizon as the closest Chilean precedent,
