@@ -355,9 +355,56 @@
     \end{itemize}
 \end{frame}
 
+% ============================================================
+\section{Horizonte de pronóstico}
+
+\begin{frame}{Alcance: una hora como escenario controlado}
+    \begin{itemize}
+        \item Todos los resultados principales pronostican \textbf{la hora siguiente}, usando el precio observado hasta la hora anterior.
+        \item Es el mismo horizonte del antecedente chileno más cercano (León et al., 2026), que deja el \textit{day-ahead} como trabajo futuro.
+        \item Sirve como \textbf{escenario controlado} para comparar estrategias de \textit{features}, arquitecturas y métodos de Conformal Prediction.
+        \item Pero el horizonte de decisión más relevante del mercado es el \textit{day-ahead}: por eso se evaluó también el modelo a \textbf{24 horas}.
+        \item La comparación con el CEN cambia con el horizonte: a una hora el modelo usa información que el programado no tiene; a igual anticipación, gana en una de tres barras.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Pronóstico a 24 horas: error e incertidumbre por paso}
+    \centering
+    \includegraphics[width=0.92\textwidth]{fig_h24_mae_ancho.pdf}
+    \vspace{0.2em}
+    \footnotesize
+    \begin{itemize}
+        \item El MAE crece 57\% del primer al último paso; en promedio, el modelo no supera a la persistencia diaria (7 de 10 combinaciones).
+        \item La cobertura de Conformal Prediction se mantiene en 0.916--0.923 (90\% nominal) en los 24 pasos, y el ancho se estabiliza desde el paso $\sim$12.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{¿Se mantienen las conclusiones a 24 horas?}
+    \footnotesize
+    \begin{table}
+        \centering
+        \begin{tabular}{p{3.1cm}p{5.3cm}p{2.7cm}}
+            \toprule
+            \textbf{Conclusión a 1 hora} & \textbf{Resultado a 24 horas} & \textbf{¿Se mantiene?} \\
+            \midrule
+            Heterocedasticidad horaria del error & Levene significativo en los 24 pasos en 4 de 5 barras (Charrúa se debilita) & Sí \\
+            \addlinespace
+            LW-ACP es el mejor método de CP & Menor Winkler en los 24 pasos; intervalos 18.5\% más angostos que Split CP & Sí, más fuerte \\
+            \addlinespace
+            LayerNorm supera a DyT & Diebold-Mariano: LN gana en 1 barra, DyT en 1, 3 empates & No: equivalentes \\
+            \addlinespace
+            S+C supera a P+C & S+C gana en 1 barra, P+C en 1 (Puerto Montt), 3 empates & Empatan; S+C con un solo modelo \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+    \vspace{0.3em}
+    \begin{itemize}
+        \item Lo que traspasa al \textit{day-ahead} es la estructura del error y la cuantificación de incertidumbre; la ventaja en precisión puntual, no.
+    \end{itemize}
+\end{frame}
+
 \begin{frame}{Extensiones exploradas}
     \begin{itemize}
-        \item \textbf{Horizonte \textit{day-ahead} ($h=24$)}: el modelo se degrada monótonamente con el horizonte; \textit{skill score} negativo en 7/10 combinaciones. Aumentar la capacidad del modelo mejora el MAE (2.5--5.1\%) pero no revierte el signo.
         \item \textbf{Piloto sin recorte de outliers}: a $h=1$, en las ocho barras, no perjudica el MAE general y reduce los errores más grandes (error máximo menor en las 8 barras, MAE en el percentil 99 menor en 7); significativo individualmente solo en 2 barras. Resultado mixto a $h=24$ (4 barras).
         \item \textbf{Granularidad temporal}: mayor resolución (15 min) mejora la capacidad predictiva de forma consistente, controlando por período histórico.
         \item \textbf{Sensibilidad a pérdida asimétrica}: la ventaja de S+C-LN se sostiene en 7 de 8 barras independientemente de qué error sea más costoso.
@@ -379,6 +426,7 @@
 
 \begin{frame}{Limitaciones}
     \begin{itemize}
+        \item \textbf{Horizonte}: los resultados principales son a una hora; a 24 horas la predicción puntual no supera a la persistencia diaria.
         \item Un único split cronológico entrenamiento/validación/prueba (no \textit{walk-forward validation}) por costo computacional.
         \item Sin semilla fija para los modelos principales del Capítulo 4 (sí para el estudio de robustez).
         \item Esfuerzo de ajuste de hiperparámetros asimétrico entre Prophet (optimizado por barra) y TFT (fijo).
@@ -389,6 +437,7 @@
 
 \begin{frame}{Trabajo futuro}
     \begin{itemize}
+        \item Mejorar el \textit{day-ahead} con información conocida de antemano, por ejemplo el costo marginal programado del CEN como variable de entrada.
         \item Comparar LW-ACP contra AgACI (agregación de múltiples $\gamma$ vía expertos \textit{online}).
         \item Extender la comparación contra el CEN a Atacama y Tarapacá.
         \item \textit{Walk-forward validation} sobre múltiples ventanas rodantes.
