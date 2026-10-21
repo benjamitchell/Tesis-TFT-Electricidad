@@ -2,7 +2,7 @@
 """
 h24_heterocedasticidad.py - Repite la verificacion de heterocedasticidad de la tesis
 (Scripts/test_heterocedasticidad.py) sobre el modelo day-ahead S+C-LN, para cada paso
-del horizonte (h=1..24) y las 5 barras con modelo h24:
+del horizonte (h=1..24) y las 8 barras con modelo h24:
 
   1. Levene (centrado en la mediana) entre los 24 grupos de hora del dia de la hora
      pronosticada.
@@ -10,7 +10,7 @@ del horizonte (h=1..24) y las 5 barras con modelo h24:
      cronologico.
 
 Residuos de VALIDACION contra la serie cruda, excluyendo VENTANA_PRECIO_FALLA, igual que
-en h=1. Holm-Bonferroni sobre las 5 barras de cada paso. Lee el cache de
+en h=1. Holm-Bonferroni sobre las 8 barras de cada paso. Lee el cache de
 Scripts/extraer_predicciones_h24.py.
 
 Uso:
@@ -32,16 +32,15 @@ from statsmodels.stats.diagnostic import het_arch
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Modulos.Evaluacion_TFT import VENTANA_PRECIO_FALLA
+from cache_h24 import cargar_preds_sc
 from test_heterocedasticidad import holm
 
-CACHE = "Multi-Modelos_TFT/h/LN/pred_sol_clima_h24/Resultados/predicciones_por_paso.pkl"
 RUTA_CRUDA = "Datos/h/2020-2026.csv"
 NLAGS_ARCH = 24
 
 
 def main():
-    with open(CACHE, "rb") as f:
-        preds = pickle.load(f)
+    preds = cargar_preds_sc("LN")
     crudo = pd.read_csv(RUTA_CRUDA, sep=";")
     crudo["Fecha"] = pd.to_datetime(crudo["Fecha"])
     ini, fin = VENTANA_PRECIO_FALLA

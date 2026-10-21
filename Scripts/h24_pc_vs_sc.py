@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 h24_pc_vs_sc.py - Compara las estrategias P+C y S+C a horizonte day-ahead (h=24), LN,
-en las 5 barras con modelo h24, replicando el protocolo de la tesis a h=1
+en las 8 barras con modelo h24, replicando el protocolo de la tesis a h=1
 (Modulos/Stacking_Optimization_TFT.stacking_optimization) en cada paso del horizonte:
 
   - Seis estrategias de P+C: Prophet solo, TFT precios solo, Prophet + TFT precios,
@@ -13,7 +13,7 @@ en las 5 barras con modelo h24, replicando el protocolo de la tesis a h=1
   - Comparacion en PRUEBA contra S+C h24 (cache de Scripts/extraer_predicciones_h24.py),
     contra la serie cruda, excluyendo VENTANA_PRECIO_FALLA: MAE promedio de los 24 pasos
     y Diebold-Mariano sobre el error promedio de los 24 pasos de cada pronostico emitido
-    (h=24, Newey-West truncado en 25), con Holm sobre las 5 barras.
+    (h=24, Newey-West truncado en 25), con Holm sobre las 8 barras.
 
 Uso:
     python Scripts/h24_pc_vs_sc.py
@@ -39,24 +39,25 @@ from Modulos.Evaluacion_TFT import extraer_todas_predicciones_modelo, inferir_ra
 from Modulos.Stacking_Optimization_TFT import grid_search_modelos
 from Modulos.Comparativa import diebold_mariano_desde_errores
 from test_heterocedasticidad import holm
+from cache_h24 import cargar_preds_sc, cargar_preds_pc
 
-CARPETA = "Multi-Modelos_TFT/h/LN/pred_prophet_clima_h24"
 CARPETA_NORM = "Multi-Modelos_TFT/h/LN/pred_prophet_clima"
-CACHE_SC = "Multi-Modelos_TFT/h/LN/pred_sol_clima_h24/Resultados/predicciones_por_paso.pkl"
-CACHE_PC = os.path.join(CARPETA, "Resultados", "predicciones_por_paso.pkl")
 RUTA_CRUDA = "Datos/h/2020-2026.csv"
-BARRAS = ["ATACAMA", "CHARRUA", "P.AZUCAR", "P.MONTT", "TARAPACA"]
+# (carpeta de la tanda de entrenamiento, barras)
+TANDAS = [("Multi-Modelos_TFT/h/LN/pred_prophet_clima_h24", ["ATACAMA", "CHARRUA", "P.AZUCAR", "P.MONTT", "TARAPACA"]),
+          ("Multi-Modelos_TFT/h/LN/pred_prophet_clima_h24_resto", ["CARDONES", "CRUCERO", "QUILLOTA"])]
+BARRAS = [b for _, bs in TANDAS for b in bs]
 N_HORIZONTES = 24
 ESTRATEGIAS = ["Prophet solo", "TFT precios solo", "Prophet + TFT precios",
                "Prophet + residuos (directo)", "Prophet + residuos (opt)", "(Prophet + residuos) + TFT precios"]
 
 
-def cargar_modelo(experimento, barra):
-    ruta = os.path.join(CARPETA, experimento, barra, f"{experimento}_{barra}_config.json")
+def cargar_modelo(carpeta, experimento, barra):
+    ruta = os.path.join(carpeta, experimento, barra, f"{experimento}_{barra}_config.json")
     with open(ruta, encoding="utf-8") as f:
         ckpt = json.load(f)["model_path"]
     if not os.path.exists(ckpt):
-        ckpt = os.path.join(CARPETA, experimento, barra, os.path.basename(ckpt))
+        ckpt = os.path.join(carpeta, experimento, barra, os.path.basename(ckpt))
     _orig_zeros = torch.zeros
 
     def _safe_zeros(*a, **kw):
@@ -77,26 +78,27 @@ def cargar_modelo(experimento, barra):
     return modelo
 
 
-def extraer():
-    """Predicciones por paso de precios y residuos de P+C h24, en los tres conjuntos."""
-    if os.path.exists(CACHE_PC):
-        with open(CACHE_PC, "rb") as f:
-            return pickle.load(f)
-    with open(os.path.join(CARPETA, "dataloaders_precios.pkl"), "rb") as f:
+def extraer(carpeta, barras):
+    """Predicciones por paso de precios y residuos de P+C h24, en los tres conjuntos.
+    Cache en <carpeta>/Resultados/predicciones_por_paso.pkl."""
+    cache = os.path.join(carpeta, "Resultados", "predicciones_por_paso.pkl")
+    if os.path.exists(cache):
+        return
+    with open(os.path.join(carpeta, "dataloaders_precios.pkl"), "rb") as f:
         dl_precios = pickle.load(f)
-    with open(os.path.join(CARPETA, "dataloaders_residuos.pkl"), "rb") as f:
+    with open(os.path.join(carpeta, "dataloaders_residuos.pkl"), "rb") as f:
         dl_residuos = pickle.load(f)
     with open(os.path.join(CARPETA_NORM, "datasets_norm.pkl"), "rb") as f:
         datasets_norm = pickle.load(f)
-    with open(os.path.join(CARPETA, "scalers.pkl"), "rb") as f:
+    with open(os.path.join(carpeta, "scalers.pkl"), "rb") as f:
         scalers = pickle.load(f)
 
     out = {}
-    for barra in BARRAS:
+    for barra in barras:
         out[barra] = {}
         for tipo, exp, dls, clave in (("precios", "Multi-TFT_Precios", dl_precios, "y_real"),
                                       ("residuos", "Multi-TFT_Residuos", dl_residuos, "residuo")):
-            modelo = cargar_modelo(exp, barra)
+            modelo = cargar_modelo(carpeta, exp, barra)
             raw = inferir_raw_modelo(modelo, dls[barra]["test"])
             for h in range(1, N_HORIZONTES + 1):
                 r = extraer_todas_predicciones_modelo(barra, modelo, dls[barra]["test"], datasets_norm, scalers,
@@ -107,10 +109,9 @@ def extraer():
             print(f"[{barra}] {tipo} listo", flush=True)
             del raw, modelo
             gc.collect()
-    os.makedirs(os.path.dirname(CACHE_PC), exist_ok=True)
-    with open(CACHE_PC, "wb") as f:
+    os.makedirs(os.path.dirname(cache), exist_ok=True)
+    with open(cache, "wb") as f:
         pickle.dump(out, f)
-    return out
 
 
 def prophet_y_objetivo(datasets_norm, scalers, barra):
@@ -151,13 +152,14 @@ def estrategias_paso(d, prophet, y_pipe):
 
 
 def main():
-    pc = extraer()
-    with open(CACHE_SC, "rb") as f:
-        sc = pickle.load(f)
+    scalers = {}
+    for carpeta, barras in TANDAS:
+        extraer(carpeta, barras)
+        with open(os.path.join(carpeta, "scalers.pkl"), "rb") as f:
+            scalers.update({b: v for b, v in pickle.load(f).items() if b in barras})
+    pc, sc = cargar_preds_pc(), cargar_preds_sc("LN")
     with open(os.path.join(CARPETA_NORM, "datasets_norm.pkl"), "rb") as f:
         datasets_norm = pickle.load(f)
-    with open(os.path.join(CARPETA, "scalers.pkl"), "rb") as f:
-        scalers = pickle.load(f)
     crudo = pd.read_csv(RUTA_CRUDA, sep=";")
     crudo["Fecha"] = pd.to_datetime(crudo["Fecha"])
     ini, fin = VENTANA_PRECIO_FALLA

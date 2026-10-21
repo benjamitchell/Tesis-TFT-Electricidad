@@ -25,9 +25,9 @@ import pandas as pd
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Modulos.Evaluacion_TFT import VENTANA_PRECIO_FALLA
+from cache_h24 import cargar_preds_sc
 from cp_metricas_completas import evaluar_metodo, pinball
 
-CACHE = "Multi-Modelos_TFT/h/LN/pred_sol_clima_h24/Resultados/predicciones_por_paso.pkl"
 RUTA_CRUDA = "Datos/h/2020-2026.csv"
 ALPHA = 0.10
 METODOS = ["Split CP", "ACI", "LW Split CP", "LW-ACP"]
@@ -43,8 +43,7 @@ def marco(d, serie):
 
 
 def main():
-    with open(CACHE, "rb") as f:
-        preds = pickle.load(f)
+    preds = cargar_preds_sc("LN")
     crudo = pd.read_csv(RUTA_CRUDA, sep=";")
     crudo["Fecha"] = pd.to_datetime(crudo["Fecha"])
 
@@ -67,15 +66,15 @@ def main():
 
     df = pd.DataFrame(filas)
     pd.set_option("display.width", 200)
-    print("\n=== Promedio de las 5 barras y los 24 pasos, 90% nominal ===")
+    print("\n=== Promedio de las 8 barras y los 24 pasos, 90% nominal ===")
     print(df.groupby("Metodo")[["Cobertura", "Desv", "Ancho", "Winkler", "Pinball"]].mean()
           .loc[METODOS].round(4).to_string())
 
-    print("\n=== Por paso (promedio de 5 barras): Winkler por metodo ===")
+    print("\n=== Por paso (promedio de 8 barras): Winkler por metodo ===")
     print(df.pivot_table(index="h", columns="Metodo", values="Winkler").loc[:, METODOS].round(2).to_string())
 
     ganador = df.loc[df.groupby(["Barra", "h"])["Winkler"].idxmin()]
-    print("\n=== Metodo con menor Winkler en cada combinacion barra-paso (de 120) ===")
+    print("\n=== Metodo con menor Winkler en cada combinacion barra-paso (de 192) ===")
     print(ganador["Metodo"].value_counts().to_string())
     print("\nPor barra:")
     print(ganador.groupby("Barra")["Metodo"].value_counts().unstack(fill_value=0).to_string())

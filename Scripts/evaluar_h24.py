@@ -17,6 +17,8 @@ train_piloto_outliers_h24.sh ya estan sincronizados desde el cluster.
 
 Uso:
     python Scripts/evaluar_h24.py
+    python Scripts/evaluar_h24.py --solo-resto   # solo las carpetas *_h24_resto, y agrega sus
+                                                 # filas a los CSV existentes
 """
 import os
 import sys
@@ -53,6 +55,10 @@ EXPERIMENTOS = [
     ("h24_original", "Multi-Modelos_TFT/h/{arq}/pred_sol_clima_h24",
      "Multi-Modelos_TFT/h/{arq}/pred_sol_clima",
      ["ATACAMA", "CHARRUA", "P.MONTT", "P.AZUCAR", "TARAPACA"], ["LN", "DyT"]),
+    # Las tres barras restantes, entrenadas despues (train_h24_resto.sh): mismo experimento
+    ("h24_original", "Multi-Modelos_TFT/h/{arq}/pred_sol_clima_h24_resto",
+     "Multi-Modelos_TFT/h/{arq}/pred_sol_clima",
+     ["CARDONES", "CRUCERO", "QUILLOTA"], ["LN", "DyT"]),
     ("piloto_sin_outliers_h24", "Multi-Modelos_TFT/h/{arq}/pred_sol_clima_piloto_sin_outliers_h24",
      "Multi-Modelos_TFT/h/{arq}/pred_sol_clima_piloto_sin_outliers",
      ["ATACAMA", "CHARRUA", "P.AZUCAR", "TARAPACA"], ["LN"]),
@@ -104,10 +110,13 @@ def cargar_modelo(carpeta_modelos, barra, variante):
 
 
 def main():
+    solo_resto = "--solo-resto" in sys.argv
     filas_resumen = []
     filas_detalle = []
 
     for nombre_exp, carpeta_tpl, carpeta_norm_tpl, barras, arqs in EXPERIMENTOS:
+        if solo_resto and not carpeta_tpl.endswith("_resto"):
+            continue
         for arq in arqs:
             carpeta = carpeta_tpl.format(arq=arq)
             carpeta_norm = carpeta_norm_tpl.format(arq=arq)
@@ -180,6 +189,16 @@ def main():
 
     df_resumen = pd.DataFrame(filas_resumen)
     df_detalle = pd.DataFrame(filas_detalle)
+    if solo_resto and not df_resumen.empty:
+        # reemplaza en los CSV existentes solo las filas recien calculadas
+        clave = ["Experimento", "Arq", "Barra"]
+        previo_r = pd.read_csv("Scripts/resultado_h24_resumen.csv")
+        previo_d = pd.read_csv("Scripts/resultado_h24_detalle.csv")
+        nuevas = set(map(tuple, df_resumen[clave].values))
+        df_resumen = pd.concat([previo_r[[t not in nuevas for t in map(tuple, previo_r[clave].values)]], df_resumen],
+                               ignore_index=True)
+        df_detalle = pd.concat([previo_d[[t not in nuevas for t in map(tuple, previo_d[clave].values)]], df_detalle],
+                               ignore_index=True)
 
     if df_resumen.empty:
         print("\nNo se encontro ningun checkpoint. ¿Ya se sincronizaron los resultados del cluster?")

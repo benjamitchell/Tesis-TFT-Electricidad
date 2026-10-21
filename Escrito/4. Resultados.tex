@@ -1190,7 +1190,7 @@ El test confirma que la ausencia de mejora de S+H+C no es casualidad de una sola
 \subsection{Comparación contra el costo marginal programado del CEN}
 \label{sec:cen_programado}
 
-El CEN publica el \textit{costo marginal programado}, el valor esperado del costo marginal resultante de la Programación de la Operación, obtenido a través de su API pública (Sistema de Información Pública, \texttt{sipub.coordinador.cl}). Se compara aquí contra la predicción de S+C-LN, ambos evaluados contra el costo marginal real de la misma barra, sobre las 8\,298 horas del conjunto de prueba (13 de mayo de 2025 -- 24 de abril de 2026), para las seis barras cuyo mnemotécnico se logró identificar en el catálogo de la API (Atacama y Tarapacá no están disponibles bajo ningún mnemotécnico de barra 220kV probado, ni en este ni en ningún otro período consultado). Ambos pronósticos no se emiten con la misma anticipación: el programado se fija antes de la operación real, mientras que S+C-LN pronostica la hora siguiente con el costo marginal observado hasta la hora anterior. Por eso la Tabla \ref{tab:cen_programado} agrega el modelo a 24 horas (Sección \ref{sec:h24_dayahead}), disponible para tres de esas seis barras.
+El CEN publica el \textit{costo marginal programado}, el valor esperado del costo marginal resultante de la Programación de la Operación, obtenido a través de su API pública (Sistema de Información Pública, \texttt{sipub.coordinador.cl}). Se compara aquí contra la predicción de S+C-LN, ambos evaluados contra el costo marginal real de la misma barra, sobre las 8\,298 horas del conjunto de prueba (13 de mayo de 2025 -- 24 de abril de 2026), para las seis barras cuyo mnemotécnico se logró identificar en el catálogo de la API (Atacama y Tarapacá no están disponibles bajo ningún mnemotécnico de barra 220kV probado, ni en este ni en ningún otro período consultado). Ambos pronósticos no se emiten con la misma anticipación: el programado se fija antes de la operación real, mientras que S+C-LN pronostica la hora siguiente con el costo marginal observado hasta la hora anterior. Por eso la Tabla \ref{tab:cen_programado} agrega el modelo a 24 horas (Sección \ref{sec:h24_dayahead}).
 
 \begin{table}[htbp]
     \centering
@@ -1200,18 +1200,18 @@ El CEN publica el \textit{costo marginal programado}, el valor esperado del cost
         Barra & MAE CEN & MAE & vs.\ CEN & MAE & vs.\ CEN \\
         \midrule
         Puerto Montt  & 32.98 & 13.68 & $-58.5\%$ & 38.89 & $+17.9\%$ \\
-        Crucero       & 17.10 & 6.74  & $-60.6\%$ & --    & --        \\
-        Cardones      & 14.52 & 6.63  & $-54.4\%$ & --    & --        \\
+        Crucero       & 17.10 & 6.74  & $-60.6\%$ & 15.94 & $-6.8\%$  \\
+        Cardones      & 14.52 & 6.63  & $-54.4\%$ & 15.32 & $+5.5\%$  \\
         Pan de Azúcar & 15.09 & 6.93  & $-54.1\%$ & 13.64 & $-9.6\%$  \\
         Charrúa       & 17.01 & 7.98  & $-53.1\%$ & 18.41 & $+8.2\%$  \\
-        Quillota      & 17.26 & 8.26  & $-52.1\%$ & --    & --        \\
+        Quillota      & 17.26 & 8.26  & $-52.1\%$ & 17.50 & $+1.4\%$  \\
         \bottomrule
     \end{tabular}
-    \caption{S+C-LN vs.\ el costo marginal programado publicado por el CEN, ambos evaluados contra el costo marginal real, conjunto de prueba. MAE en USD/MWh; ``vs.\ CEN'' es la diferencia relativa de MAE (negativo: menor error que el CEN). El MAE a 24 horas es el promedio de los 24 pasos del horizonte (Tabla \ref{tab:h24_resumen}), con pronósticos emitidos a todas las horas; solo se entrenó para cinco barras, de las cuales el CEN no publica Atacama ni Tarapacá.}
+    \caption{S+C-LN vs.\ el costo marginal programado publicado por el CEN, ambos evaluados contra el costo marginal real, conjunto de prueba. MAE en USD/MWh; ``vs.\ CEN'' es la diferencia relativa de MAE (negativo: menor error que el CEN). El MAE a 24 horas es el promedio de los 24 pasos del horizonte (Tabla \ref{tab:h24_resumen}), con pronósticos emitidos a todas las horas.}
     \label{tab:cen_programado}
 \end{table}
 
-Con una hora de anticipación, S+C-LN reduce el MAE entre 52.1\% y 60.6\% respecto al costo marginal programado en las seis barras. Con un día de anticipación, la comparación cambia: en las tres barras donde ambos están disponibles, el modelo a 24 horas reduce el error en Pan de Azúcar (9.6\%), pero lo aumenta en Charrúa (8.2\%) y Puerto Montt (17.9\%). La ventaja a una hora proviene, por lo tanto, principalmente de incorporar el costo marginal recién observado, información que el programado no tiene al momento de fijarse, y no de una representación del sistema superior a la de la Programación de la Operación. Esto es consistente con que el programado no es un pronóstico estadístico optimizado para minimizar el error puntual, sino el resultado de optimizar el despacho del sistema completo con restricciones técnicas y de seguridad que este trabajo no modela. Lo que la comparación sí muestra es el valor de esa información reciente: un pronóstico actualizado hora a hora reduce a menos de la mitad el error respecto de la cifra programada. Completar Atacama y Tarapacá, cuyo mnemotécnico no se logró ubicar en el catálogo de la API, y evaluar el modelo a 24 horas en Crucero, Cardones y Quillota, son las continuaciones naturales de esta comparación.
+Con una hora de anticipación, S+C-LN reduce el MAE entre 52.1\% y 60.6\% respecto al costo marginal programado en las seis barras. Con un día de anticipación, la comparación cambia: el modelo a 24 horas reduce el error en Pan de Azúcar (9.6\%) y Crucero (6.8\%), queda prácticamente empatado en Quillota (1.4\% más error) y lo aumenta en Cardones (5.5\%), Charrúa (8.2\%) y Puerto Montt (17.9\%). La ventaja a una hora proviene, por lo tanto, principalmente de incorporar el costo marginal recién observado, información que el programado no tiene al momento de fijarse, y no de una representación del sistema superior a la de la Programación de la Operación. Esto es consistente con que el programado no es un pronóstico estadístico optimizado para minimizar el error puntual, sino el resultado de optimizar el despacho del sistema completo con restricciones técnicas y de seguridad que este trabajo no modela. Lo que la comparación sí muestra es el valor de esa información reciente: un pronóstico actualizado hora a hora reduce a menos de la mitad el error respecto de la cifra programada. Completar Atacama y Tarapacá, cuyo mnemotécnico no se logró ubicar en el catálogo de la API, es la continuación natural de esta comparación.
 
 \subsection{Sensibilidad a una función de pérdida asimétrica}
 \label{sec:perdida_asimetrica}
@@ -1584,7 +1584,7 @@ Esta subsección cruza el piloto de entrenamiento sin recorte de outliers con un
 \subsection{Evaluación a horizonte \textit{day-ahead} ($h=24$)}
 \label{sec:h24_dayahead}
 
-La Tabla \ref{tab:h24_resumen} presenta el MAE promedio sobre los 24 pasos del horizonte, el MAE del primer y del último paso, y el \textit{skill score} promedio respecto a la persistencia estacional de 24 horas (Sección \ref{sec:baselines}), para las cinco barras y ambas arquitecturas evaluadas a $h=24$ (Sección \ref{sec:h24_dayahead_meta} de la Metodología).
+La Tabla \ref{tab:h24_resumen} presenta el MAE promedio sobre los 24 pasos del horizonte, el MAE del primer y del último paso, y el \textit{skill score} promedio respecto a la persistencia estacional de 24 horas (Sección \ref{sec:baselines}), para las ocho barras evaluadas a $h=24$ (Sección \ref{sec:h24_dayahead_meta} de la Metodología): con ambas arquitecturas en cinco de ellas y solo con LN en Cardones, Crucero y Quillota, entrenadas después.
 
 \begin{table}[htbp]
     \centering
@@ -1595,12 +1595,15 @@ La Tabla \ref{tab:h24_resumen} presenta el MAE promedio sobre los 24 pasos del h
         \midrule
         Atacama       & LN  & 13.54 & 9.92  & 14.64 & $-0.096$ \\
         Atacama       & DyT & 12.69 & 10.18 & 13.23 & $-0.028$ \\
+        Cardones      & LN  & 15.32 & 10.98 & 16.46 & $-0.200$ \\
         Charrúa       & LN  & 18.41 & 13.71 & 20.26 & $+0.038$ \\
         Charrúa       & DyT & 18.73 & 13.15 & 19.25 & $+0.021$ \\
+        Crucero       & LN  & 15.94 & 11.85 & 17.35 & $-0.278$ \\
         Puerto Montt  & LN  & 38.89 & 22.47 & 41.73 & $-0.042$ \\
         Puerto Montt  & DyT & 40.08 & 23.08 & 42.22 & $-0.074$ \\
         Pan de Azúcar & LN  & 13.64 & 9.82  & 14.87 & $-0.036$ \\
         Pan de Azúcar & DyT & 13.67 & 10.16 & 14.60 & $-0.039$ \\
+        Quillota      & LN  & 17.50 & 13.67 & 18.42 & $+0.088$ \\
         Tarapacá      & LN  & 12.86 & 10.83 & 13.02 & $+0.017$ \\
         Tarapacá      & DyT & 13.79 & 11.38 & 14.18 & $-0.054$ \\
         \bottomrule
@@ -1610,7 +1613,7 @@ La Tabla \ref{tab:h24_resumen} presenta el MAE promedio sobre los 24 pasos del h
     \label{tab:h24_resumen}
 \end{table}
 
-En el primer paso del horizonte ($h=1$ dentro del modelo MIMO de 24 pasos) el modelo supera cómodamente a la persistencia de 24 horas en las 10 combinaciones de barra y arquitectura, con un MAE comparable al del pipeline principal de $h=1$ (Tabla \ref{tab:tft_sc_ln_resultados}). El MAE crece de forma monótona a medida que el horizonte avanza (entre 30\% y 90\% peor en el paso 24 que en el paso 1, según la barra), un patrón esperable dado que la incertidumbre acumulada de un pronóstico a 24 horas es sustancialmente mayor que la de un pronóstico a una hora. En promedio sobre los 24 pasos, el \textit{skill score} se vuelve negativo en 7 de las 10 combinaciones: el modelo, evaluado como predictor \textit{day-ahead} completo, queda en promedio empatado o levemente peor que la persistencia estacional de 24 horas, un baseline particularmente exigente para el costo marginal eléctrico dado su marcado ciclo diario. Charrúa (LN y DyT) y Tarapacá (LN) son la excepción, con \textit{skill score} promedio levemente positivo.
+En el primer paso del horizonte ($h=1$ dentro del modelo MIMO de 24 pasos) el modelo supera cómodamente a la persistencia de 24 horas en las 13 combinaciones de barra y arquitectura, con un MAE comparable al del pipeline principal de $h=1$ (Tabla \ref{tab:tft_sc_ln_resultados}). El MAE crece, casi siempre paso a paso, a medida que el horizonte avanza (entre 20\% y 86\% peor en el paso 24 que en el paso 1, según la barra), un patrón esperable dado que la incertidumbre acumulada de un pronóstico a 24 horas es sustancialmente mayor que la de un pronóstico a una hora. En promedio sobre los 24 pasos, el \textit{skill score} se vuelve negativo en 9 de las 13 combinaciones: el modelo, evaluado como predictor \textit{day-ahead} completo, queda en promedio empatado o levemente peor que la persistencia estacional de 24 horas, un baseline particularmente exigente para el costo marginal eléctrico dado su marcado ciclo diario. Charrúa (LN y DyT), Quillota y Tarapacá (LN) son la excepción, con \textit{skill score} promedio levemente positivo; en el otro extremo, Crucero y Cardones quedan entre 20\% y 28\% por detrás de la persistencia.
 
 Este resultado no contradice el hallazgo central de este trabajo (Sección \ref{sec:pc_vs_sc}), pero delimita su alcance: la arquitectura y los hiperparámetros de S+C-LN, ajustados y validados para $h=1$ (Sección \ref{sec:ln_vs_dyt}), no generalizan automáticamente a un horizonte \textit{day-ahead} completo sin ajustes adicionales (la misma limitación de esfuerzo de ajuste asimétrico señalada en la Sección \ref{sec:ln_vs_dyt}, aquí aplicada al horizonte en vez de a la arquitectura).
 
@@ -1716,18 +1719,21 @@ Las conclusiones de este trabajo se obtuvieron a una hora de anticipación, usad
         Barra & 1 hora & 24 h (rango) & Pasos signif. & 1 hora & 24 h, paso 24 \\
         \midrule
         Atacama       & 12.84 & 11.7--17.4 & 24/24 & 3.0 & 2.2 \\
+        Cardones      & 25.76 & 16.9--29.1 & 24/24 & 4.0 & 2.6 \\
         Charrúa       & 12.31 & 1.4--6.1   & 16/24 & 2.4 & 1.6 \\
+        Crucero       & 14.03 & 19.2--29.6 & 24/24 & 3.5 & 2.9 \\
         Pan de Azúcar & 18.84 & 11.7--14.5 & 24/24 & 3.0 & 1.7 \\
         Puerto Montt  & 18.35 & 9.3--13.6  & 24/24 & 3.4 & 2.0 \\
+        Quillota      & 13.34 & 3.9--8.5   & 24/24 & 2.5 & 1.8 \\
         Tarapacá      & 16.24 & 23.8--27.5 & 24/24 & 3.5 & 2.6 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Test de Levene entre las 24 horas del día sobre los residuos de validación, modelo a una hora (Tabla \ref{tab:heterocedasticidad}) y modelo a 24 horas en cada uno de sus 24 pasos. Pasos signif.: pasos con $p<0.05$ tras corrección de Holm-Bonferroni sobre las cinco barras. $\hat\sigma_h$ máx./mín.: razón entre la mayor y la menor desviación estándar horaria del residuo.}
+    \caption{Test de Levene entre las 24 horas del día sobre los residuos de validación, modelo a una hora (Tabla \ref{tab:heterocedasticidad}) y modelo a 24 horas en cada uno de sus 24 pasos. Pasos signif.: pasos con $p<0.05$ tras corrección de Holm-Bonferroni sobre las ocho barras. $\hat\sigma_h$ máx./mín.: razón entre la mayor y la menor desviación estándar horaria del residuo.}
     \label{tab:h24_hetero}
 \end{table}
 
-En cuatro de las cinco barras la heterocedasticidad horaria se mantiene en los 24 pasos, con estadísticos del mismo orden que a una hora. El contraste entre horas se suaviza (la razón entre la hora más y la menos dispersa baja de 3.0--3.5 a 1.7--2.6), porque a 24 horas el error crece en todas las horas y no solo en las de transición. Charrúa es la excepción: su estadístico cae a 1.4--6.1 y en ocho pasos intermedios deja de ser significativo. El test ARCH-LM resulta significativo en las 120 combinaciones de barra y paso, pero a 24 horas es menos informativo que a una hora, porque los pronósticos de un mismo paso emitidos en horas consecutivas comparten información y eso induce autocorrelación en el residuo aunque la volatilidad no se agrupe.
+En siete de las ocho barras la heterocedasticidad horaria se mantiene en los 24 pasos, con estadísticos del mismo orden que a una hora. El contraste entre horas se suaviza (la razón entre la hora más y la menos dispersa baja de 2.4--4.0 a 1.6--2.9), porque a 24 horas el error crece en todas las horas y no solo en las de transición. Charrúa es la excepción: su estadístico cae a 1.4--6.1 y en ocho pasos intermedios deja de ser significativo. Quillota también se debilita (3.9--8.5), aunque sigue siendo significativa en los 24 pasos. El test ARCH-LM resulta significativo en las 192 combinaciones de barra y paso, pero a 24 horas es menos informativo que a una hora, porque los pronósticos de un mismo paso emitidos en horas consecutivas comparten información y eso induce autocorrelación en el residuo aunque la volatilidad no se agrupe.
 
 \paragraph{Métodos de Conformal Prediction.} La Tabla \ref{tab:h24_cp_metodos} compara los cuatro métodos de la familia conforme de la Sección \ref{sec:lwacp_comparativa} (CQR, la comparación externa, no se incluye), calibrados por separado en cada paso, al 90\% de cobertura nominal.
 
@@ -1737,18 +1743,18 @@ En cuatro de las cinco barras la heterocedasticidad horaria se mantiene en los 2
         \toprule
         Método & Cobertura & $|$Cov $-$ 0.90$|$ & Ancho & Winkler & Pinball \\
         \midrule
-        Split CP    & 0.920 & 0.020 & 90.19 & 153.04 & 3.826 \\
-        LW Split CP & 0.920 & 0.020 & 90.14 & 150.76 & 3.769 \\
-        ACI         & 0.896 & \textbf{0.004} & 73.99 & 113.81 & 2.845 \\
-        LW-ACP      & 0.896 & \textbf{0.004} & \textbf{73.51} & \textbf{112.73} & \textbf{2.818} \\
+        Split CP    & 0.918 & 0.018 & 83.41 & 145.90 & 3.648 \\
+        LW Split CP & 0.918 & 0.018 & 83.37 & 144.26 & 3.606 \\
+        ACI         & 0.895 & \textbf{0.005} & 69.48 & 107.74 & 2.694 \\
+        LW-ACP      & 0.895 & \textbf{0.005} & \textbf{69.10} & \textbf{106.93} & \textbf{2.673} \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Conformal Prediction sobre el modelo a 24 horas, calibrado por paso, 90\% de cobertura nominal, promedio de las cinco barras y los 24 pasos. Ancho, Winkler y pinball en USD/MWh.}
+    \caption{Conformal Prediction sobre el modelo a 24 horas, calibrado por paso, 90\% de cobertura nominal, promedio de las ocho barras y los 24 pasos. Ancho, Winkler y pinball en USD/MWh.}
     \label{tab:h24_cp_metodos}
 \end{table}
 
-El orden de la Sección \ref{sec:lwacp_comparativa} se mantiene y se refuerza. LW-ACP obtiene el menor Winkler promedio en cada uno de los 24 pasos, y en las 120 combinaciones de barra y paso el mejor método es siempre uno de los dos con adaptación \textit{online}: LW-ACP en 68 y ACI en 52. A diferencia de lo observado a una hora al 90\%, donde la adaptación \textit{online} ensanchaba levemente el intervalo, a 24 horas además lo angosta un 18.5\% respecto a Split CP, que sobrecubre más (0.920), con una desviación de cobertura casi cinco veces menor y un Winkler 26.3\% más bajo. Es el mismo patrón observado a una hora al 95\% de cobertura: el mecanismo \textit{online} aporta más ancho cuanto más pesa la cola del error que debe cubrir el cuantil fijo. La ponderación horaria vuelve a aportar un refinamiento pequeño (0.9\% menos Winkler que ACI) y no uniforme: LW-ACP es mejor en Puerto Montt en los 24 pasos y en Charrúa y Tarapacá en 19, mientras que en Atacama y Pan de Azúcar ACI queda levemente por delante.
+El orden de la Sección \ref{sec:lwacp_comparativa} se mantiene y se refuerza. LW-ACP obtiene el menor Winkler promedio en cada uno de los 24 pasos, y en las 192 combinaciones de barra y paso el mejor método es siempre uno de los dos con adaptación \textit{online}: LW-ACP en 115 y ACI en 77. A diferencia de lo observado a una hora al 90\%, donde la adaptación \textit{online} ensanchaba levemente el intervalo, a 24 horas además lo angosta un 17.2\% respecto a Split CP, que sobrecubre más (0.918), con una desviación de cobertura casi cuatro veces menor y un Winkler 26.7\% más bajo. Es el mismo patrón observado a una hora al 95\% de cobertura: el mecanismo \textit{online} aporta más ancho cuanto más pesa la cola del error que debe cubrir el cuantil fijo. La ponderación horaria vuelve a aportar un refinamiento pequeño (0.8\% menos Winkler que ACI) y no uniforme: LW-ACP es mejor en Puerto Montt en los 24 pasos, en Quillota en 22 y en Charrúa y Tarapacá en 19, mientras que en Atacama, Pan de Azúcar y Crucero ACI queda levemente por delante.
 
 \paragraph{LayerNorm contra DyT.} La Tabla \ref{tab:h24_ln_dyt} aplica el test de Diebold-Mariano al error absoluto promedio de los 24 pasos de cada pronóstico emitido, con varianza Newey-West truncada en 25 rezagos porque pronósticos consecutivos comparten 23 horas.
 

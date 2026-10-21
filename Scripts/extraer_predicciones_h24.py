@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 extraer_predicciones_h24.py - Extrae y guarda en cache las predicciones por paso (h=1..24)
-de los modelos day-ahead S+C, LN y DyT, en validacion y prueba, para las 5 barras con
-modelo h24. Una sola inferencia por modelo (mismo patron que Scripts/evaluar_h24.py).
+de los modelos day-ahead S+C, LN y DyT, en validacion y prueba, para las 8 barras con
+modelo h24 (las 5 originales en *_h24 y las 3 de train_h24_resto.sh en *_h24_resto). Una sola inferencia por modelo (mismo patron que Scripts/evaluar_h24.py).
 
 Las pruebas de la Seccion "conclusiones a 24 horas" (heterocedasticidad, Conformal
 Prediction y LN vs DyT) leen este cache en vez de re-inferir.
 
-Salida: Multi-Modelos_TFT/h/{arq}/pred_sol_clima_h24/Resultados/predicciones_por_paso.pkl
+Salida: Multi-Modelos_TFT/h/{arq}/pred_sol_clima_h24{,_resto}/Resultados/predicciones_por_paso.pkl
+        (Scripts/cache_h24.py las une)
         dict[barra][h]["val"|"test"] = {"fechas": DatetimeIndex, "y_pred": ndarray}
 
 Uso:
@@ -27,18 +28,24 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from evaluar_h24 import cargar_modelo
 from Modulos.Evaluacion_TFT import extraer_todas_predicciones_modelo, inferir_raw_modelo
 
-BARRAS = ["ATACAMA", "CHARRUA", "P.AZUCAR", "P.MONTT", "TARAPACA"]
+# (sufijo de carpeta, barras)
+TANDAS = [("_h24", ["ATACAMA", "CHARRUA", "P.AZUCAR", "P.MONTT", "TARAPACA"]),
+          ("_h24_resto", ["CARDONES", "CRUCERO", "QUILLOTA"])]
 ARQUITECTURAS = ["LN", "DyT"]
 N_HORIZONTES = 24
 
 
 def main():
-    for arq in ARQUITECTURAS:
-        carpeta = f"Multi-Modelos_TFT/h/{arq}/pred_sol_clima_h24"
+    for arq, (sufijo, barras) in ((a, t) for a in ARQUITECTURAS for t in TANDAS):
+        carpeta = f"Multi-Modelos_TFT/h/{arq}/pred_sol_clima{sufijo}"
         carpeta_norm = f"Multi-Modelos_TFT/h/{arq}/pred_sol_clima"
         salida = os.path.join(carpeta, "Resultados", "predicciones_por_paso.pkl")
         if os.path.exists(salida):
             print(f"[{arq}] ya existe {salida}, se omite")
+            continue
+        if not all(os.path.exists(os.path.join(carpeta, "Multi-TFT_Precios" if arq == "LN" else "Precios", b))
+                   for b in barras):
+            print(f"[{arq}] faltan modelos en {carpeta}, se omite")
             continue
 
         with open(os.path.join(carpeta, "dataloaders_precios.pkl"), "rb") as f:
@@ -49,7 +56,7 @@ def main():
             scalers = pickle.load(f)
 
         resultado = {}
-        for barra in BARRAS:
+        for barra in barras:
             modelo = cargar_modelo(carpeta, barra, arq)
             raw = inferir_raw_modelo(modelo, dataloaders[barra]["test"])
             resultado[barra] = {}
