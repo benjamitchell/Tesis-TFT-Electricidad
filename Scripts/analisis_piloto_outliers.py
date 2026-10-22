@@ -35,7 +35,9 @@ from Modulos.Comparativa import diebold_mariano
 from Modulos.Evaluacion_TFT import (extraer_todas_predicciones_modelo, VENTANA_PRECIO_FALLA)
 from Modulos.Conformal_Prediction_Wrapper import (split_cp_from_calibration,
                                                   lw_acp_online_from_calibration)
-from evaluar_piloto_outliers import cargar_modelo, BARRAS, ORIGEN_ACTUAL, ORIGEN_PILOTO
+from evaluar_piloto_outliers import EXPERIMENTO_PRECIOS, BARRAS, ORIGEN_ACTUAL, ORIGEN_PILOTO
+from Modulos.TFT_Model import cargar_modelo_entrenado
+from cp_metricas_completas import winkler
 
 RUTA_SERIE_CRUDA = "Datos/h/2020-2026.csv"
 CARPETA_SALIDA = os.path.join(ORIGEN_PILOTO, "Resultados")
@@ -59,7 +61,7 @@ def generar_predicciones():
         cache[nombre] = {}
         for barra in BARRAS:
             print(f"[inferencia] {nombre} / {barra}", flush=True)
-            modelo = cargar_modelo(origen, barra)
+            modelo, _ = cargar_modelo_entrenado(barra, EXPERIMENTO_PRECIOS, origen, verbose=False)
             res = extraer_todas_predicciones_modelo(barra, modelo, dls[barra]["test"], dsn, scl)
             cache[nombre][barra] = {k: (pd.to_datetime(res[k]["fechas"]), np.asarray(res[k]["y_pred"]))
                                     for k in ("val", "test")}
@@ -98,13 +100,11 @@ def bootstrap_delta_regimen(m, mask):
     return obs, lo, hi, p
 
 
-def winkler(y, lo, up, alpha=ALPHA):
-    return float(np.mean((up - lo) + (2 / alpha) * np.maximum(lo - y, 0) + (2 / alpha) * np.maximum(y - up, 0)))
 
 
 def metricas_cp(y, lo, up, mask_alto, mask_cero):
     dentro = (y >= lo) & (y <= up)
-    out = {"Cobertura": dentro.mean(), "Ancho": np.mean(up - lo), "Winkler": winkler(y, lo, up)}
+    out = {"Cobertura": dentro.mean(), "Ancho": np.mean(up - lo), "Winkler": winkler(y, lo, up, ALPHA)}
     out["Cob_p95"] = dentro[mask_alto].mean() if mask_alto.any() else np.nan
     out["Ancho_p95"] = np.mean((up - lo)[mask_alto]) if mask_alto.any() else np.nan
     out["Cob_cero"] = dentro[mask_cero].mean() if mask_cero.any() else np.nan

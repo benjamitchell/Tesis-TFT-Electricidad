@@ -44,6 +44,11 @@ def pinball(y, q, tau):
     return float(np.mean(np.where(e >= 0, tau * e, (tau - 1) * e)))
 
 
+def winkler(y, lo, up, alpha):
+    """Interval score de Winkler: ancho mas 2/alpha veces la distancia de y al intervalo."""
+    return float(np.mean((up - lo) + (2 / alpha) * np.maximum(lo - y, 0) + (2 / alpha) * np.maximum(y - up, 0)))
+
+
 def _ll(n0, n1, p):
     """log-verosimilitud binomial con piso numerico para p en {0,1}."""
     out = 0.0
@@ -137,8 +142,7 @@ def main():
                 hits = (~dentro).astype(int)
 
                 pb = (pinball(y, lo, tau_lo) + pinball(y, up, tau_hi)) / 2
-                winkler = float(np.mean((up - lo) + (2 / alpha) * np.maximum(lo - y, 0)
-                                        + (2 / alpha) * np.maximum(y - up, 0)))
+                winkler_ = winkler(y, lo, up, alpha)
 
                 pass_uc, pass_cc = 0, 0
                 for h in range(24):
@@ -154,7 +158,7 @@ def main():
                 filas.append({
                     "Barra": barra, "Nivel": nivel, "Metodo": metodo,
                     "Cobertura": round(float(dentro.mean()), 4), "Ancho": round(float(np.mean(up - lo)), 2),
-                    "Winkler": round(winkler, 2), "Pinball": round(pb, 3),
+                    "Winkler": round(winkler_, 2), "Pinball": round(pb, 3),
                     "UC_pasa_%": round(100 * pass_uc / 24, 1), "CC_pasa_%": round(100 * pass_cc / 24, 1),
                 })
         print(f"[{barra}] ok")

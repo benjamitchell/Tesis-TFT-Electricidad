@@ -14,7 +14,7 @@
 # piloto (pred_sol_clima_piloto_sin_outliers, train sin Z-score) pooled en un
 # unico TimeSeriesDataSet, igual que train_global.sh pero partiendo de datos
 # de train sin limpiar. Dataloaders generados localmente con
-# Scripts/preparar_modelo_global_sin_outliers.py. Un solo job, no un array.
+# Scripts/preparar_modelo_global.py --sin-outliers. Un solo job, no un array.
 
 BASE_DIR="/home/minas01/BMitchell"
 EXPERIMENTO="pred_sol_clima_global_sin_outliers"

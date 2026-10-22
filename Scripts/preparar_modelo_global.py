@@ -11,9 +11,16 @@ solares + clima, ya normalizado por barra) -- no recalcula preprocesamiento
 ni features. Solo concatena las ocho barras en un unico DataFrame por split y
 arma un unico TimeSeriesDataSet con group_ids=["serie_id"].
 
+Con --sin-outliers usa en cambio las 8 barras del piloto sin recorte de outliers en
+train (pred_sol_clima_piloto_sin_outliers, Scripts/preparar_piloto_outliers_resto.py),
+para comparar si el efecto del piloto tambien aparece al agrupar las 8 barras.
+
 Uso:
-    python Scripts/preparar_modelo_global.py
+    python Scripts/preparar_modelo_global.py                  # -> pred_sol_clima_global
+    python Scripts/preparar_modelo_global.py --sin-outliers  # -> pred_sol_clima_global_sin_outliers
+    python Scripts/preparar_modelo_global.py --salida OTRA   # otra carpeta de salida
 """
+import argparse
 import os
 import sys
 import json
@@ -25,8 +32,22 @@ os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pandas as pd
 from pytorch_forecasting import TimeSeriesDataSet
 
-ORIGEN = "Multi-Modelos_TFT/h/LN/pred_sol_clima"
-CARPETA_SALIDA = "Multi-Modelos_TFT/h/LN/pred_sol_clima_global"
+parser = argparse.ArgumentParser(description="Dataloaders del modelo TFT GLOBAL (8 barras)")
+parser.add_argument("--sin-outliers", action="store_true",
+                    help="usar las barras del piloto sin recorte de outliers en train")
+parser.add_argument("--salida", help="carpeta de salida (por defecto, segun --sin-outliers)")
+args = parser.parse_args()
+
+if args.sin_outliers:
+    ORIGEN = "Multi-Modelos_TFT/h/LN/pred_sol_clima_piloto_sin_outliers"
+    CARPETA_SALIDA = "Multi-Modelos_TFT/h/LN/pred_sol_clima_global_sin_outliers"
+    NOTA = ("Modelo GLOBAL sin recorte de outliers en train: las 8 barras del piloto "
+            "(pred_sol_clima_piloto_sin_outliers) pooled en un unico TimeSeriesDataSet")
+else:
+    ORIGEN = "Multi-Modelos_TFT/h/LN/pred_sol_clima"
+    CARPETA_SALIDA = "Multi-Modelos_TFT/h/LN/pred_sol_clima_global"
+    NOTA = "Modelo GLOBAL: las 8 barras pooled en un unico TimeSeriesDataSet"
+CARPETA_SALIDA = args.salida or CARPETA_SALIDA
 BARRAS = ["ATACAMA", "CARDONES", "CHARRUA", "CRUCERO", "P.AZUCAR", "P.MONTT", "QUILLOTA", "TARAPACA"]
 
 var_clima = ["temperatura", "humedad", "velocidad_viento", "precipitacion", "nubosidad"]
@@ -38,11 +59,14 @@ MAX_PREDICTION_LENGTH = 1
 BATCH_SIZE = 128
 
 print("=" * 80)
-print("Preparando modelo GLOBAL (8 barras en un solo TimeSeriesDataSet)")
+print(f"Preparando modelo GLOBAL desde {ORIGEN} (8 barras en un solo TimeSeriesDataSet)")
 print("=" * 80)
 
 with open(os.path.join(ORIGEN, "datasets_norm.pkl"), "rb") as f:
     datasets_norm = pickle.load(f)
+
+faltantes = [b for b in BARRAS if b not in datasets_norm]
+assert not faltantes, f"Faltan barras en {ORIGEN}/datasets_norm.pkl: {faltantes}"
 with open(os.path.join(ORIGEN, "scalers.pkl"), "rb") as f:
     scalers = pickle.load(f)
 
@@ -136,7 +160,7 @@ feature_config = {
     "known_reals": KNOWN_REALS, "unknown_reals_price": UNKNOWN_REALS_PRICE,
     "unknown_reals_resid": [], "max_encoder_length": MAX_ENCODER_LENGTH,
     "max_prediction_length": MAX_PREDICTION_LENGTH, "batch_size": BATCH_SIZE,
-    "lista_barras": BARRAS, "nota": "Modelo GLOBAL: las 8 barras pooled en un unico TimeSeriesDataSet",
+    "lista_barras": BARRAS, "nota": NOTA,
 }
 with open(os.path.join(CARPETA_SALIDA, "feature_config.json"), "w", encoding="utf-8") as f:
     json.dump(feature_config, f, indent=2, ensure_ascii=False)

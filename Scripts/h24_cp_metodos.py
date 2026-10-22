@@ -13,7 +13,6 @@ Uso:
 """
 import os
 import sys
-import pickle
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -26,7 +25,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Modulos.Evaluacion_TFT import VENTANA_PRECIO_FALLA
 from cache_h24 import cargar_preds_sc
-from cp_metricas_completas import evaluar_metodo, pinball
+from cp_metricas_completas import evaluar_metodo, pinball, winkler
 
 RUTA_CRUDA = "Datos/h/2020-2026.csv"
 ALPHA = 0.10
@@ -56,12 +55,11 @@ def main():
                 r = evaluar_metodo(metodo, mv, mt, ALPHA)
                 y, lo, up = r["y_test"], r["lower"], r["upper"]
                 cov = float(np.mean((y >= lo) & (y <= up)))
-                winkler = float(np.mean((up - lo) + (2 / ALPHA) * np.maximum(lo - y, 0)
-                                        + (2 / ALPHA) * np.maximum(y - up, 0)))
+                winkler_ = winkler(y, lo, up, ALPHA)
                 pb = (pinball(y, lo, ALPHA / 2) + pinball(y, up, 1 - ALPHA / 2)) / 2
                 filas.append({"Barra": barra, "h": h, "Metodo": metodo, "Cobertura": cov,
                               "Desv": abs(cov - (1 - ALPHA)), "Ancho": float(np.mean(up - lo)),
-                              "Winkler": winkler, "Pinball": pb})
+                              "Winkler": winkler_, "Pinball": pb})
         print(f"[{barra}] listo", flush=True)
 
     df = pd.DataFrame(filas)

@@ -155,59 +155,14 @@ def _verificar_archivos(*rutas):
         sys.exit(1)
 
 
-def _cargar_modelo_ln(barra, experimento, carpeta_modelos):
+def _cargar_modelo(barra, experimento, carpeta_modelos, dyt=False):
     from Modulos.TFT_Model import cargar_modelo_entrenado
-    modelo, config = cargar_modelo_entrenado(barra, experimento, carpeta_modelos)
+    modelo, config = cargar_modelo_entrenado(barra, experimento, carpeta_modelos, dyt=dyt)
     if modelo is None:
         raise FileNotFoundError(f"No se encontró checkpoint para {barra} ({experimento})")
     return modelo
 
 
-def _cargar_modelo_dyt(barra, experimento, carpeta_modelos):
-    import json
-    import torch
-    from Modulos.TFT_Model import TFTBridge
-    from Modulos.Parche import activar_dyt_mode, desactivar_dyt_mode
-
-    carpeta_exp = os.path.join(carpeta_modelos, experimento, barra)
-    ruta_config = os.path.join(carpeta_exp, f"{experimento}_{barra}_config.json")
-
-    if not os.path.exists(ruta_config):
-        raise FileNotFoundError(f"No se encontró config: {ruta_config}")
-
-    try:
-        with open(ruta_config, "r", encoding="utf-8") as f:
-            config = json.load(f)
-    except UnicodeDecodeError:
-        with open(ruta_config, "r", encoding="latin-1") as f:
-            config = json.load(f)
-
-    ruta_checkpoint = config.get("model_path")
-    if not os.path.exists(ruta_checkpoint):
-        raise FileNotFoundError(f"No se encontró checkpoint: {ruta_checkpoint}")
-
-    # Patch para redirigir tensores CUDA a CPU al cargar en máquina sin GPU
-    _orig_zeros = torch.zeros
-    def _safe_zeros(*args, **kwargs):
-        if "cuda" in str(kwargs.get("device", "")):
-            kwargs["device"] = "cpu"
-        return _orig_zeros(*args, **kwargs)
-
-    activar_dyt_mode()
-    torch.zeros = _safe_zeros
-    try:
-        modelo = TFTBridge.load_from_checkpoint(
-            ruta_checkpoint,
-            map_location=lambda storage, loc: storage,
-            weights_only=False,
-        )
-    finally:
-        torch.zeros = _orig_zeros
-        desactivar_dyt_mode()
-
-    modelo.eval()
-    print(f"  Modelo DyT para {barra} cargado desde: {ruta_checkpoint}")
-    return modelo
 
 
 def main():
@@ -259,7 +214,7 @@ def main():
                 print(f"ERROR: '{barra}' no encontrada en dataloaders_{nombre_dl}.")
                 sys.exit(1)
 
-    cargar = _cargar_modelo_ln if tipo == "LN" else _cargar_modelo_dyt
+    cargar = lambda b, e, c: _cargar_modelo(b, e, c, dyt=tipo == "DyT")
 
     # ─── Verificar checkpoints antes de empezar ───────────────────────────────
     print("\n" + "=" * 80)

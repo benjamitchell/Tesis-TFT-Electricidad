@@ -14,7 +14,7 @@
 # ── Modelos a 24 horas para las 3 barras que faltaban (CARDONES, CRUCERO, QUILLOTA) ──
 # Completa a 8 barras las pruebas a 24 horas (heterocedasticidad, Conformal
 # Prediction, LN vs DyT, S+C vs P+C) y la comparacion con el CEN a igual horizonte.
-# Dataloaders generados localmente con Scripts/preparar_h24_resto.py, con las mismas
+# Dataloaders generados localmente con Scripts/preparar_h24.py (destino *_h24_resto), con las mismas
 # configuraciones que los modelos h24 de las otras cinco barras.
 #
 # Cuatro modelos por barra:

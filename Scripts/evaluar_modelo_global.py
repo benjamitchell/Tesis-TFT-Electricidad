@@ -26,7 +26,6 @@ sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
 
 import gc
-import json
 import pickle
 import warnings
 from types import SimpleNamespace
@@ -37,7 +36,7 @@ import torch
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from Modulos.TFT_Model import TFTBridge
+from Modulos.TFT_Model import cargar_modelo_entrenado
 from Modulos.Evaluacion_TFT import (
     extraer_todas_predicciones_modelo, calcular_metricas_predicciones,
     crear_tabla_resumen, inferir_raw_modelo,
@@ -50,36 +49,6 @@ HORIZONTE = 1
 UMBRAL_DESFASE = 0.001
 
 
-def cargar_modelo_global():
-    ruta_config = os.path.join(CARPETA, EXPERIMENTO, "GLOBAL", f"{EXPERIMENTO}_GLOBAL_config.json")
-    with open(ruta_config, encoding="utf-8") as f:
-        config = json.load(f)
-    ckpt = config["model_path"]
-    if not os.path.exists(ckpt):
-        ckpt_local = os.path.join(CARPETA, EXPERIMENTO, "GLOBAL", os.path.basename(ckpt))
-        if os.path.exists(ckpt_local):
-            ckpt = ckpt_local
-        else:
-            raise FileNotFoundError(f"Checkpoint no encontrado: {ckpt} ni {ckpt_local}")
-
-    _orig_zeros = torch.zeros
-
-    def _safe_zeros(*a, **kw):
-        d = kw.get("device")
-        if d is not None and "cuda" in str(d):
-            kw["device"] = "cpu"
-        return _orig_zeros(*a, **kw)
-
-    torch.zeros = _safe_zeros
-    try:
-        modelo = TFTBridge.load_from_checkpoint(ckpt, map_location=lambda storage, loc: storage, weights_only=False)
-    finally:
-        torch.zeros = _orig_zeros
-    modelo.eval()
-    for m in modelo.modules():
-        if hasattr(m, "_device"):
-            m._device = torch.device("cpu")
-    return modelo
 
 
 def filtrar_raw_por_barra(raw, mask):
@@ -118,7 +87,9 @@ def main():
     print(f"Barras a separar ({len(lista_barras)}): {lista_barras}")
 
     print("\nCargando modelo GLOBAL...")
-    modelo = cargar_modelo_global()
+    modelo, _ = cargar_modelo_entrenado("GLOBAL", EXPERIMENTO, CARPETA, verbose=False)
+    if modelo is None:
+        raise FileNotFoundError(f"No se encontro el modelo GLOBAL en {CARPETA}")
 
     print("Corriendo inferencia única sobre el dataloader pooled (8 barras)...")
     raw = inferir_raw_modelo(modelo, dataloaders_precios["GLOBAL"]["test"])

@@ -18,7 +18,8 @@ import matplotlib.dates as mdates
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Modulos.Conformal_Prediction_Wrapper import lw_acp_online_from_calibration
-from Modulos.Evaluacion_TFT import VENTANA_PRECIO_FALLA
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from cp_metricas_completas import marco
 
 RUTA_EVAL = "Multi-Modelos_TFT/h/LN/pred_sol_clima/Resultados/eval_TFT_LN.pkl"
 BARRA, ALPHA, GAMMA = "ATACAMA", 0.10, 0.05
@@ -33,15 +34,6 @@ TEXTOS = {
 plt.rcParams.update({"font.size": 10, "axes.grid": True, "grid.alpha": 0.3})
 
 
-def marco(datos, conjunto, serie):
-    d = datos[BARRA][conjunto]["Precios"]["datos"]
-    m = pd.DataFrame({"fecha": pd.to_datetime(d["fechas"]), "y_pred": np.asarray(d["y_pred"])})
-    m = m.drop_duplicates("fecha").sort_values("fecha").reset_index(drop=True)
-    m["y_real"] = serie.reindex(m["fecha"]).values
-    m = m.dropna(subset=["y_real"])
-    ini, fin = VENTANA_PRECIO_FALLA
-    return m.loc[~((m["fecha"] >= ini) & (m["fecha"] <= fin))].reset_index(drop=True)
-
 
 def main():
     with open(RUTA_EVAL, "rb") as f:
@@ -49,7 +41,7 @@ def main():
     df_crudo = pd.read_csv("Datos/h/2020-2026.csv", sep=";")
     df_crudo["Fecha"] = pd.to_datetime(df_crudo["Fecha"])
     serie = df_crudo.loc[df_crudo["Barra"] == BARRA].groupby("Fecha")["Valor"].mean()
-    mv, mt = marco(datos, "val", serie), marco(datos, "test", serie)
+    mv, mt = marco(datos, BARRA, "val", serie), marco(datos, BARRA, "test", serie)
 
     r = lw_acp_online_from_calibration(mv["y_real"].values, mv["y_pred"].values, mv["fecha"].values,
                                        mt["y_real"].values, mt["y_pred"].values, mt["fecha"].values,

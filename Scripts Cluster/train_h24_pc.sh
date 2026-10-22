@@ -14,7 +14,7 @@
 # ── P+C (Prophet + clima) a horizonte day-ahead, h=24, MIMO, LN ──
 # Para comparar S+C contra P+C a igual horizonte (S+C h=24 ya entrenado con
 # train_h24.sh). Mismas 5 barras e hiperparametros que S+C h=24. Los dataloaders
-# se generaron localmente con Scripts/preparar_h24_pc.py a partir de
+# se generaron localmente con Scripts/preparar_h24.py --origen Multi-Modelos_TFT/h/LN/pred_prophet_clima a partir de
 # pred_prophet_clima (h=1), cambiando solo max_prediction_length a 24.
 #
 # P+C necesita dos modelos por barra: el TFT de precios y el TFT de residuos de

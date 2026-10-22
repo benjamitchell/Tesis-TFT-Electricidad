@@ -22,12 +22,10 @@ warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
-import torch
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from Modulos.TFT_Model import TFTBridge
-from Modulos.Parche import activar_dyt_mode, desactivar_dyt_mode
+from Modulos.TFT_Model import cargar_modelo_entrenado
 from Modulos.Evaluacion_TFT import extraer_todas_predicciones_modelo, recalcular_metricas_serie_cruda
 from Modulos.Comparativa import diebold_mariano
 
@@ -40,49 +38,6 @@ BASE = "Multi-Modelos_TFT/h"
 EXPERIMENTO_PRECIOS = {"LN": "Multi-TFT_Precios", "DyT": "Precios"}
 
 
-def cargar_modelo(carpeta_modelos, barra, variante):
-    exp = EXPERIMENTO_PRECIOS[variante]
-    ruta_config = os.path.join(carpeta_modelos, exp, barra, f"{exp}_{barra}_config.json")
-    if not os.path.exists(ruta_config):
-        return None
-    import json
-    with open(ruta_config, encoding="utf-8") as f:
-        config = json.load(f)
-    ckpt = config["model_path"]
-    if not os.path.exists(ckpt):
-        # el model_path guardado suele ser la ruta absoluta del cluster; se intenta
-        # resolver localmente asumiendo que la carpeta se sincronizo tal cual
-        ckpt_local = os.path.join(carpeta_modelos, exp, barra, os.path.basename(ckpt))
-        if os.path.exists(ckpt_local):
-            ckpt = ckpt_local
-        else:
-            print(f"  [AVISO] checkpoint no encontrado: {ckpt}")
-            return None
-
-    _orig_zeros = torch.zeros
-    def _safe_zeros(*a, **kw):
-        d = kw.get("device")
-        if d is not None and "cuda" in str(d):
-            kw["device"] = "cpu"
-        return _orig_zeros(*a, **kw)
-    # DyT reemplaza nn.LayerNorm por DynamicTanh vía monkey-patch al construir el
-    # modelo (Modulos/Parche.py); load_from_checkpoint reconstruye la arquitectura
-    # desde cero antes de cargar el state_dict, asi que hay que activar el mismo
-    # parche aca o los nombres/formas de las capas no calzan (RuntimeError).
-    if variante == "DyT":
-        activar_dyt_mode()
-    torch.zeros = _safe_zeros
-    try:
-        modelo = TFTBridge.load_from_checkpoint(ckpt, map_location=lambda storage, loc: storage, weights_only=False)
-    finally:
-        torch.zeros = _orig_zeros
-        if variante == "DyT":
-            desactivar_dyt_mode()
-    modelo.eval()
-    for m in modelo.modules():
-        if hasattr(m, "_device"):
-            m._device = torch.device("cpu")
-    return modelo
 
 
 def main():
@@ -102,7 +57,8 @@ def main():
             for seed in SEMILLAS:
                 carpeta_modelos = os.path.join(BASE, variante, "pred_sol_clima_seeds", f"seed{seed}")
                 print(f"Cargando {barra} / {variante} / seed {seed} ...")
-                modelo = cargar_modelo(carpeta_modelos, barra, variante)
+                modelo, _ = cargar_modelo_entrenado(barra, EXPERIMENTO_PRECIOS[variante], carpeta_modelos,
+                                                    dyt=variante == "DyT", verbose=False)
                 if modelo is None:
                     continue
 

@@ -17,12 +17,12 @@ import warnings
 warnings.filterwarnings("ignore")
 sys.stdout.reconfigure(encoding="utf-8")
 
-import numpy as np
 import pandas as pd
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Modulos.Conformal_Prediction_Wrapper import split_cp_from_calibration, lw_acp_online_from_calibration
-from Modulos.Evaluacion_TFT import VENTANA_PRECIO_FALLA
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from cp_metricas_completas import marco
 
 BARRAS = ["ATACAMA", "CARDONES", "P.MONTT"]
 GAMMA = 0.05
@@ -46,15 +46,6 @@ def series_crudas():
         out[("15min", barra)] = m.loc[m["Barra"] == barra].groupby("Fecha")["Valor"].mean()
     return out
 
-
-def marco(datos, barra, conjunto, serie):
-    d = datos[barra][conjunto]["Precios"]["datos"]
-    m = pd.DataFrame({"fecha": pd.to_datetime(d["fechas"]), "y_pred": np.asarray(d["y_pred"])})
-    m = m.drop_duplicates("fecha").sort_values("fecha").reset_index(drop=True)
-    m["y_real"] = serie.reindex(m["fecha"]).values
-    m = m.dropna(subset=["y_real"])
-    ini, fin = VENTANA_PRECIO_FALLA
-    return m.loc[~((m["fecha"] >= ini) & (m["fecha"] <= fin))].reset_index(drop=True)
 
 
 def main():

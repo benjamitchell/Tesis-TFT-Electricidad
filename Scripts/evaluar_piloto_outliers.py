@@ -18,7 +18,6 @@ Uso:
 """
 import os
 import sys
-import json
 import pickle
 import warnings
 
@@ -26,11 +25,10 @@ warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
-import torch
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from Modulos.TFT_Model import TFTBridge
+from Modulos.TFT_Model import cargar_modelo_entrenado
 from Modulos.Evaluacion_TFT import extraer_todas_predicciones_modelo, recalcular_metricas_serie_cruda
 
 BARRAS = ["ATACAMA", "CARDONES", "CHARRUA", "CRUCERO", "P.AZUCAR", "P.MONTT", "QUILLOTA", "TARAPACA"]
@@ -39,41 +37,6 @@ ORIGEN_ACTUAL = "Multi-Modelos_TFT/h/LN/pred_sol_clima"
 ORIGEN_PILOTO = "Multi-Modelos_TFT/h/LN/pred_sol_clima_piloto_sin_outliers"
 
 
-def cargar_modelo(carpeta_modelos, barra):
-    ruta_config = os.path.join(carpeta_modelos, EXPERIMENTO_PRECIOS, barra,
-                                f"{EXPERIMENTO_PRECIOS}_{barra}_config.json")
-    if not os.path.exists(ruta_config):
-        print(f"  [AVISO] no encontrado: {ruta_config}")
-        return None
-    with open(ruta_config, encoding="utf-8") as f:
-        config = json.load(f)
-    ckpt = config["model_path"]
-    if not os.path.exists(ckpt):
-        ckpt_local = os.path.join(carpeta_modelos, EXPERIMENTO_PRECIOS, barra, os.path.basename(ckpt))
-        if os.path.exists(ckpt_local):
-            ckpt = ckpt_local
-        else:
-            print(f"  [AVISO] checkpoint no encontrado: {ckpt}")
-            return None
-
-    _orig_zeros = torch.zeros
-
-    def _safe_zeros(*a, **kw):
-        d = kw.get("device")
-        if d is not None and "cuda" in str(d):
-            kw["device"] = "cpu"
-        return _orig_zeros(*a, **kw)
-
-    torch.zeros = _safe_zeros
-    try:
-        modelo = TFTBridge.load_from_checkpoint(ckpt, map_location=lambda storage, loc: storage, weights_only=False)
-    finally:
-        torch.zeros = _orig_zeros
-    modelo.eval()
-    for m in modelo.modules():
-        if hasattr(m, "_device"):
-            m._device = torch.device("cpu")
-    return modelo
 
 
 def evaluar(origen, barra, carpeta_modelos):
@@ -84,7 +47,7 @@ def evaluar(origen, barra, carpeta_modelos):
     with open(os.path.join(origen, "scalers.pkl"), "rb") as f:
         scalers = pickle.load(f)
 
-    modelo = cargar_modelo(carpeta_modelos, barra)
+    modelo, _ = cargar_modelo_entrenado(barra, EXPERIMENTO_PRECIOS, carpeta_modelos, verbose=False)
     if modelo is None:
         return None
 

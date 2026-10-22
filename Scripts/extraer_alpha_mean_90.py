@@ -10,27 +10,18 @@ import warnings
 warnings.filterwarnings("ignore")
 sys.stdout.reconfigure(encoding="utf-8")
 
-import numpy as np
 import pandas as pd
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Modulos.Conformal_Prediction_Wrapper import aci_from_calibration, lw_acp_online_from_calibration
-from Modulos.Evaluacion_TFT import VENTANA_PRECIO_FALLA
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from cp_metricas_completas import marco
 
 RUTA_EVAL = "Multi-Modelos_TFT/h/LN/pred_sol_clima/Resultados/eval_TFT_LN.pkl"
 BARRAS = ["ATACAMA", "CARDONES", "CHARRUA", "CRUCERO", "P.AZUCAR", "P.MONTT", "QUILLOTA", "TARAPACA"]
 GAMMA = 0.05
 ALPHA = 0.10
 
-
-def marco(datos, barra, conjunto, serie):
-    d = datos[barra][conjunto]["Precios"]["datos"]
-    m = pd.DataFrame({"fecha": pd.to_datetime(d["fechas"]), "y_pred": np.asarray(d["y_pred"])})
-    m = m.drop_duplicates("fecha").sort_values("fecha").reset_index(drop=True)
-    m["y_real"] = serie.reindex(m["fecha"]).values
-    m = m.dropna(subset=["y_real"])
-    ini, fin = VENTANA_PRECIO_FALLA
-    return m.loc[~((m["fecha"] >= ini) & (m["fecha"] <= fin))].reset_index(drop=True)
 
 
 def main():

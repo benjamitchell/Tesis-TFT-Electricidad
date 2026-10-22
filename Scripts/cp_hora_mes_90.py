@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Recalcula cobertura por hora y por mes (Split CP, ACI, LW-ACP) al 90% de cobertura
-nominal (alpha=0.10, gamma=0.05), y regenera la figura fig_cp_cobertura_ancho_hora.pdf
-en espanol. Reusa la misma logica que Scripts/generar_figuras_ingles_ieee.py, que a su
-vez es la reconstruccion fiel (confirmada por los numeros ya publicados en la tesis al
-95%) del codigo original que genero las figuras en espanol."""
+nominal (alpha=0.10, gamma=0.05), y regenera la figura de cobertura y ancho por hora en
+espanol (fig_cp_cobertura_ancho_hora.pdf, tesis y presentacion) y en ingles
+(fig_cp_cobertura_ancho_hora_en.pdf, paper IEEE). La logica es la reconstruccion fiel
+(confirmada por los numeros publicados en la tesis al 95%) del codigo original que genero
+la figura en espanol."""
 import os
 import sys
 import pickle
@@ -22,7 +23,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Modulos.Conformal_Prediction_Wrapper import (split_cp_from_calibration,
                                                   aci_from_calibration,
                                                   lw_acp_online_from_calibration)
-from Modulos.Evaluacion_TFT import VENTANA_PRECIO_FALLA
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from cp_metricas_completas import marco
 
 RUTA_EVAL = "Multi-Modelos_TFT/h/LN/pred_sol_clima/Resultados/eval_TFT_LN.pkl"
 RUTA_CRUDA = "Datos/h/2020-2026.csv"
@@ -32,15 +34,6 @@ ALPHA, GAMMA = 0.10, 0.05
 
 plt.rcParams.update({"font.size": 10, "axes.grid": True, "grid.alpha": 0.3})
 
-
-def marco(datos, barra, conjunto, serie):
-    d = datos[barra][conjunto]["Precios"]["datos"]
-    m = pd.DataFrame({"fecha": pd.to_datetime(d["fechas"]), "y_pred": np.asarray(d["y_pred"])})
-    m = m.drop_duplicates("fecha").sort_values("fecha").reset_index(drop=True)
-    m["y_real"] = serie.reindex(m["fecha"]).values
-    m = m.dropna(subset=["y_real"])
-    ini, fin = VENTANA_PRECIO_FALLA
-    return m.loc[~((m["fecha"] >= ini) & (m["fecha"] <= fin))].reset_index(drop=True)
 
 
 def main():
@@ -108,25 +101,35 @@ def main():
         mejor_mes = max(covs, key=covs.get)
         print(f"{nombre}: SD_mes={vals.std():.4f}  min={covs[peor_mes]:.4f}(mes {peor_mes})  max={covs[mejor_mes]:.4f}(mes {mejor_mes})  rango=[{vals.min():.3f},{vals.max():.3f}]")
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+    # Misma figura en espanol (tesis, presentacion) y en ingles (paper IEEE); la tesis
+    # llama "ACP" al metodo que el paper llama ACI
     colores = {"Split CP": "tab:gray", "ACI": "tab:orange", "LW-ACP": "tab:blue"}
-    etiquetas = {"Split CP": "Split CP", "ACI": "ACP", "LW-ACP": "LW-ACP"}
-    for nombre in ("Split CP", "ACI", "LW-ACP"):
-        n = acumulado_h[nombre]["n"]
-        cov_h = acumulado_h[nombre]["cov"] / n
-        width_h = acumulado_h[nombre]["width"] / n
-        ax1.plot(range(24), cov_h, marker="o", markersize=3, label=etiquetas[nombre], color=colores[nombre])
-        ax2.plot(range(24), width_h, marker="o", markersize=3, label=etiquetas[nombre], color=colores[nombre])
+    textos = {
+        "fig_cp_cobertura_ancho_hora.pdf": (
+            {"Split CP": "Split CP", "ACI": "ACP", "LW-ACP": "LW-ACP"}, "Hora del día",
+            "Cobertura empírica", "Cobertura por hora", "Ancho medio del intervalo (USD/MWh)", "Ancho por hora"),
+        "fig_cp_cobertura_ancho_hora_en.pdf": (
+            {"Split CP": "Split CP", "ACI": "ACI", "LW-ACP": "LW-ACP"}, "Hour of day",
+            "Empirical coverage", "Coverage by hour", "Mean interval width (USD/MWh)", "Width by hour"),
+    }
+    for archivo, (etiquetas, et_hora, et_cov, tit_cov, et_ancho, tit_ancho) in textos.items():
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+        for nombre in ("Split CP", "ACI", "LW-ACP"):
+            n = acumulado_h[nombre]["n"]
+            cov_h = acumulado_h[nombre]["cov"] / n
+            width_h = acumulado_h[nombre]["width"] / n
+            ax1.plot(range(24), cov_h, marker="o", markersize=3, label=etiquetas[nombre], color=colores[nombre])
+            ax2.plot(range(24), width_h, marker="o", markersize=3, label=etiquetas[nombre], color=colores[nombre])
 
-    ax1.axhline(0.90, color="black", linestyle=":", linewidth=1)
-    ax1.set_xlabel("Hora del día"); ax1.set_ylabel("Cobertura empírica"); ax1.set_title("Cobertura por hora")
-    ax2.set_xlabel("Hora del día"); ax2.set_ylabel("Ancho medio del intervalo (USD/MWh)"); ax2.set_title("Ancho por hora")
-    ax1.legend(fontsize=8); ax1.set_xticks(range(0, 24, 3)); ax2.set_xticks(range(0, 24, 3))
-    fig.tight_layout()
-    ruta = os.path.join(CARPETA_SALIDA, "fig_cp_cobertura_ancho_hora.pdf")
-    fig.savefig(ruta, bbox_inches="tight")
-    plt.close(fig)
-    print(f"\nGuardado: {ruta}")
+        ax1.axhline(0.90, color="black", linestyle=":", linewidth=1)
+        ax1.set_xlabel(et_hora); ax1.set_ylabel(et_cov); ax1.set_title(tit_cov)
+        ax2.set_xlabel(et_hora); ax2.set_ylabel(et_ancho); ax2.set_title(tit_ancho)
+        ax1.legend(fontsize=8); ax1.set_xticks(range(0, 24, 3)); ax2.set_xticks(range(0, 24, 3))
+        fig.tight_layout()
+        ruta = os.path.join(CARPETA_SALIDA, archivo)
+        fig.savefig(ruta, bbox_inches="tight")
+        plt.close(fig)
+        print(f"Guardado: {ruta}")
 
 
 if __name__ == "__main__":

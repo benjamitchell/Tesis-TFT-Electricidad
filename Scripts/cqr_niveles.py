@@ -24,22 +24,14 @@ from sklearn.linear_model import QuantileRegressor
 from sklearn.model_selection import KFold
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from Modulos.Evaluacion_TFT import VENTANA_PRECIO_FALLA
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from cp_metricas_completas import marco, pinball, winkler
 
 RUTA_EVAL = "Multi-Modelos_TFT/h/LN/pred_sol_clima/Resultados/eval_TFT_LN.pkl"
 BARRAS = ["ATACAMA", "CARDONES", "CHARRUA", "CRUCERO", "P.AZUCAR", "P.MONTT", "QUILLOTA", "TARAPACA"]
 NIVELES = {0.05: "95%", 0.10: "90%", 0.50: "50%"}
 N_FOLDS, QR_L1 = 5, 0.01
 
-
-def marco(datos, barra, conjunto, serie):
-    d = datos[barra][conjunto]["Precios"]["datos"]
-    m = pd.DataFrame({"fecha": pd.to_datetime(d["fechas"]), "y_pred": np.asarray(d["y_pred"])})
-    m = m.drop_duplicates("fecha").sort_values("fecha").reset_index(drop=True)
-    m["y_real"] = serie.reindex(m["fecha"]).values
-    m = m.dropna(subset=["y_real"])
-    ini, fin = VENTANA_PRECIO_FALLA
-    return m.loc[~((m["fecha"] >= ini) & (m["fecha"] <= fin))].reset_index(drop=True)
 
 
 def features(yhat, fechas):
@@ -78,10 +70,6 @@ def qr_simple(mv, mt, alpha):
     return lower, upper
 
 
-def pinball(y, q, tau):
-    e = y - q
-    return float(np.mean(np.where(e >= 0, tau * e, (tau - 1) * e)))
-
 
 def main():
     with open(RUTA_EVAL, "rb") as f:
@@ -98,12 +86,11 @@ def main():
             for metodo, fn in (("CQR", cqr), ("QR sin conformalizar", qr_simple)):
                 lo, up = fn(mv, mt, alpha)
                 cov = float(np.mean((y >= lo) & (y <= up)))
-                winkler = float(np.mean((up - lo) + (2 / alpha) * np.maximum(lo - y, 0)
-                                        + (2 / alpha) * np.maximum(y - up, 0)))
+                winkler_ = winkler(y, lo, up, alpha)
                 pb = (pinball(y, lo, alpha / 2) + pinball(y, up, 1 - alpha / 2)) / 2
                 filas.append({"Barra": barra, "Nivel": nivel, "Metodo": metodo, "Cobertura": round(cov, 4),
                               "Desv": abs(cov - (1 - alpha)), "Ancho": round(float(np.mean(up - lo)), 2),
-                              "Winkler": round(winkler, 2), "Pinball": round(pb, 3)})
+                              "Winkler": round(winkler_, 2), "Pinball": round(pb, 3)})
         print(f"[{barra}] ok")
 
     df = pd.DataFrame(filas)
