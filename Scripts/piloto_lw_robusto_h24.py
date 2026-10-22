@@ -3,7 +3,9 @@
 piloto_lw_robusto_h24.py - Evalua la variante de LW-ACP con escala horaria robusta
 (Scripts/piloto_lw_escala_robusta.py) sobre el modelo S+C-LN a 24 horas, en cada paso del
 horizonte y en las 8 barras, junto a la version principal de LW-ACP y a ACI, igual que
-Scripts/h24_cp_metodos.py.
+Scripts/h24_cp_metodos.py. Como ahi, la adaptacion online usa un alpha_t por hora del dia
+actualizado con el resultado de la misma hora del dia anterior (Zaffran et al., 2022), para
+no usar resultados que aun no ocurren al emitir el pronostico.
 
 El piso de la escala se elige solo en validacion, como a una hora: para cada piso de la
 grilla se calibra con la primera mitad de la validacion de cada barra y paso y se mide el
@@ -30,9 +32,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from cache_h24 import cargar_preds_sc
 from cp_metricas_completas import winkler, pinball
-from h24_cp_metodos import marco
+from h24_cp_metodos import marco, adaptativo
 from piloto_lw_escala_robusta import lw_acp, PISOS, HORAS_TRANSICION
-from Modulos.Conformal_Prediction_Wrapper import aci_from_calibration
 
 RUTA_CRUDA = "Datos/h/2020-2026.csv"
 ALPHAS = (0.10, 0.05)
@@ -58,7 +59,8 @@ def main():
             ws = []
             for mv, _ in marcos.values():
                 mitad = len(mv) // 2
-                r = lw_acp(mv.iloc[:mitad].reset_index(drop=True), mv.iloc[mitad:].reset_index(drop=True), alpha, piso)
+                r = lw_acp(mv.iloc[:mitad].reset_index(drop=True), mv.iloc[mitad:].reset_index(drop=True), alpha, piso,
+                           por_hora=True)
                 ws.append(winkler(r["y_test"], r["lower"], r["upper"], alpha))
             w_val[piso] = float(np.mean(ws))
             print(f"[{nivel}] piso {piso}: Winkler validacion {w_val[piso]:.2f}", flush=True)
@@ -67,10 +69,9 @@ def main():
 
         for (barra, h), (mv, mt) in marcos.items():
             horas = mt["fecha"].dt.hour.values
-            res = {"ACI": aci_from_calibration(mv.y_real.values, mv.y_pred.values, mt.y_real.values,
-                                               mt.y_pred.values, alpha=alpha, gamma=GAMMA),
-                   "LW-ACP": lw_acp(mv, mt, alpha),
-                   "LW-ACP robusto": lw_acp(mv, mt, alpha, piso)}
+            res = {"ACI": adaptativo(mv, mt, alpha, False, "por hora", h),
+                   "LW-ACP": adaptativo(mv, mt, alpha, True, "por hora", h),
+                   "LW-ACP robusto": lw_acp(mv, mt, alpha, piso, por_hora=True)}
             for nombre, r in res.items():
                 y, lo, up = r["y_test"], r["lower"], r["upper"]
                 dentro = (y >= lo) & (y <= up)

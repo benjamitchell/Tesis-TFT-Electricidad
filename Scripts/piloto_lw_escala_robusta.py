@@ -10,15 +10,16 @@ desviacion estandar (Atacama a las 15 h: P90 del error 0.05 USD/MWh, desviacion 
 piso impide que las horas tranquilas tengan una escala menor que la global: al 90%, el
 intervalo sobrecubre al mediodia y subcubre en las transiciones solares.
 
-La variante usa como escala de cada hora el cuantil (1 - alpha) del error absoluto de
-calibracion de esa hora, con un piso absoluto. Con esa escala, en cada hora una fraccion
+La variante usa como escala de cada hora un cuantil alto del error absoluto de calibracion
+de esa hora, con un piso absoluto; el cuantil y el piso se eligen en validacion (en ambos
+niveles resulta el P90). Con esa escala, en cada hora una fraccion
 alpha de los scores normalizados supera 1, de modo que el metodo se acerca a calibrar cada
 hora por separado (Mondrian conformal prediction), mas la adaptacion online de alpha_t de
 LW-ACP (gamma=0.05).
 
-El piso se elige SOLO en validacion: se calibra con la primera mitad de la validacion, se
-evalua el Winkler promedio de las 8 barras en la segunda mitad para cada piso de la grilla y
-se elige el menor. Luego se calibra con toda la validacion y se evalua en prueba, contra
+El cuantil y el piso se eligen SOLO en validacion: se calibra con la primera mitad de la
+validacion, se evalua el Winkler promedio de las 8 barras en la segunda mitad para cada
+combinacion de la grilla y se elige la menor. Luego se calibra con toda la validacion y se evalua en prueba, contra
 Split CP, ACI y LW-ACP (version principal), con las metricas de la tesis mas la cobertura
 por hora (desviacion estandar entre horas y cobertura en las horas de transicion solar).
 
@@ -47,20 +48,23 @@ from cp_metricas_completas import marco, pinball, winkler, RUTA_EVAL, BARRAS, GA
 RUTA_CRUDA = "Datos/h/2020-2026.csv"
 HORAS_TRANSICION = [7, 8, 19, 20, 21]
 PISOS = [0.5, 1, 2, 5, 10, 15, 20, 30, 50, 100]  # USD/MWh
+CUANTILES = [0.5, 0.75, 0.9, 0.95, 0.975]       # cuantil del error que define la escala de cada hora
 METODOS = ["Split CP", "ACI", "LW-ACP", "LW-ACP robusto", "LW-ACP robusto por hora"]
 FIGURA = "Escrito/imagenes/fig_cp_lwacp_robusto_hora.pdf"
 
 
-def escala_horaria(errores_cal, horas_cal, alpha, piso):
-    """Escala por hora: cuantil (1 - alpha) del error absoluto de la hora (piso=None:
-    desviacion estandar con piso global, la version principal de LW-ACP)."""
+def escala_horaria(errores_cal, horas_cal, alpha, piso, cuantil=None):
+    """Escala por hora: cuantil del error absoluto de la hora, por defecto al nivel nominal
+    (1 - alpha), con piso absoluto (piso=None: desviacion estandar con piso global, la
+    version principal de LW-ACP)."""
     if piso is None:
         return _estimar_sigma_h(errores_cal, horas_cal)
-    s = np.array([np.quantile(errores_cal[horas_cal == h], 1 - alpha) for h in range(24)])
+    p = 1 - alpha if cuantil is None else cuantil
+    s = np.array([np.quantile(errores_cal[horas_cal == h], p) for h in range(24)])
     return np.maximum(s, piso)
 
 
-def lw_acp(mv, mt, alpha, piso=None, por_hora=False):
+def lw_acp(mv, mt, alpha, piso=None, por_hora=False, cuantil=None):
     """LW-ACP con la escala horaria indicada; mismo bucle online que
     Modulos/Conformal_Prediction_Wrapper.lw_acp_online_from_calibration. Con por_hora=True,
     alpha_t es un vector de 24 niveles, uno por hora del dia, y cada uno se actualiza solo
@@ -68,7 +72,7 @@ def lw_acp(mv, mt, alpha, piso=None, por_hora=False):
     e_cal = np.abs(mv["y_real"].values - mv["y_pred"].values)
     h_cal = mv["fecha"].dt.hour.values
     h_test = mt["fecha"].dt.hour.values
-    sigma_h = escala_horaria(e_cal, h_cal, alpha, piso)
+    sigma_h = escala_horaria(e_cal, h_cal, alpha, piso, cuantil)
     scores = e_cal / sigma_h[h_cal]
     n_cal = len(scores)
     y, yhat = mt["y_real"].values, mt["y_pred"].values
@@ -85,15 +89,18 @@ def lw_acp(mv, mt, alpha, piso=None, por_hora=False):
 
 
 def elegir_piso(marcos, alpha):
-    """Winkler promedio en la segunda mitad de validacion, calibrando con la primera."""
+    """Cuantil y piso de la escala con menor Winkler promedio en la segunda mitad de la
+    validacion, calibrando con la primera."""
     w = {}
-    for piso in PISOS:
-        ws = []
-        for mv, _ in marcos.values():
-            mitad = len(mv) // 2
-            r = lw_acp(mv.iloc[:mitad].reset_index(drop=True), mv.iloc[mitad:].reset_index(drop=True), alpha, piso)
-            ws.append(winkler(r["y_test"], r["lower"], r["upper"], alpha))
-        w[piso] = float(np.mean(ws))
+    for cuantil in CUANTILES:
+        for piso in PISOS:
+            ws = []
+            for mv, _ in marcos.values():
+                mitad = len(mv) // 2
+                r = lw_acp(mv.iloc[:mitad].reset_index(drop=True), mv.iloc[mitad:].reset_index(drop=True),
+                           alpha, piso, cuantil=cuantil)
+                ws.append(winkler(r["y_test"], r["lower"], r["upper"], alpha))
+            w[(cuantil, piso)] = float(np.mean(ws))
     return min(w, key=w.get), w
 
 
@@ -110,9 +117,10 @@ def main():
     filas, filas_piso, filas_hora, filas_mes = [], [], [], []
     for alpha in (0.10, 0.05):
         nivel = f"{int(round(100 * (1 - alpha)))}%"
-        piso, w_val = elegir_piso(marcos, alpha)
-        filas_piso += [{"Nivel": nivel, "Piso": p, "Winkler_val": v, "Elegido": p == piso} for p, v in w_val.items()]
-        print(f"[{nivel}] piso elegido en validacion: {piso} USD/MWh", flush=True)
+        (cuantil, piso), w_val = elegir_piso(marcos, alpha)
+        filas_piso += [{"Nivel": nivel, "Cuantil": c, "Piso": p, "Winkler_val": v, "Elegido": (c, p) == (cuantil, piso)}
+                       for (c, p), v in w_val.items()]
+        print(f"[{nivel}] elegido en validacion: cuantil {cuantil}, piso {piso} USD/MWh", flush=True)
         for barra, (mv, mt) in marcos.items():
             horas = mt["fecha"].dt.hour.values
             meses = mt["fecha"].dt.month.values
@@ -122,8 +130,8 @@ def main():
                 "ACI": aci_from_calibration(mv.y_real.values, mv.y_pred.values, mt.y_real.values,
                                             mt.y_pred.values, alpha=alpha, gamma=GAMMA),
                 "LW-ACP": lw_acp(mv, mt, alpha),
-                "LW-ACP robusto": lw_acp(mv, mt, alpha, piso),
-                "LW-ACP robusto por hora": lw_acp(mv, mt, alpha, piso, por_hora=True),
+                "LW-ACP robusto": lw_acp(mv, mt, alpha, piso, cuantil=cuantil),
+                "LW-ACP robusto por hora": lw_acp(mv, mt, alpha, piso, por_hora=True, cuantil=cuantil),
             }
             for nombre, r in res.items():
                 y, lo, up = r["y_test"], r["lower"], r["upper"]

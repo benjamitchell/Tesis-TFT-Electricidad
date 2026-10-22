@@ -104,8 +104,8 @@ At 95% nominal coverage LW-ACP is also the narrowest (58.25 USD/MWh, 8.7% narrow
 with the lowest Winkler score (89.89).
 
 Heavy-tailed errors limit the hourly weighting: LW-ACP scales each hour by the standard deviation
-of its errors, which a few large errors inflate. A variant that scales each hour by a quantile of
-its errors instead, with a floor chosen on validation only, lowers the 90% Winkler score at all
+of its errors, which a few large errors inflate. A variant that scales each hour by the 90th percentile of
+its errors instead, with quantile and floor chosen on validation only, lowers the 90% Winkler score at all
 eight busbars (69.15), gives the narrowest intervals of all methods (40.40 USD/MWh) and nearly
 halves the spread of coverage across hours ([`Scripts/piloto_lw_escala_robusta.py`](Scripts/piloto_lw_escala_robusta.py)).
 

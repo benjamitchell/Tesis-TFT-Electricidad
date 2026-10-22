@@ -312,7 +312,7 @@
     \begin{itemize}
         \item LW-ACP escala cada hora con la \textbf{desviación estándar} de su error, con un piso igual a la global. Las colas pesadas la inflan: en Atacama a las 15 h, P90 del error 0.05 USD/MWh, desviación 16.3.
         \item Resultado: sobrecubre al mediodía y subcubre en las transiciones solares.
-        \item \textbf{Variante}: escalar cada hora por su \textbf{cuantil} $1-\alpha$ del error, con un piso elegido solo en validación. Se acerca a calibrar cada hora por separado (Mondrian CP).
+        \item \textbf{Variante}: escalar cada hora por un \textbf{cuantil} de su error (P90, elegido en validación junto con el piso). Se acerca a calibrar cada hora por separado (Mondrian CP).
     \end{itemize}
     \begin{table}
         \centering
@@ -326,8 +326,8 @@
         \end{tabular}
     \end{table}
     \begin{itemize}
-        \item Mejor Winkler en las 8 barras y el más angosto de todos los métodos; misma estabilidad mes a mes. Al 95\% mejora menos (Winkler 88.82 vs.\ 89.89).
-        \item A 24 horas, al 90\%: Winkler 1.8\% menor en cada paso del horizonte; al 95\% empata.
+        \item Mejor Winkler en las 8 barras y el más angosto de todos los métodos; misma estabilidad mes a mes. Al 95\% también mejora (87.75 vs.\ 89.89).
+        \item A 24 horas no agrega: la adaptación por hora ya ajusta cada hora. Calibración móvil e intervalo asimétrico: sin mejora.
     \end{itemize}
 \end{frame}
 
@@ -413,7 +413,7 @@
             \midrule
             Heterocedasticidad horaria del error & Levene significativo en los 24 pasos en 7 de 8 barras (Charrúa se debilita) & Sí \\
             \addlinespace
-            LW-ACP es el mejor método de CP & Menor Winkler en los 24 pasos; intervalos 17.2\% más angostos que Split CP & Sí, más fuerte \\
+            LW-ACP es el mejor método de CP & Adaptación \textit{online} por hora (Zaffran): menor Winkler en los 24 pasos; intervalos 10.5\% más angostos que Split CP; empata con ACI & Sí \\
             \addlinespace
             LayerNorm supera a DyT & Diebold-Mariano: LN gana en 1 barra, 7 empates & No: equivalentes \\
             \addlinespace
