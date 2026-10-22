@@ -21,7 +21,6 @@ Uso:
 """
 import os
 import sys
-import json
 import pickle
 import warnings
 
@@ -30,10 +29,9 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 import numpy as np
 import pandas as pd
-import torch
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from Modulos.TFT_Model import TFTBridge
+from Modulos.TFT_Model import cargar_modelo_entrenado
 from Modulos.Evaluacion_TFT import extraer_todas_predicciones_modelo, inferir_raw_modelo, VENTANA_PRECIO_FALLA
 
 EXPERIMENTO_PRECIOS = "Multi-TFT_Precios"
@@ -48,32 +46,6 @@ UMBRAL_REDUCCION = 0.60
 HORAS_TRANSICION = {7, 8, 19, 20, 21}
 
 
-def cargar_modelo(barra):
-    ruta_config = os.path.join(CARPETA, EXPERIMENTO_PRECIOS, barra, f"{EXPERIMENTO_PRECIOS}_{barra}_config.json")
-    with open(ruta_config, encoding="utf-8") as f:
-        config = json.load(f)
-    ckpt = config["model_path"]
-    if not os.path.exists(ckpt):
-        ckpt = os.path.join(CARPETA, EXPERIMENTO_PRECIOS, barra, os.path.basename(ckpt))
-
-    _orig_zeros = torch.zeros
-
-    def _safe_zeros(*a, **kw):
-        d = kw.get("device")
-        if d is not None and "cuda" in str(d):
-            kw["device"] = "cpu"
-        return _orig_zeros(*a, **kw)
-
-    torch.zeros = _safe_zeros
-    try:
-        modelo = TFTBridge.load_from_checkpoint(ckpt, map_location=lambda storage, loc: storage, weights_only=False)
-    finally:
-        torch.zeros = _orig_zeros
-    modelo.eval()
-    for m in modelo.modules():
-        if hasattr(m, "_device"):
-            m._device = torch.device("cpu")
-    return modelo
 
 
 def clasificar(fechas, y_pred, y_real_cont):
@@ -119,7 +91,7 @@ def main():
     with open(os.path.join(CARPETA, "scalers.pkl"), "rb") as f:
         scalers = pickle.load(f)
 
-    modelo = cargar_modelo(BARRA)
+    modelo, _ = cargar_modelo_entrenado(BARRA, EXPERIMENTO_PRECIOS, CARPETA, verbose=False)
     raw = inferir_raw_modelo(modelo, dataloaders_precios[BARRA]["test"])
 
     filas_resumen = []

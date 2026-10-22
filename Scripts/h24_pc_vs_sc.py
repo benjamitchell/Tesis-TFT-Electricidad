@@ -21,7 +21,6 @@ Uso:
 import os
 import sys
 import gc
-import json
 import pickle
 import warnings
 
@@ -30,11 +29,10 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 import numpy as np
 import pandas as pd
-import torch
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from Modulos.TFT_Model import TFTBridge
+from Modulos.TFT_Model import cargar_modelo_entrenado
 from Modulos.Evaluacion_TFT import extraer_todas_predicciones_modelo, inferir_raw_modelo, VENTANA_PRECIO_FALLA
 from Modulos.Stacking_Optimization_TFT import grid_search_modelos
 from Modulos.Comparativa import diebold_mariano_desde_errores
@@ -52,30 +50,6 @@ ESTRATEGIAS = ["Prophet solo", "TFT precios solo", "Prophet + TFT precios",
                "Prophet + residuos (directo)", "Prophet + residuos (opt)", "(Prophet + residuos) + TFT precios"]
 
 
-def cargar_modelo(carpeta, experimento, barra):
-    ruta = os.path.join(carpeta, experimento, barra, f"{experimento}_{barra}_config.json")
-    with open(ruta, encoding="utf-8") as f:
-        ckpt = json.load(f)["model_path"]
-    if not os.path.exists(ckpt):
-        ckpt = os.path.join(carpeta, experimento, barra, os.path.basename(ckpt))
-    _orig_zeros = torch.zeros
-
-    def _safe_zeros(*a, **kw):
-        d = kw.get("device")
-        if d is not None and "cuda" in str(d):
-            kw["device"] = "cpu"
-        return _orig_zeros(*a, **kw)
-
-    torch.zeros = _safe_zeros
-    try:
-        modelo = TFTBridge.load_from_checkpoint(ckpt, map_location=lambda storage, loc: storage, weights_only=False)
-    finally:
-        torch.zeros = _orig_zeros
-    modelo.eval()
-    for m in modelo.modules():
-        if hasattr(m, "_device"):
-            m._device = torch.device("cpu")
-    return modelo
 
 
 def extraer(carpeta, barras):
@@ -98,7 +72,7 @@ def extraer(carpeta, barras):
         out[barra] = {}
         for tipo, exp, dls, clave in (("precios", "Multi-TFT_Precios", dl_precios, "y_real"),
                                       ("residuos", "Multi-TFT_Residuos", dl_residuos, "residuo")):
-            modelo = cargar_modelo(carpeta, exp, barra)
+            modelo, _ = cargar_modelo_entrenado(barra, exp, carpeta, verbose=False)
             raw = inferir_raw_modelo(modelo, dls[barra]["test"])
             for h in range(1, N_HORIZONTES + 1):
                 r = extraer_todas_predicciones_modelo(barra, modelo, dls[barra]["test"], datasets_norm, scalers,

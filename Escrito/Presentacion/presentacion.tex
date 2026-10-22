@@ -403,6 +403,46 @@
     \end{itemize}
 \end{frame}
 
+\begin{frame}{¿Por qué P+C mejora a 24 horas?}
+    \footnotesize
+    \begin{columns}[T]
+        \column{0.48\textwidth}
+        \textbf{Qué información comparten} ($R^2$ al reconstruir Prophet desde la posición solar)
+        \begin{table}
+            \centering
+            \begin{tabular}{lr}
+                \toprule
+                \texttt{daily}  & 0.82--0.89 \\
+                \texttt{yearly} & 0.49--0.68 \\
+                \texttt{weekly} & 0 \\
+                \texttt{trend}  & $\le 0$ \\
+                \bottomrule
+            \end{tabular}
+        \end{table}
+        La posición solar ya contiene la hora del día, pero no el día de la semana ni el nivel de largo plazo.
+        \column{0.48\textwidth}
+        \textbf{En qué se apoya el modelo} (promedio 8 barras)
+        \begin{table}
+            \centering
+            \begin{tabular}{lrr}
+                \toprule
+                & 1 h & 24 h \\
+                \midrule
+                \texttt{y\_real} en encoder S+C & 66\% & 29\% \\
+                \texttt{y\_real} en encoder P+C & 49\% & 22\% \\
+                \texttt{weekly} en decoder P+C  & 11\% & 18\% \\
+                \bottomrule
+            \end{tabular}
+        \end{table}
+    \end{columns}
+    \vspace{0.4em}
+    \begin{itemize}
+        \item A 1 hora mandan el precio reciente y la hora del día, que ambas estrategias tienen: S+C gana por simplicidad.
+        \item A 24 horas el precio reciente pierde peso y P+C recurre al día de la semana, que solo él conoce.
+        \item Propuesta: un único TFT con posición solar + \texttt{weekly} + \texttt{trend}.
+    \end{itemize}
+\end{frame}
+
 \begin{frame}{Extensiones exploradas}
     \begin{itemize}
         \item \textbf{Piloto sin recorte de outliers}: a $h=1$, en las ocho barras, no perjudica el MAE general y reduce los errores más grandes (error máximo menor en las 8 barras, MAE en el percentil 99 menor en 7); significativo individualmente solo en 2 barras. Resultado mixto a $h=24$ (4 barras).

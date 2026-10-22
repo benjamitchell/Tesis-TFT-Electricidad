@@ -25,8 +25,9 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from evaluar_h24 import cargar_modelo
+from evaluar_h24 import EXPERIMENTO_PRECIOS
 from Modulos.Evaluacion_TFT import extraer_todas_predicciones_modelo, inferir_raw_modelo
+from Modulos.TFT_Model import cargar_modelo_entrenado
 
 # (sufijo de carpeta, barras)
 TANDAS = [("_h24", ["ATACAMA", "CHARRUA", "P.AZUCAR", "P.MONTT", "TARAPACA"]),
@@ -57,7 +58,8 @@ def main():
 
         resultado = {}
         for barra in barras:
-            modelo = cargar_modelo(carpeta, barra, arq)
+            modelo, _ = cargar_modelo_entrenado(barra, EXPERIMENTO_PRECIOS[arq], carpeta,
+                                                dyt=arq == "DyT", verbose=False)
             raw = inferir_raw_modelo(modelo, dataloaders[barra]["test"])
             resultado[barra] = {}
             for h in range(1, N_HORIZONTES + 1):

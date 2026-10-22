@@ -59,7 +59,10 @@ busbar-architecture combinations, 13 of them statistically significant, so the s
 signal is at least as informative as Prophet's statistical decomposition. The advantage does not
 carry over to 24 hours: there P+C wins at three busbars, S+C at two, three show no significant
 difference, and P+C's average error is about 4% lower. At that horizon S+C's appeal is coming close
-to P+C with one model instead of Prophet, two TFTs and a stacking step.
+to P+C with one model instead of Prophet, two TFTs and a stacking step. Variable importance is
+consistent with this: solar position already carries Prophet's daily cycle but not its weekly
+component or trend, and at 24 hours the models lean less on recent prices while P+C leans more on
+the day of the week.
 
 **Forecast horizon.** The main model forecasts the marginal cost **one hour ahead**, using the
 price observed up to the previous hour. That is the same horizon as the closest Chilean precedent,

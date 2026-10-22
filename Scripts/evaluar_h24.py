@@ -24,7 +24,6 @@ Uso:
 import os
 import sys
 import gc
-import json
 import pickle
 import warnings
 
@@ -32,12 +31,10 @@ warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
-import torch
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from Modulos.TFT_Model import TFTBridge
-from Modulos.Parche import activar_dyt_mode, desactivar_dyt_mode
+from Modulos.TFT_Model import cargar_modelo_entrenado
 from Modulos.Evaluacion_TFT import (
     extraer_todas_predicciones_modelo, recalcular_metricas_serie_cruda,
     calcular_baselines_naive, inferir_raw_modelo,
@@ -66,48 +63,6 @@ EXPERIMENTOS = [
 ]
 
 
-def cargar_modelo(carpeta_modelos, barra, variante):
-    exp = EXPERIMENTO_PRECIOS[variante]
-    ruta_config = os.path.join(carpeta_modelos, exp, barra, f"{exp}_{barra}_config.json")
-    if not os.path.exists(ruta_config):
-        print(f"  [AVISO] no encontrado: {ruta_config}")
-        return None
-    with open(ruta_config, encoding="utf-8") as f:
-        config = json.load(f)
-    ckpt = config["model_path"]
-    if not os.path.exists(ckpt):
-        ckpt_local = os.path.join(carpeta_modelos, exp, barra, os.path.basename(ckpt))
-        if os.path.exists(ckpt_local):
-            ckpt = ckpt_local
-        else:
-            print(f"  [AVISO] checkpoint no encontrado: {ckpt}")
-            return None
-
-    _orig_zeros = torch.zeros
-
-    def _safe_zeros(*a, **kw):
-        d = kw.get("device")
-        if d is not None and "cuda" in str(d):
-            kw["device"] = "cpu"
-        return _orig_zeros(*a, **kw)
-
-    # DyT reemplaza nn.LayerNorm por DynamicTanh vía monkey-patch al construir el
-    # modelo (Modulos/Parche.py); hay que activarlo antes de load_from_checkpoint
-    # o el state_dict no calza con la arquitectura reconstruida (RuntimeError).
-    if variante == "DyT":
-        activar_dyt_mode()
-    torch.zeros = _safe_zeros
-    try:
-        modelo = TFTBridge.load_from_checkpoint(ckpt, map_location=lambda storage, loc: storage, weights_only=False)
-    finally:
-        torch.zeros = _orig_zeros
-        if variante == "DyT":
-            desactivar_dyt_mode()
-    modelo.eval()
-    for m in modelo.modules():
-        if hasattr(m, "_device"):
-            m._device = torch.device("cpu")
-    return modelo
 
 
 def main():
@@ -136,7 +91,8 @@ def main():
 
             for barra in barras:
                 print(f"\n=== {nombre_exp} / {arq} / {barra} ===")
-                modelo = cargar_modelo(carpeta, barra, arq)
+                modelo, _ = cargar_modelo_entrenado(barra, EXPERIMENTO_PRECIOS[arq], carpeta,
+                                                    dyt=arq == "DyT", verbose=False)
                 if modelo is None:
                     continue
 

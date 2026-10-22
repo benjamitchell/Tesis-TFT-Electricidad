@@ -1095,9 +1095,39 @@ La Tabla \ref{tab:importancia_sc_decoder} presenta la importancia completa en el
     \label{tab:importancia_sc_decoder}
 \end{table}
 
-El resultado central es que la posición solar sí domina el decoder: sumando \texttt{elevacion\_solar} y \texttt{cos\_elevacion}, la posición solar concentra entre el 42.3\% (Charrúa) y el 77.3\% (Crucero) del peso del decoder en seis de las ocho barras, superando a \texttt{relative\_time\_idx} como variable individual más importante en seis de ocho barras (todas salvo Cardones y Puerto Montt). Esto confirma directamente, a nivel del mecanismo interno del modelo, la hipótesis que motiva a S+C (Sección 3.4.1): el TFT efectivamente aprende a usar la posición solar como señal futura dominante, en lugar de apoyarse principalmente en el índice temporal genérico. Puerto Montt es nuevamente la excepción más clara: \texttt{relative\_time\_idx} lidera su decoder (44.8\%) por sobre \texttt{elevacion\_solar} (16.9\%, el valor más bajo de las ocho barras), consistente con una dinámica menos regida por el ciclo solar diario. Respecto a si el modelo prefiere el ángulo de elevación crudo o su coseno (la variable diseñada como proxy de irradiancia), \texttt{elevacion\_solar} recibe más peso que \texttt{cos\_elevacion} en siete de las ocho barras, con Puerto Montt como única excepción; esto sugiere que la relación no lineal completa entre el ángulo y el costo marginal aporta información que el coseno, al comprimir esa relación a una única forma funcional, no captura del todo.
+El peso de \texttt{relative\_time\_idx} en el decoder requiere una precaución de lectura. Con una hora de horizonte, el decoder tiene un único paso y esta variable es constante, por lo que el peso que recibe actúa como un término de sesgo de la VSN, cuyos pesos siempre suman 100\%, y no aporta información sobre el instante pronosticado; de hecho, varía entre 7.9\% y 44.8\% sin relación con el desempeño de cada barra. Entre las variables informativas del decoder, la posición solar concentra la mayor parte del peso: \texttt{elevacion\_solar} y \texttt{cos\_elevacion} suman entre el 70.1\% y el 84.9\% en las ocho barras, y el resto corresponde a \texttt{es\_horario\_verano}. Que la posición solar sea efectivamente útil, y no solo la única información disponible en el decoder, lo respaldan el encoder (donde recibe más peso que el clima en siete de ocho barras) y la comparación con P+C (Sección \ref{sec:pc_vs_sc}). Puerto Montt es nuevamente la excepción más clara: es la barra con menor peso de la posición solar en el encoder (9.0\%), consistente con una dinámica menos regida por el ciclo solar diario. Respecto a si el modelo prefiere el ángulo de elevación crudo o su coseno (la variable diseñada como proxy de irradiancia), \texttt{elevacion\_solar} recibe más peso que \texttt{cos\_elevacion} en siete de las ocho barras, con Puerto Montt como única excepción; esto sugiere que la relación no lineal completa entre el ángulo y el costo marginal aporta información que el coseno, al comprimir esa relación a una única forma funcional, no captura del todo.
 
-En síntesis: la dominancia de la posición solar en el decoder confirma, a nivel de interpretabilidad, que la ventaja predictiva de S+C sobre P+C (Sección \ref{sec:pc_vs_sc}) no es incidental, sino que el TFT efectivamente aprende a apoyarse en la señal solar disponible.
+En síntesis, el TFT de S+C usa la posición solar tanto para describir el pasado, en el encoder, como para anticipar el instante pronosticado, en el decoder, lo que es consistente con que la ventaja predictiva de S+C sobre P+C (Sección \ref{sec:pc_vs_sc}) no sea incidental.
+
+\subsection{Información compartida entre P+C y S+C}
+\label{sec:informacion_pc_sc}
+
+P+C y S+C describen el instante pronosticado con variables distintas: P+C, con los componentes de Prophet (\texttt{trend}, \texttt{yearly}, \texttt{weekly}, \texttt{daily}) y el indicador de feriado; S+C, con la posición solar. Para saber cuánta información comparten, se mide con qué precisión las variables solares (\texttt{elevacion\_solar}, \texttt{cos\_elevacion} y \texttt{es\_horario\_verano}), en conjunto y de forma no lineal, reconstruyen cada componente de Prophet: un modelo de \textit{gradient boosting} ajustado sobre el conjunto de entrenamiento de cada barra y evaluado con validación cruzada en cinco bloques contiguos. Un $R^2$ cercano a 1 indica que el componente es redundante con la posición solar; uno cercano a 0, que contiene información que ella no tiene. Como las variables son las mismas en ambos horizontes, este análisis vale tanto para el modelo a una hora como para el modelo a 24 horas (Sección \ref{sec:h24_conclusiones}).
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrr}
+        \toprule
+        Barra & \texttt{daily} & \texttt{yearly} & \texttt{weekly} & \texttt{trend} \\
+        \midrule
+        Atacama       & 0.85 & 0.49 & 0.00 & $\le 0$ \\
+        Cardones      & 0.85 & 0.60 & 0.00 & $\le 0$ \\
+        Charrúa       & 0.82 & 0.61 & 0.00 & $\le 0$ \\
+        Crucero       & 0.87 & 0.66 & 0.00 & $\le 0$ \\
+        Pan de Azúcar & 0.84 & 0.61 & 0.00 & $\le 0$ \\
+        Puerto Montt  & 0.16 & 0.04 & 0.00 & $\le 0$ \\
+        Quillota      & 0.83 & 0.62 & 0.00 & $\le 0$ \\
+        Tarapacá      & 0.89 & 0.68 & 0.00 & $\le 0$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{$R^2$ con que las variables de posición solar de S+C reconstruyen cada componente de Prophet de P+C, conjunto de entrenamiento, validación cruzada en cinco bloques contiguos. Para \texttt{trend} el $R^2$ es negativo en todas las barras: un nivel de largo plazo no se puede extrapolar desde variables cíclicas.}
+    \label{tab:informacion_pc_sc}
+\end{table}
+
+La posición solar contiene casi todo el componente diario de Prophet ($R^2$ entre 0.82 y 0.89 en siete barras) y buena parte del anual (0.49--0.68), pero nada del semanal ni de la tendencia (Tabla \ref{tab:informacion_pc_sc}). Las correlaciones correspondientes son negativas ($-0.83$ a $-0.86$ entre \texttt{daily} y \texttt{elevacion\_solar}; $-0.65$ a $-0.77$ entre \texttt{yearly} y \texttt{es\_horario\_verano}) porque la generación solar baja el precio: Prophet aprende que el costo marginal es menor en las horas y en los meses de mayor radiación, justo cuando las variables solares son altas. Puerto Montt vuelve a ser la excepción ($R^2$ de 0.16 y 0.04), consistente con un precio que no sigue el ciclo solar (Sección \ref{sec:pmontt_desempeno}). En suma, lo que P+C sabe del instante pronosticado y S+C no es el calendario (día de la semana y feriados) y el nivel de largo plazo del precio.
+
+A una hora, ambos modelos se apoyan sobre todo en el precio recién observado: \texttt{y\_real} concentra en promedio el 66.0\% del encoder de S+C (Tabla \ref{tab:importancia_sc_encoder}) y el 48.8\% del de P+C. En el decoder, excluido \texttt{relative\_time\_idx} por ser constante, cada uno toma la hora del día de su propia fuente: S+C de la posición solar y P+C de \texttt{daily} (26.2\% en promedio), junto con \texttt{trend} (30.8\%), que le indica el nivel de la serie; \texttt{weekly} recibe un 10.7\%. Ambas estrategias acceden, por lo tanto, a la información que domina a este horizonte, la hora del día, y S+C lo hace con un único modelo, sin Prophet ni Stacking. Es consistente con que S+C sea la estrategia más precisa a una hora (Sección \ref{sec:pc_vs_sc}).
 
 \section{Extensiones y análisis complementarios}
 
@@ -1789,6 +1819,7 @@ A diferencia de lo observado a una hora, donde LN ganaba en 11 de las 12 combina
 \begin{table}[htbp]
     \centering
     \small
+    \setlength{\tabcolsep}{4pt}
     \begin{tabular}{llrrrrl}
         \toprule
         Barra & Estrategia P+C elegida & MAE S+C & MAE P+C & DM & $p$ & Resultado \\
@@ -1812,7 +1843,61 @@ A diferencia de lo observado a una hora, donde LN ganaba en 11 de las 12 combina
 
 A una hora, S+C superaba a P+C en 14 de las 16 combinaciones de barra y arquitectura, y las 10 diferencias que sobreviven a la corrección de Holm-Bonferroni eran todas a su favor (Sección \ref{sec:pc_vs_sc}). A 24 horas la comparación queda dividida y se inclina levemente hacia P+C: P+C gana en Puerto Montt, Cardones y Crucero, S+C gana en Tarapacá y Quillota, y en Atacama, Charrúa y Pan de Azúcar no hay diferencias significativas tras la corrección (en Atacama, P+C es nominalmente mejor, con $p=0.030$). En promedio de las ocho barras, P+C obtiene un MAE 4.2\% menor que S+C (17.51 frente a 18.28\,USD/MWh). Puerto Montt vuelve a ser una de las barras donde P+C rinde mejor, igual que a una hora con DyT, lo que es consistente con su dependencia hidrológica (Sección \ref{sec:pmontt_desempeno}); pero Cardones y Crucero, barras del norte con un ciclo solar marcado, muestran que a este horizonte la ventaja de P+C no se limita a la barra hidrológica. Prophet por sí solo es la peor estrategia en las ocho barras, y su combinación directa con el TFT de precios no mejora a este último: cuando P+C iguala o supera a S+C, lo hace combinando Prophet con dos modelos TFT mediante Stacking Optimization. A 24 horas, por lo tanto, S+C no conserva la ventaja en precisión que tenía a una hora: P+C es algo más preciso en promedio, a cambio de necesitar cuatro piezas (Prophet, dos TFT y la combinación) en lugar de un único modelo.
 
-\paragraph{Síntesis.} De las cuatro conclusiones puestas a prueba, dos se sostienen a 24 horas: la heterocedasticidad horaria del error (en siete de ocho barras) y la superioridad de los métodos con adaptación \textit{online}, con LW-ACP en primer lugar, que a este horizonte además produce los intervalos más angostos. Las otras dos no se sostienen. La ventaja de LayerNorm sobre DyT desaparece: ambas arquitecturas son equivalentes. Y la conclusión central queda acotada al horizonte de una hora: a 24 horas S+C ya no supera a P+C, que es algo más preciso en promedio (4.2\%) y gana en tres barras contra dos. Lo que S+C conserva en ambos horizontes es una precisión cercana a la de P+C con una estructura mucho más simple, no una ventaja de precisión.
+\paragraph{¿Por qué cambia la comparación a 24 horas?} La importancia de variables de ambos modelos a 24 horas, calculada igual que a una hora (Sección \ref{sec:interpretabilidad_sc}), muestra dos cambios. El primero es que el precio reciente pierde peso (Tabla \ref{tab:h24_encoder_yreal}): \texttt{y\_real} pasa de concentrar en promedio el 66.0\% del encoder de S+C al 29.3\%, y en P+C del 48.8\% al 22.2\%. Ese peso se redistribuye hacia el clima (en S+C, de 12.6\% a 39.6\%) y, en P+C, también hacia los componentes de Prophet (de 26.9\% a 34.6\%). Con un día de anticipación, el último precio observado informa mucho menos sobre la hora pronosticada, y el modelo necesita otra información para describir cómo será ese día.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrr}
+        \toprule
+        & \multicolumn{2}{c}{S+C} & \multicolumn{2}{c}{P+C} \\
+        Barra & 1 hora & 24 horas & 1 hora & 24 horas \\
+        \midrule
+        Atacama       & 66.5 & 38.0 & 64.8 & 25.6 \\
+        Cardones      & 70.9 & 29.5 & 64.5 & 26.4 \\
+        Charrúa       & 54.5 & 17.4 & 58.6 & 16.2 \\
+        Crucero       & 62.2 & 27.6 & 18.8 & 23.1 \\
+        Pan de Azúcar & 58.2 & 31.2 & 19.0 & 23.2 \\
+        Puerto Montt  & 84.1 & 28.3 & 88.4 & 24.3 \\
+        Quillota      & 59.6 & 29.2 & 13.0 & 19.7 \\
+        Tarapacá      & 72.1 & 33.0 & 63.5 & 19.5 \\
+        \midrule
+        Promedio      & 66.0 & 29.3 & 48.8 & 22.2 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Peso de \texttt{y\_real} (el costo marginal observado) en el encoder del TFT de precios, en porcentaje del total del encoder, a una hora y a 24 horas.}
+    \label{tab:h24_encoder_yreal}
+\end{table}
+
+El segundo cambio está en el decoder de P+C (Tabla \ref{tab:h24_decoder_pc}): \texttt{weekly} casi duplica su peso, de 10.7\% a 18.4\% en promedio, y aumenta en siete de las ocho barras, mientras \texttt{daily} y \texttt{trend} se mantienen; el indicador de feriado, en cambio, pierde peso (de 17.3\% a 7.8\%), de modo que el cambio no proviene de los feriados. El decoder de S+C sigue concentrado en la posición solar (entre 71.9\% y 86.6\% del peso informativo), porque no dispone de otra información sobre el día pronosticado.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        & \multicolumn{2}{c}{\texttt{daily}} & \multicolumn{2}{c}{\texttt{trend}} & \multicolumn{2}{c}{\texttt{weekly}} \\
+        Barra & 1 h & 24 h & 1 h & 24 h & 1 h & 24 h \\
+        \midrule
+        Atacama       & 23.5 & 30.9 & 25.6 & 15.2 & 15.3 & 17.8 \\
+        Cardones      & 23.9 & 19.6 & 26.0 & 28.7 &  7.8 & 26.8 \\
+        Charrúa       & 27.7 & 14.9 & 34.8 & 25.3 & 17.1 & 24.7 \\
+        Crucero       & 42.1 & 15.8 & 21.0 & 42.9 &  4.1 & 17.5 \\
+        Pan de Azúcar & 24.2 & 28.8 & 30.5 & 23.5 & 20.4 & 13.7 \\
+        Puerto Montt  & 14.1 & 25.8 & 37.4 & 31.2 &  6.1 & 16.0 \\
+        Quillota      & 23.2 & 30.1 & 47.0 & 35.5 &  4.7 & 14.3 \\
+        Tarapacá      & 30.8 & 30.2 & 24.4 & 40.1 &  9.9 & 16.7 \\
+        \midrule
+        Promedio      & 26.2 & 24.5 & 30.8 & 30.3 & 10.7 & 18.4 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Importancia en el decoder del TFT de precios de P+C, a una hora y a 24 horas, en porcentaje del peso de las variables informativas (excluido \texttt{relative\_time\_idx}, constante a una hora). Las columnas restantes corresponden a \texttt{yearly} e \texttt{is\_holiday}.}
+    \label{tab:h24_decoder_pc}
+\end{table}
+
+A 24 horas, por lo tanto, P+C desplaza peso hacia la información que la posición solar no contiene (Sección \ref{sec:informacion_pc_sc}): el día de la semana. Esto es consistente con su ventaja a este horizonte; de hecho, las tres barras donde P+C supera a S+C (Cardones, Crucero y Puerto Montt) están entre las cuatro con mayor aumento de \texttt{weekly}, aunque con ocho barras esa relación no puede establecerse estadísticamente. La importancia de la VSN indica en qué variables se apoya el modelo, no cuánto reducen el error, por lo que este análisis es una explicación consistente con los resultados y no una prueba causal. Lo que sí muestra con claridad es que la ventaja de S+C depende del horizonte: es máxima cuando el problema lo dominan el precio reciente y el ciclo diario, como a una hora, y se diluye cuando hace falta información de calendario que la posición solar no tiene.
+
+\paragraph{Síntesis.} De las cuatro conclusiones puestas a prueba, dos se sostienen a 24 horas: la heterocedasticidad horaria del error (en siete de ocho barras) y la superioridad de los métodos con adaptación \textit{online}, con LW-ACP en primer lugar, que a este horizonte además produce los intervalos más angostos. Las otras dos no se sostienen. La ventaja de LayerNorm sobre DyT desaparece: ambas arquitecturas son equivalentes. Y la conclusión central queda acotada al horizonte de una hora: a 24 horas S+C ya no supera a P+C, que es algo más preciso en promedio (4.2\%) y gana en tres barras contra dos. Lo que S+C conserva en ambos horizontes es una precisión cercana a la de P+C con una estructura mucho más simple, no una ventaja de precisión. La importancia de variables sugiere por qué: a 24 horas el precio reciente pierde peso y P+C recurre más al día de la semana, información que la posición solar no contiene.
 
 \subsection{Comparación con la literatura: CRUCERO y P.MONTT 2024}
 \label{sec:crucero_leon}

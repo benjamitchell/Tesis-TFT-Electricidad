@@ -218,17 +218,19 @@ class TFTBridge(TemporalFusionTransformer, LightningModule):
     configure_sharded_model = None 
 
 # Función para cargar un modelo TFT entrenado desde un checkpoint
-def cargar_modelo_entrenado(barra, nombre_experimento, carpeta_modelos='Modelos_TFT', device='cpu'):
+# dyt=True reconstruye el modelo con Dynamic Tanh (debe coincidir con cómo se entrenó)
+def cargar_modelo_entrenado(barra, nombre_experimento, carpeta_modelos='Modelos_TFT', device='cpu',
+                            dyt=False, verbose=True):
 
     # Construimos las rutas
     carpeta_exp = os.path.join(carpeta_modelos, nombre_experimento, barra)
     ruta_config = os.path.join(carpeta_exp, f"{nombre_experimento}_{barra}_config.json")
-    
+
     # Cargamos la configuración
     if not os.path.exists(ruta_config):
         print(f"No se encontró el archivo de configuración: {ruta_config}")
         return None, None
-    
+
     try:
         with open(ruta_config, 'r', encoding='utf-8') as f:
             config = json.load(f)
@@ -236,13 +238,17 @@ def cargar_modelo_entrenado(barra, nombre_experimento, carpeta_modelos='Modelos_
         print("Advertencia: Error de codificación UTF-8, intentando con 'latin-1'...")
         with open(ruta_config, 'r', encoding='latin-1') as f:
             config = json.load(f)
-    
+
     ruta_checkpoint = config.get('model_path')
-    
-    # Cargamos el modelo desde el checkpoint
+
+    # El model_path guardado es la ruta absoluta donde se entrenó (por ejemplo, la del
+    # cluster); si no existe, se busca el mismo archivo junto al config descargado
     if not os.path.exists(ruta_checkpoint):
-        print(f"No se encontró el checkpoint: {ruta_checkpoint}")
-        return None, None
+        ruta_local = os.path.join(carpeta_exp, os.path.basename(ruta_checkpoint))
+        if not os.path.exists(ruta_local):
+            print(f"No se encontró el checkpoint: {ruta_checkpoint}")
+            return None, None
+        ruta_checkpoint = ruta_local
 
     # Al cargar checkpoints de GPU en máquinas CPU-only, torchmetrics intenta crear tensores
     # en 'cuda:0' (su device guardado) para detectar cambios de dispositivo, lo que lanza
@@ -254,6 +260,11 @@ def cargar_modelo_entrenado(barra, nombre_experimento, carpeta_modelos='Modelos_
             kwargs['device'] = 'cpu'
         return _orig_zeros(*args, **kwargs)
 
+    # DyT reemplaza nn.LayerNorm por DynamicTanh vía monkey-patch al construir el modelo
+    # (Modulos/Parche.py); sin activarlo, el state_dict no calza con la arquitectura
+    if dyt:
+        from Modulos.Parche import activar_dyt_mode, desactivar_dyt_mode
+        activar_dyt_mode()
     torch.zeros = _safe_zeros
     try:
         best_tft = TFTBridge.load_from_checkpoint(
@@ -263,11 +274,19 @@ def cargar_modelo_entrenado(barra, nombre_experimento, carpeta_modelos='Modelos_
         )
     finally:
         torch.zeros = _orig_zeros
-    
-    # Ponemos el modelo en modo evaluación
+        if dyt:
+            desactivar_dyt_mode()
+
+    # Ponemos el modelo en modo evaluación; sin GPU, los módulos que guardan el device
+    # donde se entrenó ('cuda') se redirigen a CPU
     best_tft.eval()
-    
-    print(f"Modelo para {barra} cargado desde: {ruta_checkpoint}")
+    if not torch.cuda.is_available():
+        for m in best_tft.modules():
+            if hasattr(m, '_device'):
+                m._device = torch.device('cpu')
+
+    if verbose:
+        print(f"Modelo para {barra} cargado desde: {ruta_checkpoint}")
     return best_tft, config
 
 # Función
