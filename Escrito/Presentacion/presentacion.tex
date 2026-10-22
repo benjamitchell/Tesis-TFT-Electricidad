@@ -316,11 +316,11 @@
             \textbf{Barra} & \textbf{MAE CEN} & \textbf{MAE 1 h} & \textbf{vs.\ CEN} & \textbf{MAE 24 h} & \textbf{vs.\ CEN} \\
             \midrule
             Puerto Montt  & 32.98 & 13.68 & $-58.5\%$ & 38.89 & $+17.9\%$ \\
-            Crucero       & 17.10 & 6.74  & $-60.6\%$ & --    & --        \\
-            Cardones      & 14.52 & 6.63  & $-54.4\%$ & --    & --        \\
+            Crucero       & 17.10 & 6.74  & $-60.6\%$ & 15.94 & $-6.8\%$  \\
+            Cardones      & 14.52 & 6.63  & $-54.4\%$ & 15.32 & $+5.5\%$  \\
             Pan de Azúcar & 15.09 & 6.93  & $-54.1\%$ & 13.64 & $-9.6\%$  \\
             Charrúa       & 17.01 & 7.98  & $-53.1\%$ & 18.41 & $+8.2\%$  \\
-            Quillota      & 17.26 & 8.26  & $-52.1\%$ & --    & --        \\
+            Quillota      & 17.26 & 8.26  & $-52.1\%$ & 17.50 & $+1.4\%$  \\
             \bottomrule
         \end{tabular}
     \end{table}
@@ -328,7 +328,7 @@
     \begin{itemize}
         \item Se compara S+C-LN contra el \textit{costo marginal programado} que el CEN publica operacionalmente (vía API pública), ambos evaluados contra el costo marginal real.
         \item A una hora, el modelo reduce el MAE entre 52\% y 61\%, pero usa el precio de la hora anterior; el programado se fija antes de la operación.
-        \item A 24 horas (igual anticipación) gana en Pan de Azúcar y pierde en Charrúa y Puerto Montt.
+        \item A 24 horas (igual anticipación) gana en Pan de Azúcar y Crucero, empata en Quillota y pierde en Cardones, Charrúa y Puerto Montt.
         \item La ventaja a una hora es el valor del precio recién observado, no un mejor modelo del sistema que la Programación de la Operación.
     \end{itemize}
 \end{frame}
@@ -364,7 +364,7 @@
         \item Es el mismo horizonte del antecedente chileno más cercano (León et al., 2026), que deja el \textit{day-ahead} como trabajo futuro.
         \item Sirve como \textbf{escenario controlado} para comparar estrategias de \textit{features}, arquitecturas y métodos de Conformal Prediction.
         \item Pero el horizonte de decisión más relevante del mercado es el \textit{day-ahead}: por eso se evaluó también el modelo a \textbf{24 horas}.
-        \item La comparación con el CEN cambia con el horizonte: a una hora el modelo usa información que el programado no tiene; a igual anticipación, gana en una de tres barras.
+        \item La comparación con el CEN cambia con el horizonte: a una hora el modelo usa información que el programado no tiene; a igual anticipación, gana en dos de seis barras.
     \end{itemize}
 \end{frame}
 
@@ -374,8 +374,8 @@
     \vspace{0.2em}
     \footnotesize
     \begin{itemize}
-        \item El MAE crece 57\% del primer al último paso; en promedio, el modelo no supera a la persistencia diaria (7 de 10 combinaciones).
-        \item La cobertura de Conformal Prediction se mantiene en 0.916--0.923 (90\% nominal) en los 24 pasos, y el ancho se estabiliza desde el paso $\sim$12.
+        \item El MAE crece 52\% del primer al último paso; en promedio, el modelo no supera a la persistencia diaria (11 de 16 combinaciones).
+        \item La cobertura de Conformal Prediction se mantiene en 0.915--0.921 (90\% nominal) en los 24 pasos, y el ancho se estabiliza desde el paso $\sim$12.
     \end{itemize}
 \end{frame}
 
@@ -387,13 +387,13 @@
             \toprule
             \textbf{Conclusión a 1 hora} & \textbf{Resultado a 24 horas} & \textbf{¿Se mantiene?} \\
             \midrule
-            Heterocedasticidad horaria del error & Levene significativo en los 24 pasos en 4 de 5 barras (Charrúa se debilita) & Sí \\
+            Heterocedasticidad horaria del error & Levene significativo en los 24 pasos en 7 de 8 barras (Charrúa se debilita) & Sí \\
             \addlinespace
-            LW-ACP es el mejor método de CP & Menor Winkler en los 24 pasos; intervalos 18.5\% más angostos que Split CP & Sí, más fuerte \\
+            LW-ACP es el mejor método de CP & Menor Winkler en los 24 pasos; intervalos 17.2\% más angostos que Split CP & Sí, más fuerte \\
             \addlinespace
-            LayerNorm supera a DyT & Diebold-Mariano: LN gana en 1 barra, DyT en 1, 3 empates & No: equivalentes \\
+            LayerNorm supera a DyT & Diebold-Mariano: LN gana en 1 barra, 7 empates & No: equivalentes \\
             \addlinespace
-            S+C supera a P+C & S+C gana en 1 barra, P+C en 1 (Puerto Montt), 3 empates & Empatan; S+C con un solo modelo \\
+            S+C supera a P+C & P+C gana en 3 barras, S+C en 2, 3 empates; P+C 4\% menos MAE & No; S+C más simple \\
             \bottomrule
         \end{tabular}
     \end{table}
@@ -416,7 +416,7 @@
 
 \begin{frame}{Conclusiones principales}
     \begin{enumerate}
-        \item \textbf{La estrategia más simple es la más precisa a una hora}: S+C supera a P+C, con la posición solar dominando el decoder del TFT; a 24 horas empatan, y S+C lo logra con un solo modelo.
+        \item \textbf{La estrategia más simple es la más precisa a una hora}: S+C supera a P+C, con la posición solar dominando el decoder del TFT; a 24 horas P+C es algo más preciso (4\%), y S+C queda cerca con un solo modelo.
         \item \textbf{LW-ACP} combina ponderación horaria y adaptación \textit{online}, logrando el mejor Winkler y pinball al 90\% con cobertura calibrada, y los intervalos más angostos al 95\%.
         \item Los errores más extremos siguen un patrón mecanístico común (desfase de fase de $\sim$1h), no ruido aleatorio disperso.
         \item A una hora supera a la literatura reciente de ML clásico al mismo horizonte; a 24 horas la calibración de los intervalos se mantiene, pero la predicción puntual no supera a la persistencia.

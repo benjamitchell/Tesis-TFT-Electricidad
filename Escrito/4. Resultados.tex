@@ -1584,7 +1584,7 @@ Esta subsección cruza el piloto de entrenamiento sin recorte de outliers con un
 \subsection{Evaluación a horizonte \textit{day-ahead} ($h=24$)}
 \label{sec:h24_dayahead}
 
-La Tabla \ref{tab:h24_resumen} presenta el MAE promedio sobre los 24 pasos del horizonte, el MAE del primer y del último paso, y el \textit{skill score} promedio respecto a la persistencia estacional de 24 horas (Sección \ref{sec:baselines}), para las ocho barras evaluadas a $h=24$ (Sección \ref{sec:h24_dayahead_meta} de la Metodología): con ambas arquitecturas en cinco de ellas y solo con LN en Cardones, Crucero y Quillota, entrenadas después.
+La Tabla \ref{tab:h24_resumen} presenta el MAE promedio sobre los 24 pasos del horizonte, el MAE del primer y del último paso, y el \textit{skill score} promedio respecto a la persistencia estacional de 24 horas (Sección \ref{sec:baselines}), para las ocho barras y ambas arquitecturas evaluadas a $h=24$ (Sección \ref{sec:h24_dayahead_meta} de la Metodología).
 
 \begin{table}[htbp]
     \centering
@@ -1596,14 +1596,17 @@ La Tabla \ref{tab:h24_resumen} presenta el MAE promedio sobre los 24 pasos del h
         Atacama       & LN  & 13.54 & 9.92  & 14.64 & $-0.096$ \\
         Atacama       & DyT & 12.69 & 10.18 & 13.23 & $-0.028$ \\
         Cardones      & LN  & 15.32 & 10.98 & 16.46 & $-0.200$ \\
+        Cardones      & DyT & 14.38 & 11.04 & 15.44 & $-0.126$ \\
         Charrúa       & LN  & 18.41 & 13.71 & 20.26 & $+0.038$ \\
         Charrúa       & DyT & 18.73 & 13.15 & 19.25 & $+0.021$ \\
         Crucero       & LN  & 15.94 & 11.85 & 17.35 & $-0.278$ \\
+        Crucero       & DyT & 16.75 & 12.24 & 17.45 & $-0.343$ \\
         Puerto Montt  & LN  & 38.89 & 22.47 & 41.73 & $-0.042$ \\
         Puerto Montt  & DyT & 40.08 & 23.08 & 42.22 & $-0.074$ \\
         Pan de Azúcar & LN  & 13.64 & 9.82  & 14.87 & $-0.036$ \\
         Pan de Azúcar & DyT & 13.67 & 10.16 & 14.60 & $-0.039$ \\
         Quillota      & LN  & 17.50 & 13.67 & 18.42 & $+0.088$ \\
+        Quillota      & DyT & 19.08 & 13.02 & 20.14 & $+0.005$ \\
         Tarapacá      & LN  & 12.86 & 10.83 & 13.02 & $+0.017$ \\
         Tarapacá      & DyT & 13.79 & 11.38 & 14.18 & $-0.054$ \\
         \bottomrule
@@ -1613,7 +1616,7 @@ La Tabla \ref{tab:h24_resumen} presenta el MAE promedio sobre los 24 pasos del h
     \label{tab:h24_resumen}
 \end{table}
 
-En el primer paso del horizonte ($h=1$ dentro del modelo MIMO de 24 pasos) el modelo supera cómodamente a la persistencia de 24 horas en las 13 combinaciones de barra y arquitectura, con un MAE comparable al del pipeline principal de $h=1$ (Tabla \ref{tab:tft_sc_ln_resultados}). El MAE crece, casi siempre paso a paso, a medida que el horizonte avanza (entre 20\% y 86\% peor en el paso 24 que en el paso 1, según la barra), un patrón esperable dado que la incertidumbre acumulada de un pronóstico a 24 horas es sustancialmente mayor que la de un pronóstico a una hora. En promedio sobre los 24 pasos, el \textit{skill score} se vuelve negativo en 9 de las 13 combinaciones: el modelo, evaluado como predictor \textit{day-ahead} completo, queda en promedio empatado o levemente peor que la persistencia estacional de 24 horas, un baseline particularmente exigente para el costo marginal eléctrico dado su marcado ciclo diario. Charrúa (LN y DyT), Quillota y Tarapacá (LN) son la excepción, con \textit{skill score} promedio levemente positivo; en el otro extremo, Crucero y Cardones quedan entre 20\% y 28\% por detrás de la persistencia.
+En el primer paso del horizonte ($h=1$ dentro del modelo MIMO de 24 pasos) el modelo supera cómodamente a la persistencia de 24 horas en las 16 combinaciones de barra y arquitectura, con un MAE comparable al del pipeline principal de $h=1$ (Tabla \ref{tab:tft_sc_ln_resultados}). El MAE crece, casi siempre paso a paso, a medida que el horizonte avanza (entre 20\% y 86\% peor en el paso 24 que en el paso 1, según la barra), un patrón esperable dado que la incertidumbre acumulada de un pronóstico a 24 horas es sustancialmente mayor que la de un pronóstico a una hora. En promedio sobre los 24 pasos, el \textit{skill score} se vuelve negativo en 11 de las 16 combinaciones: el modelo, evaluado como predictor \textit{day-ahead} completo, queda en promedio empatado o levemente peor que la persistencia estacional de 24 horas, un baseline particularmente exigente para el costo marginal eléctrico dado su marcado ciclo diario. Charrúa y Quillota (LN y DyT) y Tarapacá (LN) son la excepción, con \textit{skill score} promedio levemente positivo; en el otro extremo, Crucero y Cardones quedan entre 13\% y 34\% por detrás de la persistencia.
 
 Este resultado no contradice el hallazgo central de este trabajo (Sección \ref{sec:pc_vs_sc}), pero delimita su alcance: la arquitectura y los hiperparámetros de S+C-LN, ajustados y validados para $h=1$ (Sección \ref{sec:ln_vs_dyt}), no generalizan automáticamente a un horizonte \textit{day-ahead} completo sin ajustes adicionales (la misma limitación de esfuerzo de ajuste asimétrico señalada en la Sección \ref{sec:ln_vs_dyt}, aquí aplicada al horizonte en vez de a la arquitectura).
 
@@ -1641,7 +1644,7 @@ Duplicar la capacidad del modelo mejora el MAE promedio en ambas barras (2.5\%--
 \subsubsection{Conformal Prediction a horizonte day-ahead}
 \label{sec:h24_cp}
 
-La degradación del MAE con el paso del horizonte (Tabla \ref{tab:h24_resumen}) no distingue si el modelo, además de errar más en promedio, pierde también la calibración de sus intervalos de predicción. Para responderlo, se calibra Split CP de forma independiente en cada uno de los 24 pasos --un cuantil de no conformidad por paso, calculado sobre el conjunto de validación de ese mismo paso y evaluado en su propio conjunto de prueba, contra la serie cruda-- para las cinco barras con modelo $h=24$ entrenado (Atacama, Charrúa, Pan de Azúcar, Puerto Montt, Tarapacá), LN. Se reportan 90\% y 95\% de cobertura nominal, consistente con el resto de este capítulo (Sección \ref{sec:cp_configuracion_general} del Marco Metodológico). La Tabla \ref{tab:h24_cp} y la Figura \ref{fig:h24_mae_ancho} presentan los resultados, promediados sobre las cinco barras.
+La degradación del MAE con el paso del horizonte (Tabla \ref{tab:h24_resumen}) no distingue si el modelo, además de errar más en promedio, pierde también la calibración de sus intervalos de predicción. Para responderlo, se calibra Split CP de forma independiente en cada uno de los 24 pasos --un cuantil de no conformidad por paso, calculado sobre el conjunto de validación de ese mismo paso y evaluado en su propio conjunto de prueba, contra la serie cruda-- para las ocho barras, LN. Se reportan 90\% y 95\% de cobertura nominal, consistente con el resto de este capítulo (Sección \ref{sec:cp_configuracion_general} del Marco Metodológico). La Tabla \ref{tab:h24_cp} y la Figura \ref{fig:h24_mae_ancho} presentan los resultados, promediados sobre las ocho barras.
 
 \begin{table}[htbp]
     \centering
@@ -1650,28 +1653,28 @@ La degradación del MAE con el paso del horizonte (Tabla \ref{tab:h24_resumen}) 
         \toprule
         Paso ($h$) & MAE & Cov.\ 90\% & Ancho 90\% & Cov.\ 95\% & Ancho 95\% \\
         \midrule
-        1  & 13.35 & 0.922 & 65.99 & 0.961 & 92.11 \\
-        6  & 19.06 & 0.921 & 89.69 & 0.963 & 123.40 \\
-        12 & 20.12 & 0.920 & 93.58 & 0.962 & 126.94 \\
-        18 & 20.53 & 0.918 & 93.98 & 0.962 & 129.29 \\
-        24 & 20.91 & 0.916 & 93.12 & 0.958 & 125.96 \\
+        1  & 12.91 & 0.918 & 61.08 & 0.958 & 86.21 \\
+        6  & 17.83 & 0.919 & 82.52 & 0.961 & 114.22 \\
+        12 & 18.79 & 0.918 & 85.89 & 0.960 & 117.49 \\
+        18 & 19.29 & 0.916 & 87.28 & 0.960 & 120.39 \\
+        24 & 19.60 & 0.915 & 87.12 & 0.958 & 118.22 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{MAE y resultados de Split CP (calibrado por paso) a 90\% y 95\% de cobertura nominal, promedio de cinco barras, por paso del horizonte \textit{day-ahead}. MAE y Ancho en USD/MWh.}
+    \caption{MAE y resultados de Split CP (calibrado por paso) a 90\% y 95\% de cobertura nominal, promedio de ocho barras, por paso del horizonte \textit{day-ahead}. MAE y Ancho en USD/MWh.}
     \label{tab:h24_cp}
 \end{table}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{imagenes/fig_h24_mae_ancho.pdf}
-    \caption{MAE (izquierda) y ancho medio y cobertura empírica de Split CP al 90\% nominal (derecha) por paso del horizonte \textit{day-ahead}, promedio de cinco barras.}
+    \caption{MAE (izquierda) y ancho medio y cobertura empírica de Split CP al 90\% nominal (derecha) por paso del horizonte \textit{day-ahead}, promedio de ocho barras.}
     \label{fig:h24_mae_ancho}
 \end{figure}
 
-La cobertura empírica se mantiene dentro de una banda estrecha en los 24 pasos, tanto al 90\% (0.916--0.923) como al 95\% (0.958--0.963), pese a que el MAE crece 56.6\% entre el paso 1 y el paso 24 (13.35 a 20.91\,USD/MWh). Calibrar el cuantil de no conformidad de forma independiente en cada paso --en vez de usar un único cuantil global para los 24-- absorbe correctamente esa degradación sin perder validez marginal en ningún punto del horizonte, la misma lógica que motiva ponderar por hora del día en LW Split CP y LW-ACP (Sección \ref{sec:lwacp}), aplicada aquí al paso del horizonte en vez de a la hora del día.
+La cobertura empírica se mantiene dentro de una banda estrecha en los 24 pasos, tanto al 90\% (0.915--0.921) como al 95\% (0.958--0.961), pese a que el MAE crece 51.8\% entre el paso 1 y el paso 24 (12.91 a 19.60\,USD/MWh). Calibrar el cuantil de no conformidad de forma independiente en cada paso --en vez de usar un único cuantil global para los 24-- absorbe correctamente esa degradación sin perder validez marginal en ningún punto del horizonte, la misma lógica que motiva ponderar por hora del día en LW Split CP y LW-ACP (Sección \ref{sec:lwacp}), aplicada aquí al paso del horizonte en vez de a la hora del día.
 
-El ancho del intervalo, en cambio, no crece de forma indefinida: aumenta con fuerza entre el paso 1 y aproximadamente el paso 11--13 (66.0 a 93.6\,USD/MWh al 90\%, un incremento de 42\%), y luego se estabiliza, con una leve declinación hacia el paso 24 (93.1\,USD/MWh, 0.5\% menor que el máximo del paso 19). Este aplanamiento es consistente con la naturaleza cíclica y de reversión a la media del costo marginal: la incertidumbre sobre el precio de la hora 15 de \textit{mañana} eventualmente satura en vez de seguir creciendo sin límite hacia el precio de la hora 15 de \textit{pasado mañana}, como ocurriría si la serie se comportara como una caminata aleatoria sin estructura periódica. Que el ancho se estabilice, y no solo el MAE, es evidencia adicional --ahora desde la perspectiva de la incertidumbre calibrada, no solo del error puntual-- de que el horizonte \textit{day-ahead} completo es alcanzable sin que la degradación observada en la Tabla \ref{tab:h24_resumen} se traduzca en una pérdida de validez o en intervalos impracticablemente anchos.
+El ancho del intervalo, en cambio, no crece de forma indefinida: aumenta con fuerza entre el paso 1 y aproximadamente el paso 12 (61.1 a 85.9\,USD/MWh al 90\%, un incremento de 41\%), y luego se estabiliza, con una leve declinación hacia el paso 24 (87.1\,USD/MWh, 0.4\% menor que el máximo del paso 19). Este aplanamiento es consistente con la naturaleza cíclica y de reversión a la media del costo marginal: la incertidumbre sobre el precio de la hora 15 de \textit{mañana} eventualmente satura en vez de seguir creciendo sin límite hacia el precio de la hora 15 de \textit{pasado mañana}, como ocurriría si la serie se comportara como una caminata aleatoria sin estructura periódica. Que el ancho se estabilice, y no solo el MAE, es evidencia adicional --ahora desde la perspectiva de la incertidumbre calibrada, no solo del error puntual-- de que el horizonte \textit{day-ahead} completo es alcanzable sin que la degradación observada en la Tabla \ref{tab:h24_resumen} se traduzca en una pérdida de validez o en intervalos impracticablemente anchos.
 
 \subsubsection{Análisis de errores extremos a horizonte day-ahead}
 \label{sec:h24_errores_extremos}
@@ -1706,7 +1709,7 @@ Esto no es una deficiencia del modelo, sino una limitación inherente a cualquie
 \subsubsection{¿Se mantienen las conclusiones a 24 horas?}
 \label{sec:h24_conclusiones}
 
-Las conclusiones de este trabajo se obtuvieron a una hora de anticipación, usado como escenario controlado para comparar estrategias, arquitecturas y métodos de cuantificación de incertidumbre (Capítulo 1). Esta sección pone a prueba cuatro de ellas con el modelo a 24 horas: la heterocedasticidad horaria del error, el orden de los métodos de Conformal Prediction y la comparación entre LayerNorm y DyT, que no requieren entrenar modelos nuevos, y la comparación central entre S+C y P+C, para la que se entrenó la estrategia P+C a 24 horas. Se usan las cinco barras con modelo a 24 horas y cada prueba se aplica por separado en cada uno de los 24 pasos del horizonte, con la misma metodología que a una hora y corrección de Holm-Bonferroni sobre las cinco barras de cada paso.
+Las conclusiones de este trabajo se obtuvieron a una hora de anticipación, usado como escenario controlado para comparar estrategias, arquitecturas y métodos de cuantificación de incertidumbre (Capítulo 1). Esta sección pone a prueba cuatro de ellas con el modelo a 24 horas: la heterocedasticidad horaria del error, el orden de los métodos de Conformal Prediction y la comparación entre LayerNorm y DyT, que no requieren entrenar modelos nuevos, y la comparación central entre S+C y P+C, para la que se entrenó la estrategia P+C a 24 horas. Se usan las ocho barras y cada prueba se aplica por separado en cada uno de los 24 pasos del horizonte, con la misma metodología que a una hora y corrección de Holm-Bonferroni sobre las ocho barras de cada paso.
 
 \paragraph{Heterocedasticidad horaria.} La Tabla \ref{tab:h24_hetero} repite el test de Levene de la Sección \ref{sec:verificacion_heterocedasticidad} sobre los residuos de validación de cada paso, agrupados por la hora del día pronosticada.
 
@@ -1764,21 +1767,24 @@ El orden de la Sección \ref{sec:lwacp_comparativa} se mantiene y se refuerza. L
         \toprule
         Barra & MAE LN & MAE DyT & DM & $p$ & Resultado \\
         \midrule
-        Atacama       & 13.55 & 12.69 & $2.54$  & 0.011 & DyT* \\
+        Atacama       & 13.55 & 12.69 & $2.54$  & 0.011 & Empate \\
+        Cardones      & 15.32 & 14.35 & $2.12$  & 0.034 & Empate \\
         Charrúa       & 18.43 & 18.72 & $-0.53$ & 0.596 & Empate \\
+        Crucero       & 15.94 & 16.76 & $-1.57$ & 0.116 & Empate \\
         Pan de Azúcar & 13.64 & 13.67 & $-0.06$ & 0.949 & Empate \\
         Puerto Montt  & 38.94 & 40.12 & $-0.96$ & 0.336 & Empate \\
-        Tarapacá      & 12.87 & 13.79 & $-2.69$ & 0.007 & LN* \\
+        Quillota      & 17.51 & 19.10 & $-4.03$ & $<0.001$ & LN* \\
+        Tarapacá      & 12.87 & 13.79 & $-2.69$ & 0.007 & Empate \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Diebold-Mariano entre los modelos a 24 horas con LayerNorm y con DyT, error absoluto promedio de los 24 pasos de cada pronóstico, conjunto de prueba, contra la serie cruda. DM negativo favorece a LN. * significativo tras Holm-Bonferroni sobre las cinco barras.}
+    \caption{Diebold-Mariano entre los modelos a 24 horas con LayerNorm y con DyT, error absoluto promedio de los 24 pasos de cada pronóstico, conjunto de prueba, contra la serie cruda. DM negativo favorece a LN. * significativo tras Holm-Bonferroni sobre las ocho barras.}
     \label{tab:h24_ln_dyt}
 \end{table}
 
-A diferencia de lo observado a una hora, donde LN ganaba en 11 de las 12 combinaciones significativas (Sección \ref{sec:dm_ln_dyt}), a 24 horas la comparación queda dividida: LN gana en Tarapacá, DyT en Atacama y las tres barras restantes empatan. Por paso, de 120 combinaciones de barra y paso, 29 son significativas a favor de LN y 11 a favor de DyT, estas últimas todas en Atacama. Incluso la preferencia por barra cambia de dirección: Tarapacá, la única barra donde DyT ganaba a una hora en S+C, es donde LN gana a 24 horas. Junto con el estudio de semillas (Sección \ref{sec:seeds_ln_dyt}), esto indica que la ventaja de LN a una hora es real pero pequeña y no se traslada a otro horizonte: para este problema, ambas arquitecturas son prácticamente equivalentes.
+A diferencia de lo observado a una hora, donde LN ganaba en 11 de las 12 combinaciones significativas (Sección \ref{sec:dm_ln_dyt}), a 24 horas solo una de las ocho barras muestra una diferencia significativa tras la corrección, Quillota, a favor de LN; las diferencias nominales se reparten entre ambas arquitecturas (LN es mejor en Tarapacá con $p=0.007$, DyT en Atacama y Cardones con $p=0.011$ y $0.034$). Por paso, de 192 combinaciones de barra y paso, 47 son significativas a favor de LN y 16 a favor de DyT, estas últimas casi todas en Atacama y Cardones. Incluso la preferencia por barra cambia de dirección: Tarapacá, la única barra donde DyT ganaba a una hora en S+C, es una de las que favorece a LN a 24 horas. Junto con el estudio de semillas (Sección \ref{sec:seeds_ln_dyt}), esto indica que la ventaja de LN a una hora es real pero pequeña y no se traslada a otro horizonte: para este problema, ambas arquitecturas son prácticamente equivalentes.
 
-\paragraph{S+C contra P+C.} Esta comparación requiere entrenar la estrategia P+C a 24 horas: un TFT de precios y un TFT sobre los residuos de Prophet, en las mismas cinco barras y con los mismos hiperparámetros que S+C. En cada paso del horizonte se replica el protocolo de Stacking Optimization de la Sección \ref{sec:pc_vs_sc}: seis estrategias de combinación, pesos ajustados en entrenamiento y selección de la mejor estrategia por barra en validación. La Tabla \ref{tab:h24_pc_sc} compara la estrategia elegida con S+C en prueba, con el mismo test de Diebold-Mariano del párrafo anterior.
+\paragraph{S+C contra P+C.} Esta comparación requiere entrenar la estrategia P+C a 24 horas: un TFT de precios y un TFT sobre los residuos de Prophet, en las mismas ocho barras y con los mismos hiperparámetros que S+C. En cada paso del horizonte se replica el protocolo de Stacking Optimization de la Sección \ref{sec:pc_vs_sc}: seis estrategias de combinación, pesos ajustados en entrenamiento y selección de la mejor estrategia por barra en validación. La Tabla \ref{tab:h24_pc_sc} compara la estrategia elegida con S+C en prueba, con el mismo test de Diebold-Mariano del párrafo anterior.
 
 \begin{table}[htbp]
     \centering
@@ -1788,20 +1794,25 @@ A diferencia de lo observado a una hora, donde LN ganaba en 11 de las 12 combina
         Barra & Estrategia P+C elegida & MAE S+C & MAE P+C & DM & $p$ & Resultado \\
         \midrule
         Atacama       & (P+R)+TFT precios & 13.55 & 12.72 & $2.18$  & 0.030 & Empate \\
+        Cardones      & (P+R)+TFT precios & 15.32 & 12.46 & $6.34$  & $<0.001$ & P+C* \\
         Charrúa       & (P+R)+TFT precios & 18.43 & 18.49 & $-0.11$ & 0.910 & Empate \\
+        Crucero       & (P+R)+TFT precios & 15.94 & 14.41 & $3.51$  & $<0.001$ & P+C* \\
         Pan de Azúcar & (P+R)+TFT precios & 13.64 & 13.90 & $-0.84$ & 0.404 & Empate \\
         Puerto Montt  & (P+R)+TFT precios & 38.94 & 35.44 & $2.67$  & 0.008 & P+C* \\
+        Quillota      & (P+R)+TFT precios & 17.51 & 18.78 & $-3.40$ & $<0.001$ & S+C* \\
         Tarapacá      & P+R directo       & 12.87 & 13.92 & $-3.11$ & 0.002 & S+C* \\
+        \midrule
+        Promedio      &                   & 18.28 & 17.51 &         &       &        \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{S+C contra la mejor estrategia de P+C (elegida en validación) con los modelos a 24 horas, error absoluto promedio de los 24 pasos de cada pronóstico, conjunto de prueba, contra la serie cruda. P+R: Prophet más el TFT de residuos. DM negativo favorece a S+C. * significativo tras Holm-Bonferroni sobre las cinco barras.}
+    \caption{S+C contra la mejor estrategia de P+C (elegida en validación) con los modelos a 24 horas, error absoluto promedio de los 24 pasos de cada pronóstico, conjunto de prueba, contra la serie cruda. P+R: Prophet más el TFT de residuos. DM negativo favorece a S+C. * significativo tras Holm-Bonferroni sobre las ocho barras.}
     \label{tab:h24_pc_sc}
 \end{table}
 
-A una hora, S+C superaba a P+C en 14 de las 16 combinaciones de barra y arquitectura, y las 10 diferencias que sobreviven a la corrección de Holm-Bonferroni eran todas a su favor (Sección \ref{sec:pc_vs_sc}). A 24 horas la comparación queda dividida: S+C gana en Tarapacá, P+C gana en Puerto Montt, y en las tres barras restantes no hay diferencias significativas tras la corrección (en Atacama, P+C es nominalmente mejor, con $p=0.030$). Puerto Montt vuelve a ser la barra donde P+C rinde mejor, igual que a una hora con DyT, lo que es consistente con su dependencia hidrológica y su menor dependencia del ciclo solar (Sección \ref{sec:pmontt_desempeno}). Prophet por sí solo es la peor estrategia en las cinco barras, y su combinación directa con el TFT de precios no mejora a este último: cuando P+C iguala o supera a S+C, lo hace combinando Prophet con dos modelos TFT mediante Stacking Optimization. La ventaja de S+C a 24 horas, por lo tanto, no es de precisión, sino de simplicidad: alcanza la misma precisión que P+C con un único modelo, en lugar de las cuatro piezas que P+C necesita.
+A una hora, S+C superaba a P+C en 14 de las 16 combinaciones de barra y arquitectura, y las 10 diferencias que sobreviven a la corrección de Holm-Bonferroni eran todas a su favor (Sección \ref{sec:pc_vs_sc}). A 24 horas la comparación queda dividida y se inclina levemente hacia P+C: P+C gana en Puerto Montt, Cardones y Crucero, S+C gana en Tarapacá y Quillota, y en Atacama, Charrúa y Pan de Azúcar no hay diferencias significativas tras la corrección (en Atacama, P+C es nominalmente mejor, con $p=0.030$). En promedio de las ocho barras, P+C obtiene un MAE 4.2\% menor que S+C (17.51 frente a 18.28\,USD/MWh). Puerto Montt vuelve a ser una de las barras donde P+C rinde mejor, igual que a una hora con DyT, lo que es consistente con su dependencia hidrológica (Sección \ref{sec:pmontt_desempeno}); pero Cardones y Crucero, barras del norte con un ciclo solar marcado, muestran que a este horizonte la ventaja de P+C no se limita a la barra hidrológica. Prophet por sí solo es la peor estrategia en las ocho barras, y su combinación directa con el TFT de precios no mejora a este último: cuando P+C iguala o supera a S+C, lo hace combinando Prophet con dos modelos TFT mediante Stacking Optimization. A 24 horas, por lo tanto, S+C no conserva la ventaja en precisión que tenía a una hora: P+C es algo más preciso en promedio, a cambio de necesitar cuatro piezas (Prophet, dos TFT y la combinación) en lugar de un único modelo.
 
-\paragraph{Síntesis.} De las cuatro conclusiones puestas a prueba, dos se sostienen a 24 horas: la heterocedasticidad horaria del error (en cuatro de cinco barras) y la superioridad de los métodos con adaptación \textit{online}, con LW-ACP en primer lugar, que a este horizonte además produce los intervalos más angostos. La ventaja de LayerNorm sobre DyT no se sostiene. La conclusión central se sostiene en forma acotada: a 24 horas S+C ya no supera a P+C en precisión, pero empata con él usando un único modelo, de modo que lo que se mantiene en ambos horizontes es que S+C alcanza al menos la misma precisión que P+C con una estructura mucho más simple.
+\paragraph{Síntesis.} De las cuatro conclusiones puestas a prueba, dos se sostienen a 24 horas: la heterocedasticidad horaria del error (en siete de ocho barras) y la superioridad de los métodos con adaptación \textit{online}, con LW-ACP en primer lugar, que a este horizonte además produce los intervalos más angostos. Las otras dos no se sostienen. La ventaja de LayerNorm sobre DyT desaparece: ambas arquitecturas son equivalentes. Y la conclusión central queda acotada al horizonte de una hora: a 24 horas S+C ya no supera a P+C, que es algo más preciso en promedio (4.2\%) y gana en tres barras contra dos. Lo que S+C conserva en ambos horizontes es una precisión cercana a la de P+C con una estructura mucho más simple, no una ventaja de precisión.
 
 \subsection{Comparación con la literatura: CRUCERO y P.MONTT 2024}
 \label{sec:crucero_leon}

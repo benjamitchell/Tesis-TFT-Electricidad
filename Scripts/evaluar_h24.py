@@ -19,6 +19,7 @@ Uso:
     python Scripts/evaluar_h24.py
     python Scripts/evaluar_h24.py --solo-resto   # solo las carpetas *_h24_resto, y agrega sus
                                                  # filas a los CSV existentes
+    python Scripts/evaluar_h24.py --solo-resto --arq=DyT   # ademas, solo esa arquitectura
 """
 import os
 import sys
@@ -118,6 +119,8 @@ def main():
         if solo_resto and not carpeta_tpl.endswith("_resto"):
             continue
         for arq in arqs:
+            if any(x.startswith("--arq=") for x in sys.argv) and f"--arq={arq}" not in sys.argv:
+                continue
             carpeta = carpeta_tpl.format(arq=arq)
             carpeta_norm = carpeta_norm_tpl.format(arq=arq)
             if not os.path.exists(carpeta):

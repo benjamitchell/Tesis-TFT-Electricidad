@@ -54,11 +54,12 @@ April 2026, about 55,000 hours per busbar, using data from the
 
 All numbers are test-set results taken from the thesis.
 
-**The simpler strategy wins.** One hour ahead, S+C beats P+C in **14 of 16** busbar-architecture
-combinations, 13 of them statistically significant. At 24 hours the two tie (one busbar each, three
-with no significant difference), so there S+C's edge is reaching the same accuracy with one model
-instead of Prophet, two TFTs and a stacking step. The solar position signal is at least as
-informative as Prophet's statistical decomposition.
+**The simpler strategy wins one hour ahead.** At that horizon S+C beats P+C in **14 of 16**
+busbar-architecture combinations, 13 of them statistically significant, so the solar position
+signal is at least as informative as Prophet's statistical decomposition. The advantage does not
+carry over to 24 hours: there P+C wins at three busbars, S+C at two, three show no significant
+difference, and P+C's average error is about 4% lower. At that horizon S+C's appeal is coming close
+to P+C with one model instead of Prophet, two TFTs and a stacking step.
 
 **Forecast horizon.** The main model forecasts the marginal cost **one hour ahead**, using the
 price observed up to the previous hour. That is the same horizon as the closest Chilean precedent,
@@ -66,17 +67,17 @@ and against it the model reduces MAE by **20–34%** on the busbars evaluated by
 
 **Against the system operator's schedule.** The CEN publishes a programmed marginal cost before
 real operation. With one hour of lead time the model has 52–61% lower error, but most of that
-comes from seeing the latest observed price. With a day of lead time (the 24-hour model, trained
-for five busbars) the picture is mixed:
+comes from seeing the latest observed price. With a day of lead time (the 24-hour model) the
+picture is mixed:
 
 | Busbar | MAE (CEN) | MAE, 1 h ahead | MAE, 24 h ahead |
 |---|---:|---:|---:|
 | Pan de Azúcar | 15.09 | 6.93 | 13.64 |
 | Charrúa | 17.01 | 7.98 | 18.41 |
 | Puerto Montt | 32.98 | 13.68 | 38.89 |
-| Crucero | 17.10 | 6.74 | not trained |
-| Cardones | 14.52 | 6.63 | not trained |
-| Quillota | 17.26 | 8.26 | not trained |
+| Crucero | 17.10 | 6.74 | 15.94 |
+| Cardones | 14.52 | 6.63 | 15.32 |
+| Quillota | 17.26 | 8.26 | 17.50 |
 
 <sub>MAE in USD/MWh over the full test set. At 24 hours the point forecast does not beat
 daily persistence at most busbars, while the prediction intervals stay calibrated.</sub>

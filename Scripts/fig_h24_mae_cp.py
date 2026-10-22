@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Genera fig_h24_mae_ancho.pdf: MAE y ancho de Split CP (90%) promedio (5 barras)
+"""Genera fig_h24_mae_ancho.pdf: MAE y ancho de Split CP (90%) promedio (8 barras)
 por paso del horizonte day-ahead, desde Scripts/resultado_h24_errores_cp.csv (ya
 calculado, no requiere reinferencia)."""
 import pandas as pd
