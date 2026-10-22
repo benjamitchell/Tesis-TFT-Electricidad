@@ -47,7 +47,8 @@ from cp_metricas_completas import marco, pinball, winkler, RUTA_EVAL, BARRAS, GA
 RUTA_CRUDA = "Datos/h/2020-2026.csv"
 HORAS_TRANSICION = [7, 8, 19, 20, 21]
 PISOS = [0.5, 1, 2, 5, 10, 15, 20, 30, 50, 100]  # USD/MWh
-METODOS = ["Split CP", "ACI", "LW-ACP", "LW-ACP robusto"]
+METODOS = ["Split CP", "ACI", "LW-ACP", "LW-ACP robusto", "LW-ACP robusto por hora"]
+FIGURA = "Escrito/imagenes/fig_cp_lwacp_robusto_hora.pdf"
 
 
 def escala_horaria(errores_cal, horas_cal, alpha, piso):
@@ -59,9 +60,11 @@ def escala_horaria(errores_cal, horas_cal, alpha, piso):
     return np.maximum(s, piso)
 
 
-def lw_acp(mv, mt, alpha, piso=None):
+def lw_acp(mv, mt, alpha, piso=None, por_hora=False):
     """LW-ACP con la escala horaria indicada; mismo bucle online que
-    Modulos/Conformal_Prediction_Wrapper.lw_acp_online_from_calibration."""
+    Modulos/Conformal_Prediction_Wrapper.lw_acp_online_from_calibration. Con por_hora=True,
+    alpha_t es un vector de 24 niveles, uno por hora del dia, y cada uno se actualiza solo
+    con los aciertos y fallos de su hora."""
     e_cal = np.abs(mv["y_real"].values - mv["y_pred"].values)
     h_cal = mv["fecha"].dt.hour.values
     h_test = mt["fecha"].dt.hour.values
@@ -70,13 +73,14 @@ def lw_acp(mv, mt, alpha, piso=None):
     n_cal = len(scores)
     y, yhat = mt["y_real"].values, mt["y_pred"].values
     lower, upper = np.empty(len(y)), np.empty(len(y))
-    alpha_t = alpha
+    alpha_t = np.full(24, alpha)
     for t in range(len(y)):
-        q_t = np.quantile(scores, min((1 - alpha_t) * (n_cal + 1) / n_cal, 1.0), method="higher")
+        k = h_test[t] if por_hora else 0
+        q_t = np.quantile(scores, min((1 - alpha_t[k]) * (n_cal + 1) / n_cal, 1.0), method="higher")
         lower[t] = max(yhat[t] - q_t * sigma_h[h_test[t]], 0.0)
         upper[t] = yhat[t] + q_t * sigma_h[h_test[t]]
         err_t = 1 - int(lower[t] <= y[t] <= upper[t])
-        alpha_t = np.clip(alpha_t + GAMMA * (alpha - err_t), 0.001, 0.999)
+        alpha_t[k] = np.clip(alpha_t[k] + GAMMA * (alpha - err_t), 0.001, 0.999)
     return {"y_test": y, "lower": lower, "upper": upper}
 
 
@@ -103,7 +107,7 @@ def main():
         serie = crudo.loc[crudo["Barra"] == barra].groupby("Fecha")["Valor"].mean()
         marcos[barra] = (marco(datos, barra, "val", serie), marco(datos, barra, "test", serie))
 
-    filas, filas_piso, filas_hora = [], [], []
+    filas, filas_piso, filas_hora, filas_mes = [], [], [], []
     for alpha in (0.10, 0.05):
         nivel = f"{int(round(100 * (1 - alpha)))}%"
         piso, w_val = elegir_piso(marcos, alpha)
@@ -111,6 +115,7 @@ def main():
         print(f"[{nivel}] piso elegido en validacion: {piso} USD/MWh", flush=True)
         for barra, (mv, mt) in marcos.items():
             horas = mt["fecha"].dt.hour.values
+            meses = mt["fecha"].dt.month.values
             res = {
                 "Split CP": split_cp_from_calibration(mv.y_real.values, mv.y_pred.values,
                                                       mt.y_real.values, mt.y_pred.values, alpha=alpha),
@@ -118,15 +123,21 @@ def main():
                                             mt.y_pred.values, alpha=alpha, gamma=GAMMA),
                 "LW-ACP": lw_acp(mv, mt, alpha),
                 "LW-ACP robusto": lw_acp(mv, mt, alpha, piso),
+                "LW-ACP robusto por hora": lw_acp(mv, mt, alpha, piso, por_hora=True),
             }
             for nombre, r in res.items():
                 y, lo, up = r["y_test"], r["lower"], r["upper"]
                 dentro = (y >= lo) & (y <= up)
                 for h in range(24):
                     filas_hora.append({"Nivel": nivel, "Metodo": nombre, "Hora": h,
-                                       "dentro": int(dentro[horas == h].sum()), "n": int((horas == h).sum())})
+                                       "dentro": int(dentro[horas == h].sum()), "n": int((horas == h).sum()),
+                                       "ancho": float((up - lo)[horas == h].sum())})
+                for m in range(1, 13):
+                    filas_mes.append({"Nivel": nivel, "Metodo": nombre, "Mes": m,
+                                      "dentro": int(dentro[meses == m].sum()), "n": int((meses == m).sum())})
                 filas.append({
-                    "Nivel": nivel, "Barra": barra, "Metodo": nombre, "Piso": piso if nombre == "LW-ACP robusto" else np.nan,
+                    "Nivel": nivel, "Barra": barra, "Metodo": nombre,
+                    "Piso": piso if nombre.startswith("LW-ACP robusto") else np.nan,
                     "Cobertura": dentro.mean(), "Desv": abs(dentro.mean() - (1 - alpha)),
                     "Ancho": np.mean(up - lo), "Winkler": winkler(y, lo, up, alpha),
                     "Pinball": (pinball(y, lo, alpha / 2) + pinball(y, up, 1 - alpha / 2)) / 2,
@@ -139,13 +150,38 @@ def main():
     pd.set_option("display.width", 220)
     # Cobertura por hora agregando las 8 barras, con la misma definicion que
     # Scripts/cp_hora_mes_90.py (desviacion estandar poblacional entre las 24 horas)
-    hh = pd.DataFrame(filas_hora).groupby(["Nivel", "Metodo", "Hora"])[["dentro", "n"]].sum()
+    hh = pd.DataFrame(filas_hora).groupby(["Nivel", "Metodo", "Hora"])[["dentro", "n", "ancho"]].sum()
     hh["cob"] = hh["dentro"] / hh["n"]
-    print("\n=== Cobertura por hora agregando las 8 barras ===")
+    hh["ancho_medio"] = hh["ancho"] / hh["n"]
+    mm = pd.DataFrame(filas_mes).groupby(["Nivel", "Metodo", "Mes"])[["dentro", "n"]].sum()
+    mm["cob"] = mm["dentro"] / mm["n"]
+    print("\n=== Cobertura por hora y por mes agregando las 8 barras ===")
     for (nivel, metodo), g in hh.groupby(level=[0, 1]):
         g = g.droplevel([0, 1])
         trans = g.loc[HORAS_TRANSICION, "dentro"].sum() / g.loc[HORAS_TRANSICION, "n"].sum()
-        print(f"{nivel} {metodo:15s} SD_hora={np.std(g['cob'].values):.4f}  cob_transicion={trans:.4f}")
+        cm = mm.loc[(nivel, metodo), "cob"].values
+        print(f"{nivel} {metodo:24s} SD_hora={np.std(g['cob'].values):.4f}  rango_hora=[{g['cob'].min():.3f}, "
+              f"{g['cob'].max():.3f}]  cob_transicion={trans:.4f}  SD_mes={np.std(cm):.4f}")
+
+    # Figura: cobertura y ancho por hora al 90%, versiones de LW-ACP
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    plt.rcParams.update({"font.size": 10, "axes.grid": True, "grid.alpha": 0.3})
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+    for metodo, color in (("LW-ACP", "tab:blue"), ("LW-ACP robusto", "tab:green"),
+                          ("LW-ACP robusto por hora", "tab:purple")):
+        g = hh.loc[("90%", metodo)]
+        ax1.plot(range(24), g["cob"].values, marker="o", markersize=3, color=color, label=metodo)
+        ax2.plot(range(24), g["ancho_medio"].values, marker="o", markersize=3, color=color, label=metodo)
+    ax1.axhline(0.90, color="black", linestyle=":", linewidth=1)
+    ax1.set_xlabel("Hora del día"); ax1.set_ylabel("Cobertura empírica"); ax1.set_title("Cobertura por hora")
+    ax2.set_xlabel("Hora del día"); ax2.set_ylabel("Ancho medio del intervalo (USD/MWh)"); ax2.set_title("Ancho por hora")
+    ax1.legend(fontsize=8); ax1.set_xticks(range(0, 24, 3)); ax2.set_xticks(range(0, 24, 3))
+    fig.tight_layout()
+    fig.savefig(FIGURA, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Guardado: {FIGURA}")
     for nivel in ("90%", "95%"):
         d = df[df.Nivel == nivel]
         print(f"\n=== {nivel}: promedio de las 8 barras ===")

@@ -966,33 +966,46 @@ El resto del método no cambia: los mismos \textit{scores} normalizados \eqref{e
 
 \begin{table}[htbp]
     \centering
-    \small
-    \setlength{\tabcolsep}{4pt}
-    \begin{tabular}{llrrrrrrr}
+    \footnotesize
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{llrrrrrrrr}
         \toprule
-        Nivel & Método & Cob. & Desv. & Ancho & Winkler & Pinball & SD hora & Trans. \\
+        Nivel & Método & Cob. & Desv. & Ancho & Winkler & Pinball & SD hora & Trans. & SD mes \\
         \midrule
-        \multirow{4}{*}{90\%}
-            & Split CP          & 0.911 & 0.0112 & 40.90 & 76.65 & 1.916 & 0.043 & 0.861 \\
-            & ACP (ACI)         & 0.898 & \textbf{0.0023} & 42.21 & 72.31 & 1.808 & 0.071 & 0.800 \\
-            & LW-ACP            & 0.898 & 0.0024 & 41.98 & 71.87 & 1.797 & 0.071 & 0.799 \\
-            & LW-ACP robusto    & 0.897 & 0.0026 & \textbf{40.40} & \textbf{69.15} & \textbf{1.729} & \textbf{0.039} & 0.856 \\
+        \multirow{5}{*}{90\%}
+            & Split CP             & 0.911 & 0.0112 & 40.90 & 76.65 & 1.916 & 0.043 & 0.861 & 0.047 \\
+            & ACP (ACI)            & 0.898 & \textbf{0.0023} & 42.21 & 72.31 & 1.808 & 0.071 & 0.800 & 0.004 \\
+            & LW-ACP               & 0.898 & 0.0024 & 41.98 & 71.87 & 1.797 & 0.071 & 0.799 & 0.004 \\
+            & LW-ACP robusto       & 0.897 & 0.0026 & \textbf{40.40} & \textbf{69.15} & \textbf{1.729} & 0.039 & 0.856 & \textbf{0.003} \\
+            & \quad con $\alpha_t$ por hora & 0.908 & 0.0079 & 40.42 & 71.37 & 1.784 & \textbf{0.009} & \textbf{0.902} & 0.019 \\
         \midrule
-        \multirow{4}{*}{95\%}
-            & Split CP          & 0.959 & 0.0089 & 63.80 & 100.78 & 1.260 & \textbf{0.018} & 0.943 \\
-            & ACP (ACI)         & 0.946 & \textbf{0.0038} & 58.70 & 90.64 & 1.133 & 0.039 & 0.902 \\
-            & LW-ACP            & 0.946 & \textbf{0.0038} & 58.25 & 89.89 & 1.124 & 0.037 & 0.898 \\
-            & LW-ACP robusto    & 0.946 & 0.0039 & \textbf{56.82} & \textbf{88.82} & \textbf{1.110} & 0.027 & 0.919 \\
+        \multirow{5}{*}{95\%}
+            & Split CP             & 0.959 & 0.0089 & 63.80 & 100.78 & 1.260 & 0.018 & 0.943 & 0.028 \\
+            & ACP (ACI)            & 0.946 & \textbf{0.0038} & 58.70 & 90.64 & 1.133 & 0.039 & 0.902 & \textbf{0.005} \\
+            & LW-ACP               & 0.946 & \textbf{0.0038} & 58.25 & 89.89 & 1.124 & 0.037 & 0.898 & \textbf{0.005} \\
+            & LW-ACP robusto       & 0.946 & 0.0039 & \textbf{56.82} & \textbf{88.82} & \textbf{1.110} & 0.027 & 0.919 & \textbf{0.005} \\
+            & \quad con $\alpha_t$ por hora & 0.954 & 0.0049 & 57.80 & 95.04 & 1.188 & \textbf{0.007} & \textbf{0.949} & 0.016 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{LW-ACP con la escala robusta \eqref{eq:sigma_robusto} frente a la versión principal y a los métodos de referencia, promedio de las ocho barras, conjunto de prueba. Desv.: distancia entre la cobertura y el nivel nominal. SD hora: desviación estándar de la cobertura entre las 24 horas del día, agregando las ocho barras (Sección \ref{sec:cobertura_condicional}); Trans.: cobertura en las horas de transición solar (7, 8, 19, 20 y 21 horas). Ancho, Winkler y pinball en USD/MWh.}
+    \caption{LW-ACP con la escala robusta \eqref{eq:sigma_robusto} frente a la versión principal y a los métodos de referencia, promedio de las ocho barras, conjunto de prueba. Desv.: distancia entre la cobertura y el nivel nominal. SD hora: desviación estándar de la cobertura entre las 24 horas del día, agregando las ocho barras (Sección \ref{sec:cobertura_condicional}); Trans.: cobertura en las horas de transición solar (7, 8, 19, 20 y 21 horas); SD mes: desviación estándar de la cobertura entre los 12 meses, agregando las ocho barras. ``Con $\alpha_t$ por hora'': la variante robusta con un nivel $\alpha_t$ independiente para cada hora del día. Ancho, Winkler y pinball en USD/MWh.}
     \label{tab:lwacp_robusto}
 \end{table}
 
 Al 90\%, la variante mejora el Winkler en las ocho barras (69.15 frente a 71.87 en promedio, un 3.8\% menos) y es, además, el método más angosto de los evaluados (40.40\,USD/MWh, por debajo de los 40.69 de LW Split CP), con una calibración (0.0026) muy cercana a la de ACP. Es decir, a este nivel reúne casi todas las ventajas que en la Sección \ref{sec:lwacp_comparativa} estaban repartidas entre métodos distintos. La mejora más clara es la cobertura por hora: la desviación entre horas cae de 0.071 a 0.039, por debajo incluso de la de Split CP, y la cobertura en las transiciones solares sube de 0.799 a 0.856, mientras el ancho al mediodía (10 a 16 horas) baja de 32.9 a 28.0\,USD/MWh. La estabilidad mes a mes de LW-ACP se conserva (desviación de la cobertura mensual de 0.0034, frente a 0.0039 de la versión principal), porque la adaptación \textit{online} de $\alpha_t$ es la misma. Al 95\% la ganancia es menor (Winkler 1.2\% más bajo, mejor en cinco de las ocho barras), con la misma dirección: intervalos más angostos y cobertura más pareja entre horas.
 
 Dos matices acotan este resultado. Primero, el piso que se elige en validación resulta del orden del cuantil global del error de calibración (15 y 30\,USD/MWh, según el nivel), de modo que el intervalo del mediodía sigue limitado para angostarse: la mejora proviene sobre todo de escalar las horas difíciles con un cuantil, que refleja la cola que el intervalo debe cubrir, en vez de con una desviación estándar inflada por unos pocos errores. Segundo, la garantía de cobertura es la misma de la versión principal y no mayor: la escala de cada hora se estima con los mismos datos de calibración, igual que $\hat\sigma_h$, y el respaldo de largo plazo lo sigue dando la adaptación \textit{online} de $\alpha_t$. Los resultados del resto de este capítulo se mantienen con la versión principal de LW-ACP; la variante robusta se reporta como una mejora del método identificada a partir del diagnóstico de colas pesadas. A 24 horas, la variante conserva su ventaja al 90\% (Winkler 1.8\% menor, en cada paso del horizonte) y empata al 95\% (Sección \ref{sec:h24_conclusiones}).
+
+El diagnóstico sugiere un paso adicional. La adaptación \textit{online} de ACI garantiza que la cobertura promedio de largo plazo se acerque al nivel nominal sobre la secuencia en que se actualiza $\alpha_t$ \cite{GibbsCP}; con un único $\alpha_t$, esa secuencia es el día completo, no cada hora. Si en cambio se mantiene un $\alpha_t$ por hora del día, cada uno actualizado solo con los aciertos y fallos de su hora, la garantía pasa a valer para cada hora por separado. La última fila de cada nivel en la Tabla \ref{tab:lwacp_robusto} aplica esta modificación sobre la variante robusta, y la Figura \ref{fig:cp_lwacp_robusto_hora} compara la cobertura y el ancho por hora de las tres versiones al 90\%.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{imagenes/fig_cp_lwacp_robusto_hora.pdf}
+    \caption{Cobertura empírica (izquierda) y ancho medio del intervalo (derecha) por hora del día de LW-ACP, su variante con escala robusta y esta última con un $\alpha_t$ por hora, promediado sobre las ocho barras, al 90\% de cobertura nominal.}
+    \label{fig:cp_lwacp_robusto_hora}
+\end{figure}
+
+La variante robusta redistribuye el ancho entre horas: lo reduce en la madrugada y al mediodía, donde la versión principal sobrecubría, y lo aumenta en las transiciones solares, donde subcubría. Con un $\alpha_t$ por hora, la cobertura queda prácticamente en el nivel nominal en todas las horas: entre 0.897 y 0.923 al 90\% (frente a 0.737--0.971 de la versión principal), con una desviación entre horas de 0.009 y una cobertura de 0.902 en las transiciones solares. Esa uniformidad tiene dos costos. El primero es la estabilidad mes a mes: cada $\alpha_t$ horario se corrige una sola vez al día y reacciona más lento a la deriva estacional, y la desviación de la cobertura mensual sube de 0.003 a 0.019. El segundo es la eficiencia: el Winkler vuelve a 71.37 al 90\%, en el nivel de la versión principal, y empeora al 95\%, en parte porque el piso de la escala impide angostar las horas del mediodía, que quedan algo sobrecubiertas (0.92) aunque su $\alpha_t$ aumente. Las tres propiedades buscadas, cobertura pareja entre horas, estabilidad mes a mes e intervalos angostos, entran así en tensión: la versión principal favorece la segunda, la variante robusta logra la segunda y la tercera con una mejora parcial de la primera, y el $\alpha_t$ por hora logra la primera a costa de las otras dos.
 
 \subsection{Selección del mejor método de CP}
 
