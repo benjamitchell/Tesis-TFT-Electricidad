@@ -424,6 +424,8 @@ La \textit{Locally-Weighted Adaptive Conformal Prediction} (LW-ACP), descrita en
 
 Tras observar $y_t$, se actualiza $\alpha_{t+1} = \alpha_t + \gamma\,(\alpha - \mathbf{1}_{\{y_t \notin C_t\}})$, con $\alpha_{t+1}$ acotado al intervalo $[0.001,\, 0.999]$ para evitar niveles degenerados. Se utiliza $\gamma = 0.05$, fijado de antemano e igual al usado en ACI (Sección \ref{sec:aci_metodologia}), en vez de compararse varios valores de $\gamma$ y reportar el de mejor desempeño en el conjunto de prueba. Al igual que ACI, LW-ACP no reajusta ningún modelo de predicción en cada paso: el modelo puntual $\hat{y}_t$ es la predicción cruda de S+C-LN, ya calculada y fija durante todo el período de prueba, y el conjunto de calibración tampoco se actualiza. El único componente dinámico es $\alpha_t$; la diferencia entre ambos métodos es exclusivamente la normalización por hora del \textit{score} de no conformidad \eqref{eq:lw_score_metodologia}, presente en LW-ACP y ausente en ACI.
 
+Como variante, se evalúa además una versión de LW-ACP que reemplaza $\hat\sigma_h$ por el cuantil $1-\alpha$ del error absoluto de calibración de cada hora, acotado inferiormente por un piso absoluto elegido solo con el conjunto de validación (calibrando con su primera mitad y evaluando el Winkler en la segunda), sin modificar el resto del método. Su motivación y resultados se presentan en la Sección \ref{sec:lwacp_robusto}.
+
 \subsection{CQR (Regresión Cuantílica Conformada)}
 
 CQR (Sección 2.6.2) se emplea en este trabajo como método de comparación externo a la familia de Conformal Prediction, evaluado, al igual que las cinco variantes anteriores, sobre las ocho barras de S+C-LN, usando en cada caso la predicción puntual de S+C-LN como $\hat{y}_t$.

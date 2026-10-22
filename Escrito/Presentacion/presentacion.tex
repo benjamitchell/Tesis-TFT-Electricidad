@@ -307,6 +307,29 @@
     \end{itemize}
 \end{frame}
 
+\begin{frame}{LW-ACP robusto a colas pesadas}
+    \footnotesize
+    \begin{itemize}
+        \item LW-ACP escala cada hora con la \textbf{desviación estándar} de su error, con un piso igual a la global. Las colas pesadas la inflan: en Atacama a las 15 h, P90 del error 0.05 USD/MWh, desviación 16.3.
+        \item Resultado: sobrecubre al mediodía y subcubre en las transiciones solares.
+        \item \textbf{Variante}: escalar cada hora por su \textbf{cuantil} $1-\alpha$ del error, con un piso elegido solo en validación. Se acerca a calibrar cada hora por separado (Mondrian CP).
+    \end{itemize}
+    \begin{table}
+        \centering
+        \begin{tabular}{lrrrr}
+            \toprule
+            90\% nominal & \textbf{Ancho} & \textbf{Winkler} & \textbf{SD hora} & \textbf{Transición} \\
+            \midrule
+            LW-ACP          & 41.98 & 71.87 & 0.071 & 0.799 \\
+            LW-ACP robusto  & \textbf{40.40} & \textbf{69.15} & \textbf{0.039} & \textbf{0.856} \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+    \begin{itemize}
+        \item Mejor Winkler en las 8 barras y el más angosto de todos los métodos; misma estabilidad mes a mes. Al 95\% mejora menos (Winkler 88.82 vs.\ 89.89).
+    \end{itemize}
+\end{frame}
+
 \begin{frame}{Comparación contra el CEN}
     \begin{table}
         \centering
