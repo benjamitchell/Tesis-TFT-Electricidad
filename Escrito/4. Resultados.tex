@@ -452,47 +452,47 @@ La Tabla \ref{tab:tft_sc_dyt_resultados} presenta los resultados de la rama S+C 
         \midrule
         \multirow{3}{*}{Atacama}
             & Train & 8.12 & 16.28 & 0.925 \\
-            & Val   & 7.07 & 14.91 & 0.899 \\
-            & Test  & 6.36 & 12.95 & 0.896 \\
+            & Val   & 8.51 & 27.96 & 0.739 \\
+            & Test  & 6.68 & 16.48 & 0.844 \\
         \midrule
         \multirow{3}{*}{Cardones}
             & Train & 7.73 & 15.47 & 0.933 \\
-            & Val   & 7.11 & 14.98 & 0.890 \\
-            & Test  & 6.55 & 13.47 & 0.888 \\
+            & Val   & 7.94 & 23.50 & 0.780 \\
+            & Test  & 6.78 & 15.81 & 0.854 \\
         \midrule
         \multirow{3}{*}{Charrúa}
             & Train & 7.88 & 15.50 & 0.933 \\
-            & Val   & 8.04 & 15.60 & 0.857 \\
-            & Test  & 8.06 & 14.91 & 0.880 \\
+            & Val   & 8.70 & 23.41 & 0.737 \\
+            & Test  & 8.28 & 15.56 & 0.877 \\
         \midrule
         \multirow{3}{*}{Crucero}
             & Train & 8.10 & 16.25 & 0.930 \\
-            & Val   & 6.99 & 15.04 & 0.900 \\
-            & Test  & 6.57 & 13.32 & 0.892 \\
+            & Val   & 8.36 & 27.59 & 0.750 \\
+            & Test  & 6.87 & 16.76 & 0.841 \\
         \midrule
         \multirow{3}{*}{Pan de Azúcar}
             & Train & 7.54 & 15.08 & 0.937 \\
-            & Val   & 7.46 & 15.30 & 0.881 \\
-            & Test  & 6.70 & 13.83 & 0.885 \\
+            & Val   & 8.14 & 22.87 & 0.779 \\
+            & Test  & 6.83 & 14.95 & 0.870 \\
         \midrule
         \multirow{3}{*}{Puerto Montt}
             & Train & 10.66 & 24.13 & 0.943 \\
-            & Val   & 15.09 & 29.93 & 0.812 \\
+            & Val   & 15.58 & 32.58 & 0.791 \\
             & Test  & 14.01 & 26.04 & 0.820 \\
         \midrule
         \multirow{3}{*}{Quillota}
             & Train & 7.61 & 14.82 & 0.938 \\
-            & Val   & 8.11 & 15.60 & 0.862 \\
-            & Test  & 8.29 & 15.05 & 0.880 \\
+            & Val   & 8.76 & 23.30 & 0.747 \\
+            & Test  & 8.58 & 15.96 & 0.874 \\
         \midrule
         \multirow{3}{*}{Tarapacá}
             & Train & 8.16 & 16.35 & 0.934 \\
-            & Val   & 7.44 & 16.15 & 0.900 \\
-            & Test  & 6.62 & 13.76 & 0.900 \\
+            & Val   & 9.01 & 30.43 & 0.730 \\
+            & Test  & 6.95 & 17.61 & 0.848 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Resultados de evaluación del $\text{TFT}_\text{DyT}$, rama S+C, por barra y conjunto. MAE y RMSE en USD/MWh.}
+    \caption{Resultados de evaluación del $\text{TFT}_\text{DyT}$, rama S+C, por barra y conjunto, evaluados contra la serie cruda sin recorte de outliers (validación y prueba; el entrenamiento usa la serie con outliers recortados, Sección \ref{sec:limpieza_outliers}). MAE y RMSE en USD/MWh.}
     \label{tab:tft_sc_dyt_resultados}
 \end{table}
 

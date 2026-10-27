@@ -483,7 +483,7 @@ Como seguimiento acotado a este resultado, se evalúa además si aumentar la cap
 
 Para explicar las diferencias entre horizontes se usan la importancia de variables de la VSN (Sección 2.3.4), comparada entre una y 24 horas según se describe en la Sección \ref{sec:h24_dayahead_meta}, y una ablación de las variables exógenas.
 
-Para aislar cuánto aporta la información exógena (posición solar y clima) por sobre la autocorrelación de la propia serie, se entrena una variante "solo precios" del TFT (sin ningún \texttt{known\_real} ni variable climática, únicamente la serie de costo marginal estandarizada como \texttt{unknown\_real}) para cuatro barras (Atacama, Crucero, Puerto Montt, Tarapaca), usando el mismo período histórico y las mismas fechas de corte entrenamiento/validación/prueba que el pipeline principal (Tabla \ref{tab:division}), de modo que la única diferencia respecto de S+C sea la presencia o ausencia de las features exógenas.
+Para aislar cuánto aporta la información exógena (posición solar y clima) por sobre la autocorrelación de la propia serie, se entrena una variante ``solo precios'' del TFT (sin ningún \texttt{known\_real} ni variable climática, únicamente la serie de costo marginal estandarizada como \texttt{unknown\_real}) para cuatro barras (Atacama, Crucero, Puerto Montt, Tarapacá), usando el mismo período histórico y las mismas fechas de corte entrenamiento/validación/prueba que el pipeline principal (Tabla \ref{tab:division}), de modo que la única diferencia respecto de S+C sea la presencia o ausencia de las features exógenas.
 
 \subsection{Sensibilidad a una función de pérdida asimétrica}
 \label{sec:perdida_asimetrica_meta}

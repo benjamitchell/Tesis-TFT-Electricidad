@@ -42,7 +42,7 @@ Un proceso no estacionario que puede volverse estacionario mediante diferenciaci
         \caption{Serie No Estacionaria($\mu$ y $\sigma$ variables)}
         \label{fig:no_estacionaria}
     \end{subfigure}
-    \caption{Ejemplificación de una serie estacionaria y una no estacionarias.}
+    \caption{Ejemplificación de una serie estacionaria y otra no estacionaria.}
     \label{fig:comparacion_series}
 \end{figure}
 
@@ -67,7 +67,7 @@ En el contexto de series temporales, una componente estacional $S_t^{(j)}$ de pe
 
 donde los coeficientes $\{a_k^{(j)}, b_k^{(j)}\}$ son parámetros estimables. Esta representación viene de la teoría clásica de señales, donde cualquier función periódica de periodo $m$ que sea integrable puede aproximarse mediante sumas de senos y cosenos de frecuencias múltiplos de $\frac{1}{m}$.
 
-Esta representación tiene tres ventajas que la hacen adecuada para su estimación mediante optimización:es diferenciable, lo que permite la optimización por descenso de gradiente, es flexible, pues puede aproximar estacionalidades de cualquier forma y no solo senoidales, y parsimoniosa, lo que permite capturar patrones complejos con pocos coeficientes. El orden $K_j$ controla la suavidad de la estacionalidad estimada: valores pequeños de $K_j$ producen componentes suaves, mientras que valores grandes permiten capturar formas más irregulares.
+Esta representación tiene tres ventajas que la hacen adecuada para su estimación mediante optimización: es diferenciable, lo que permite la optimización por descenso de gradiente, es flexible, pues puede aproximar estacionalidades de cualquier forma y no solo senoidales, y parsimoniosa, lo que permite capturar patrones complejos con pocos coeficientes. El orden $K_j$ controla la suavidad de la estacionalidad estimada: valores pequeños de $K_j$ producen componentes suaves, mientras que valores grandes permiten capturar formas más irregulares.
 
 \begin{figure}[htbp]
     \centering
@@ -90,7 +90,7 @@ Otras transformaciones comunes en la literatura incluyen la diferenciación de o
 
 \subsection{Horizonte de predicción y estrategia de forecasting multihorizonte}
 
-El horizonte de predicción $h$ determina cuántos pasos adelante se desea predecir. En mercados eléctricos, el horizonte más relevante operacionalmente es el \textit{day-ahead}, es decir, $h=24$ horas, que corresponde al ciclo de programación del despacho en el SEN. En este trabajo se adopta un horizonte de $h=1$ hora, lo que corresponde a la predicción del costo marginal de la hora inmediata siguiente dado una ventana de predicción de longitud $L$. Formalmente, el problema de predicción se define como estimar:
+El horizonte de predicción $h$ determina cuántos pasos adelante se desea predecir. En mercados eléctricos, el horizonte más relevante operacionalmente es el \textit{day-ahead}, es decir, $h=24$ horas, que corresponde al ciclo de programación del despacho en el SEN. En este trabajo se adopta un horizonte de $h=1$ hora, lo que corresponde a la predicción del costo marginal de la hora inmediata siguiente dada una ventana de predicción de longitud $L$. Formalmente, el problema de predicción se define como estimar:
 
 \begin{equation}
     \hat{y}_{t+1} = f\left(y_{t-L+1:t},\, \mathbf{x}_{t-L+1:t+1}\right)
@@ -108,7 +108,7 @@ En este trabajo el problema de forecasting no se limita a una única serie, sino
 
 Esta correlación entre barras puede cuantificarse formalmente mediante una función de correlación cruzada, lo que en principio permitiría un enfoque de \textit{forecasting con dependencias espaciales}, donde la predicción para la barra $b$ incorpora información de las barras vecinas. Sin embargo, este enfoque requiere modelar explícitamente la topología de la red eléctrica y puede introducir complejidad adicional cuando las congestiones generan desacoplamientos no estacionarios entre barras.
 
-La estrategia adoptada en este trabajo consiste en entrenar un modelo independiente por barra, lo cual simplifica el problema a costa de ignorar las dependencias cruzadas. Esta decisión se justifica por dos razones: las congestiones de transmisión en el SEN introducen heterogeneidad estructural entre barras que dificultaría el entrenamiento conjunto, y los modelos independientes son más interpretables y permiten identificar con claridad el comportamiento especifico de cada barra. La incorporación de dependencias espaciales mediante correlación cruzada queda propuesta como una extensión natural de este trabajo para investigación futura.
+La estrategia adoptada en este trabajo consiste en entrenar un modelo independiente por barra, lo cual simplifica el problema a costa de ignorar las dependencias cruzadas. Esta decisión se justifica por dos razones: las congestiones de transmisión en el SEN introducen heterogeneidad estructural entre barras que dificultaría el entrenamiento conjunto, y los modelos independientes son más interpretables y permiten identificar con claridad el comportamiento específico de cada barra. La incorporación de dependencias espaciales mediante correlación cruzada queda propuesta como una extensión natural de este trabajo para investigación futura.
 
 \section{Prophet}
 
@@ -124,7 +124,7 @@ donde $T(t)$ es la componente de tendencia, $S(t)$ es la componente de estaciona
 
 \subsection{Componente de tendencia}
 
-Prophet ofrece dos especificaciones para la componente de tendencia $T(t)$. La primera es un \textit{modelo de crecimiento logístico}, adecuado para trabajar con series que tienen un capacidad máxima o saturación:
+Prophet ofrece dos especificaciones para la componente de tendencia $T(t)$. La primera es un \textit{modelo de crecimiento logístico}, adecuado para trabajar con series que tienen una capacidad máxima o saturación:
 
 \begin{equation}
 T(t) = \frac{C}{1 + e^{-k(t - m)}}
@@ -138,7 +138,7 @@ T(t) = (k + \mathbf{a}(t)^\top \boldsymbol{\delta})t + (m + \mathbf{a}(t)^\top \
 
 donde $k$ es la tasa de crecimiento global, $\boldsymbol{\delta} \in \mathbb{R}^S$ es el vector de cambios de pendiente en cada uno de los $S$ puntos de quiebre, $\mathbf{a}(t) \in \{0,1\}^S$ es un vector indicador que activa los cambios acumulados hasta el tiempo $t$, y $\boldsymbol{\gamma}$ ajusta el intercepto para garantizar continuidad en los puntos de quiebre. Los puntos de quiebre pueden especificarse manualmente o detectarse automáticamente por el modelo, lo que le permite adaptarse a cambios estructurales graduales como los que experimenta el costo marginal del SEN ante la incorporación continua de capacidad renovable.
 
-La detección automática de los puntos de quiebre se realiza colocando una distribución a priori dispersa sobre los ajustes de pendiente $\boldsymbol{\delta} \sim \text{Laplace}(0, \tau)$, donde $\tau > 0$ controla la flexibilidad del modelo. Un prior disperso permite que Prophet proponga un gran número de puntos de quiebre candidatos, típicamente uno por mes en una historia de varios años, pero penaliza aquellos ajustes que no son necesarios para explicar los datos. Cuando $\tau \to 0$, el modelo reduce a una tendencia lineal o logística simple sin quiebres. Este mecanismo de regularización es especialmente relevante para las series de costos marginales del SEN, donde los cambios estructurales son graduales y difíciles de datar con precisión \cite{Prophet}.
+La detección automática de los puntos de quiebre se realiza colocando una distribución a priori dispersa sobre los ajustes de pendiente $\boldsymbol{\delta} \sim \text{Laplace}(0, \tau)$, donde $\tau > 0$ controla la flexibilidad del modelo. Un prior disperso permite que Prophet proponga un gran número de puntos de quiebre candidatos, típicamente uno por mes en una historia de varios años, pero penaliza aquellos ajustes que no son necesarios para explicar los datos. Cuando $\tau \to 0$, el modelo se reduce a una tendencia lineal o logística simple sin quiebres. Este mecanismo de regularización es especialmente relevante para las series de costos marginales del SEN, donde los cambios estructurales son graduales y difíciles de datar con precisión \cite{Prophet}.
 
 \subsection{Componente de estacionalidad}
 
