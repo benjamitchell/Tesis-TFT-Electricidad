@@ -8,10 +8,13 @@ Corre localmente una vez que los 30 checkpoints de train_5seeds.sh ya estan
 sincronizados desde el cluster. Reusa el patron de inferencia ya validado en
 Modulos/TFT_Model.py (cargar_modelo_entrenado) + Modulos/Evaluacion_TFT.py, y
 evalua contra la serie cruda (Datos/h/2020-2026.csv), igual que el resto del
-capitulo de Resultados.
+capitulo de Resultados. La diferencia LN vs DyT de cada barra se prueba con un
+test t de Welch sobre los 5 MAE por arquitectura, con correccion de Holm sobre
+las tres barras.
 
 Uso:
-    python Scripts/analizar_5seeds.py
+    python Scripts/analizar_5seeds.py           # inferencia completa
+    python Scripts/analizar_5seeds.py --csv     # solo el test, desde resultado_5seeds.csv
 """
 import os
 import sys
@@ -22,12 +25,14 @@ warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
+from scipy.stats import ttest_ind
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from Modulos.TFT_Model import cargar_modelo_entrenado
 from Modulos.Evaluacion_TFT import extraer_todas_predicciones_modelo, recalcular_metricas_serie_cruda
 from Modulos.Comparativa import diebold_mariano
+from dm_sensibilidad_rezagos import holm
 
 BARRAS = ["ATACAMA", "CHARRUA", "P.MONTT"]
 VARIANTES = ["LN", "DyT"]
@@ -40,7 +45,29 @@ EXPERIMENTO_PRECIOS = {"LN": "Multi-TFT_Precios", "DyT": "Precios"}
 
 
 
+def comparar_welch(df):
+    """Test t de Welch LN vs DyT por barra sobre los MAE de las semillas, con Holm sobre las barras."""
+    filas = []
+    for barra in BARRAS:
+        ln = df[(df.Barra == barra) & (df.Variante == "LN")]["MAE"]
+        dyt = df[(df.Barra == barra) & (df.Variante == "DyT")]["MAE"]
+        if ln.empty or dyt.empty:
+            continue
+        t = ttest_ind(ln, dyt, equal_var=False)
+        filas.append({"Barra": barra, "dif_LN_DyT": ln.mean() - dyt.mean(), "t": t.statistic,
+                      "gl": t.df, "p": t.pvalue})
+    res = pd.DataFrame(filas)
+    res["holm"] = holm(res["p"].values)
+    print("\n=== Test t de Welch LN vs DyT (Holm sobre las barras) ===")
+    print(res.round(4).to_string(index=False))
+    return res
+
+
 def main():
+    if "--csv" in sys.argv:
+        comparar_welch(pd.read_csv("Scripts/resultado_5seeds.csv"))
+        return
+
     filas = []
     predicciones_test = {}  # (barra, variante, seed) -> (fechas, y_pred)
 
@@ -89,6 +116,8 @@ def main():
         dyt_lo, dyt_hi = dyt["mean"].iloc[0] - dyt["std"].iloc[0], dyt["mean"].iloc[0] + dyt["std"].iloc[0]
         solapan = (ln_lo <= dyt_hi) and (dyt_lo <= ln_hi)
         print(f"  {barra:10} LN=[{ln_lo:.2f},{ln_hi:.2f}]  DyT=[{dyt_lo:.2f},{dyt_hi:.2f}]  -> {'SOLAPAN (equivalentes)' if solapan else 'NO solapan'}")
+
+    comparar_welch(df)
 
     df.to_csv("Scripts/resultado_5seeds.csv", index=False)
     print("\nGuardado: Scripts/resultado_5seeds.csv")
