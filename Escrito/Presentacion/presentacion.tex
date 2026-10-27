@@ -190,7 +190,7 @@
     \end{table}
     \vspace{1em}
     \begin{itemize}
-        \item S+C, la estrategia más simple, supera a P+C en 14 de 16 combinaciones (13 estadísticamente significativas, test de Diebold-Mariano con varianza Newey-West).
+        \item S+C, la estrategia más simple, supera a P+C en 14 de 16 combinaciones (13 de ellas estadísticamente significativas, test de Diebold-Mariano con varianza Newey-West).
         \item El análisis de interpretabilidad del TFT confirma que la posición solar domina el decoder en 6 de las 8 barras: el modelo efectivamente aprende a usar esa señal.
         \item Conclusión: la señal física de posición solar es al menos tan informativa como la descomposición estadística de Prophet, con menor complejidad de pipeline.
     \end{itemize}
@@ -417,7 +417,7 @@
             \addlinespace
             LayerNorm supera a DyT & Diebold-Mariano: LN gana en 1 barra, 7 empates & No: equivalentes \\
             \addlinespace
-            S+C supera a P+C & P+C gana en 3 barras, S+C en 2, 3 empates; P+C 4\% menos MAE & No; S+C más simple \\
+            S+C supera a P+C & P+C gana en 4 barras, S+C en 2, 2 empates; P+C 4.5\% menos MAE & No; S+C más simple \\
             \bottomrule
         \end{tabular}
     \end{table}
@@ -470,7 +470,6 @@
 \begin{frame}{Extensiones exploradas}
     \begin{itemize}
         \item \textbf{Piloto sin recorte de outliers}: a $h=1$, en las ocho barras, no perjudica el MAE general y reduce los errores más grandes (error máximo menor en las 8 barras, MAE en el percentil 99 menor en 7); significativo individualmente solo en 2 barras. Resultado mixto a $h=24$ (4 barras).
-        \item \textbf{Granularidad temporal}: mayor resolución (15 min) mejora la capacidad predictiva de forma consistente, controlando por período histórico.
         \item \textbf{Sensibilidad a pérdida asimétrica}: la ventaja de S+C-LN se sostiene en 7 de 8 barras independientemente de qué error sea más costoso.
     \end{itemize}
 \end{frame}
@@ -480,7 +479,7 @@
 
 \begin{frame}{Conclusiones principales}
     \begin{enumerate}
-        \item \textbf{La estrategia más simple es la más precisa a una hora}: S+C supera a P+C, con la posición solar dominando el decoder del TFT; a 24 horas P+C es algo más preciso (4\%), y S+C queda cerca con un solo modelo.
+        \item \textbf{La estrategia más simple es la más precisa a una hora}: S+C supera a P+C, con la posición solar dominando el decoder del TFT; a 24 horas P+C es algo más preciso (4.5\%), y S+C queda cerca con un solo modelo.
         \item \textbf{LW-ACP} combina ponderación horaria y adaptación \textit{online}, logrando el mejor Winkler y pinball al 90\% con cobertura calibrada, y los intervalos más angostos al 95\%.
         \item Los errores más extremos siguen un patrón mecanístico común (desfase de fase de $\sim$1h), no ruido aleatorio disperso.
         \item A una hora supera a la literatura reciente de ML clásico al mismo horizonte; a 24 horas la calibración de los intervalos se mantiene, pero la predicción puntual no supera a la persistencia.
@@ -506,7 +505,7 @@
         \item Extender la comparación contra el CEN a Atacama y Tarapacá.
         \item \textit{Walk-forward validation} sobre múltiples ventanas rodantes.
         \item Investigar directamente el mecanismo del desfase de fase (pérdida que penalice error de temporización).
-        \item Extender el estudio de granularidad a las ocho barras y el piloto de outliers a las ocho barras a $h=24$.
+        \item Extender el piloto de outliers a las ocho barras a $h=24$.
         \item LW-ACP con adaptación \textit{online} indexada por hora del día.
     \end{itemize}
 \end{frame}
