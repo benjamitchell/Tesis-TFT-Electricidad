@@ -108,13 +108,14 @@ def main():
                 filas.append({"Barra": barra, "h": h, "Metodo": metodo, "Cobertura": cov,
                               "Desv": abs(cov - (1 - ALPHA)), "Ancho": float(np.mean(up - lo)),
                               "Winkler": winkler(y, lo, up, ALPHA),
-                              "Pinball": (pinball(y, lo, ALPHA / 2) + pinball(y, up, 1 - ALPHA / 2)) / 2})
+                              "Pinball": (pinball(y, lo, ALPHA / 2) + pinball(y, up, 1 - ALPHA / 2)) / 2,
+                              "Pinball_inf": pinball(y, lo, ALPHA / 2), "Pinball_sup": pinball(y, up, 1 - ALPHA / 2)})
         print(f"[{barra}] listo", flush=True)
 
     df = pd.DataFrame(filas)
     pd.set_option("display.width", 200)
     print("\n=== Promedio de las 8 barras y los 24 pasos, 90% nominal ===")
-    print(df.groupby("Metodo")[["Cobertura", "Desv", "Ancho", "Winkler", "Pinball"]].mean()
+    print(df.groupby("Metodo")[["Cobertura", "Desv", "Ancho", "Winkler", "Pinball", "Pinball_inf", "Pinball_sup"]].mean()
           .loc[METODOS + VERIFICACION].round(4).to_string())
 
     principal = df[df.Metodo.isin(METODOS)]

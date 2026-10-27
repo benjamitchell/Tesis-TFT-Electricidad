@@ -90,12 +90,14 @@ def main():
                 pb = (pinball(y, lo, alpha / 2) + pinball(y, up, 1 - alpha / 2)) / 2
                 filas.append({"Barra": barra, "Nivel": nivel, "Metodo": metodo, "Cobertura": round(cov, 4),
                               "Desv": abs(cov - (1 - alpha)), "Ancho": round(float(np.mean(up - lo)), 2),
-                              "Winkler": round(winkler_, 2), "Pinball": round(pb, 3)})
+                              "Winkler": round(winkler_, 2), "Pinball": round(pb, 3),
+                              "Pinball_inf": round(pinball(y, lo, alpha / 2), 3),
+                              "Pinball_sup": round(pinball(y, up, 1 - alpha / 2), 3)})
         print(f"[{barra}] ok")
 
     df = pd.DataFrame(filas)
     pd.set_option("display.width", 200)
-    print(df.groupby(["Metodo", "Nivel"])[["Cobertura", "Desv", "Ancho", "Winkler", "Pinball"]].mean().round(4).to_string())
+    print(df.groupby(["Metodo", "Nivel"])[["Cobertura", "Desv", "Ancho", "Winkler", "Pinball", "Pinball_inf", "Pinball_sup"]].mean().round(4).to_string())
     print()
     print(df[df.Metodo == "CQR"].pivot(index="Barra", columns="Nivel", values=["Cobertura", "Ancho"]).to_string())
     df.to_csv("Scripts/resultado_cqr_niveles.csv", index=False)

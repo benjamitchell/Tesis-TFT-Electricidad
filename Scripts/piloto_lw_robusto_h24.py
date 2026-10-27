@@ -79,6 +79,7 @@ def main():
                               "Cobertura": dentro.mean(), "Desv": abs(dentro.mean() - (1 - alpha)),
                               "Ancho": np.mean(up - lo), "Winkler": winkler(y, lo, up, alpha),
                               "Pinball": (pinball(y, lo, alpha / 2) + pinball(y, up, 1 - alpha / 2)) / 2,
+                              "Pinball_inf": pinball(y, lo, alpha / 2), "Pinball_sup": pinball(y, up, 1 - alpha / 2),
                               "SD_cob_hora": pd.Series(dentro).groupby(horas).mean().std(),
                               "Cob_transicion": dentro[np.isin(horas, HORAS_TRANSICION)].mean()})
 
@@ -87,8 +88,8 @@ def main():
     for nivel in ("90%", "95%"):
         d = df[df.Nivel == nivel]
         print(f"\n=== {nivel}: promedio de las 8 barras y los 24 pasos ===")
-        print(d.groupby("Metodo")[["Cobertura", "Desv", "Ancho", "Winkler", "Pinball", "SD_cob_hora",
-                                   "Cob_transicion"]].mean().round(4).to_string())
+        print(d.groupby("Metodo")[["Cobertura", "Desv", "Ancho", "Winkler", "Pinball", "Pinball_inf", "Pinball_sup",
+                                   "SD_cob_hora", "Cob_transicion"]].mean().round(4).to_string())
         w = d.pivot_table(index=["Barra", "h"], columns="Metodo", values="Winkler")
         print(f"Robusto mejor que LW-ACP en {int((w['LW-ACP robusto'] < w['LW-ACP']).sum())} de {len(w)} combinaciones barra-paso")
         print("Winkler promedio por paso:")

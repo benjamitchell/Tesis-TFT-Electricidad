@@ -141,7 +141,8 @@ def main():
                 dentro = (y >= lo) & (y <= up)
                 hits = (~dentro).astype(int)
 
-                pb = (pinball(y, lo, tau_lo) + pinball(y, up, tau_hi)) / 2
+                pb_inf, pb_sup = pinball(y, lo, tau_lo), pinball(y, up, tau_hi)
+                pb = (pb_inf + pb_sup) / 2
                 winkler_ = winkler(y, lo, up, alpha)
 
                 pass_uc, pass_cc = 0, 0
@@ -159,6 +160,11 @@ def main():
                     "Barra": barra, "Nivel": nivel, "Metodo": metodo,
                     "Cobertura": round(float(dentro.mean()), 4), "Ancho": round(float(np.mean(up - lo)), 2),
                     "Winkler": round(winkler_, 2), "Pinball": round(pb, 3),
+                    "Pinball_inf": round(pb_inf, 3), "Pinball_sup": round(pb_sup, 3),
+                    "Exc_inf": round(float(np.mean(y < lo)), 4), "Exc_sup": round(float(np.mean(y > up)), 4),
+                    "Falla_media_inf": round(float(np.mean((lo - y)[y < lo])), 2),
+                    "Falla_media_sup": round(float(np.mean((y - up)[y > up])), 2),
+                    "Lim_inf_en_0_%": round(100 * float(np.mean(lo <= 1e-9)), 1),
                     "UC_pasa_%": round(100 * pass_uc / 24, 1), "CC_pasa_%": round(100 * pass_cc / 24, 1),
                 })
         print(f"[{barra}] ok")
@@ -166,7 +172,8 @@ def main():
     df = pd.DataFrame(filas)
     pd.set_option("display.width", 200)
     print("\n=== Promedio de las 8 barras, por nivel y metodo ===")
-    print(df.groupby(["Nivel", "Metodo"])[["Cobertura", "Ancho", "Winkler", "Pinball", "UC_pasa_%", "CC_pasa_%"]]
+    print(df.groupby(["Nivel", "Metodo"])[["Cobertura", "Ancho", "Winkler", "Pinball", "Pinball_inf", "Pinball_sup",
+                                          "Exc_inf", "Exc_sup", "UC_pasa_%", "CC_pasa_%"]]
           .mean().round(3).to_string())
 
     df.to_csv("Scripts/resultado_cp_metricas_completas.csv", index=False)

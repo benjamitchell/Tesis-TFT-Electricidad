@@ -739,21 +739,21 @@ Consistente con la selección de S+C-LN como modelo de referencia para el resto 
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{lrrrr}
+    \begin{tabular}{lrrrrr}
         \toprule
-        Barra & Coverage & Width & MAE & Pinball \\
+        Barra & Coverage & Width & MAE & Pinball inf. & Pinball sup. \\
         \midrule
-        Atacama       & 0.9134 & 32.73 & 6.70  & 1.641 \\
-        Cardones      & 0.9153 & 33.50 & 6.63  & 1.646 \\
-        Charrúa       & 0.9026 & 40.07 & 7.98  & 1.858 \\
-        Crucero       & 0.9138 & 33.01 & 6.74  & 1.652 \\
-        Pan de Azúcar & 0.9171 & 35.84 & 6.93  & 1.688 \\
-        Puerto Montt  & 0.9117 & 75.77 & 13.68 & 3.162 \\
-        Quillota      & 0.9001 & 40.89 & 8.26  & 1.919 \\
-        Tarapacá      & 0.9160 & 35.40 & 7.11  & 1.763 \\
+        Atacama       & 0.9134 & 32.73 & 6.70  & 1.282 & 1.999 \\
+        Cardones      & 0.9153 & 33.50 & 6.63  & 1.315 & 1.977 \\
+        Charrúa       & 0.9026 & 40.07 & 7.98  & 1.587 & 2.129 \\
+        Crucero       & 0.9138 & 33.01 & 6.74  & 1.254 & 2.049 \\
+        Pan de Azúcar & 0.9171 & 35.84 & 6.93  & 1.393 & 1.982 \\
+        Puerto Montt  & 0.9117 & 75.77 & 13.68 & 2.865 & 3.460 \\
+        Quillota      & 0.9001 & 40.89 & 8.26  & 1.623 & 2.216 \\
+        Tarapacá      & 0.9160 & 35.40 & 7.11  & 1.356 & 2.170 \\
         \bottomrule
     \end{tabular}
-    \caption{Resultados del Split CP clásico sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.90. Width, MAE y Pinball en USD/MWh.}
+    \caption{Resultados del Split CP clásico sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.90. Width, MAE y pinball del límite inferior (inf.) y superior (sup.), Ecuación \ref{eq:pinball_cp}, en USD/MWh.}
     \label{tab:scp_resultados}
 \end{table}
 
@@ -773,21 +773,21 @@ ACI se evalúa sobre la misma predicción cruda de S+C-LN que Split CP, LW Split
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{lrrrr}
+    \begin{tabular}{lrrrrr}
         \toprule
-        Barra & Coverage & Width & MAE & Pinball \\
+        Barra & Coverage & Width & MAE & Pinball inf. & Pinball sup. \\
         \midrule
-        Atacama       & 0.8978 & 35.86 & 6.70  & 1.579 \\
-        Cardones      & 0.8977 & 33.40 & 6.63  & 1.513 \\
-        Charrúa       & 0.8967 & 41.71 & 7.98  & 1.670 \\
-        Crucero       & 0.8983 & 34.95 & 6.74  & 1.592 \\
-        Pan de Azúcar & 0.8978 & 35.39 & 6.93  & 1.561 \\
-        Puerto Montt  & 0.8988 & 76.71 & 13.68 & 3.087 \\
-        Quillota      & 0.8960 & 42.89 & 8.26  & 1.729 \\
-        Tarapacá      & 0.8984 & 36.75 & 7.11  & 1.730 \\
+        Atacama       & 0.8978 & 35.86 & 6.70  & 1.224 & 1.935 \\
+        Cardones      & 0.8977 & 33.40 & 6.63  & 1.199 & 1.828 \\
+        Charrúa       & 0.8967 & 41.71 & 7.98  & 1.462 & 1.879 \\
+        Crucero       & 0.8983 & 34.95 & 6.74  & 1.239 & 1.946 \\
+        Pan de Azúcar & 0.8978 & 35.39 & 6.93  & 1.300 & 1.823 \\
+        Puerto Montt  & 0.8988 & 76.71 & 13.68 & 2.834 & 3.339 \\
+        Quillota      & 0.8960 & 42.89 & 8.26  & 1.509 & 1.948 \\
+        Tarapacá      & 0.8984 & 36.75 & 7.11  & 1.355 & 2.104 \\
         \bottomrule
     \end{tabular}
-    \caption{Resultados de ACI sobre S+C-LN (predictor puntual crudo, sin meta-modelo) con $\gamma = 0.05$ fijo, las ocho barras del SEN. Coverage nominal: 0.90. Width, MAE y Pinball en USD/MWh.}
+    \caption{Resultados de ACI sobre S+C-LN (predictor puntual crudo, sin meta-modelo) con $\gamma = 0.05$ fijo, las ocho barras del SEN. Coverage nominal: 0.90. Width, MAE y pinball del límite inferior (inf.) y superior (sup.), Ecuación \ref{eq:pinball_cp}, en USD/MWh.}
     \label{tab:aci_ln_resultados}
 \end{table}
 
@@ -831,21 +831,21 @@ Al igual que Split CP clásico y ACI (Secciones \ref{sec:split_cp_clasico}--\ref
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{lrrrr}
+    \begin{tabular}{lrrrrr}
         \toprule
-        Barra & Coverage & Width & MAE & Pinball \\
+        Barra & Coverage & Width & MAE & Pinball inf. & Pinball sup. \\
         \midrule
-        Atacama       & 0.9142 & 33.22 & 6.70  & 1.649 \\
-        Cardones      & 0.9137 & 33.91 & 6.63  & 1.660 \\
-        Charrúa       & 0.9023 & 39.93 & 7.98  & 1.842 \\
-        Crucero       & 0.9120 & 33.18 & 6.74  & 1.655 \\
-        Pan de Azúcar & 0.9182 & 35.96 & 6.93  & 1.684 \\
-        Puerto Montt  & 0.9118 & 73.44 & 13.68 & 3.076 \\
-        Quillota      & 0.8995 & 40.63 & 8.26  & 1.907 \\
-        Tarapacá      & 0.9144 & 35.26 & 7.11  & 1.772 \\
+        Atacama       & 0.9142 & 33.22 & 6.70  & 1.305 & 1.993 \\
+        Cardones      & 0.9137 & 33.91 & 6.63  & 1.352 & 1.967 \\
+        Charrúa       & 0.9023 & 39.93 & 7.98  & 1.576 & 2.109 \\
+        Crucero       & 0.9120 & 33.18 & 6.74  & 1.266 & 2.044 \\
+        Pan de Azúcar & 0.9182 & 35.96 & 6.93  & 1.387 & 1.980 \\
+        Puerto Montt  & 0.9118 & 73.44 & 13.68 & 2.849 & 3.304 \\
+        Quillota      & 0.8995 & 40.63 & 8.26  & 1.620 & 2.195 \\
+        Tarapacá      & 0.9144 & 35.26 & 7.11  & 1.391 & 2.153 \\
         \bottomrule
     \end{tabular}
-    \caption{Resultados de LW Split CP sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.90. Width, MAE y Pinball en USD/MWh.}
+    \caption{Resultados de LW Split CP sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.90. Width, MAE y pinball del límite inferior (inf.) y superior (sup.), Ecuación \ref{eq:pinball_cp}, en USD/MWh.}
     \label{tab:lwscp_resultados}
 \end{table}
 
@@ -859,21 +859,21 @@ La Tabla \ref{tab:lwacp_resultados} presenta los resultados de LW-ACP sobre S+C-
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{lrrrr}
+    \begin{tabular}{lrrrrr}
         \toprule
-        Barra & Coverage & Width & MAE & Pinball \\
+        Barra & Coverage & Width & MAE & Pinball inf. & Pinball sup. \\
         \midrule
-        Atacama       & 0.8980 & 36.08 & 6.70  & 1.598 \\
-        Cardones      & 0.8978 & 33.78 & 6.63  & 1.542 \\
-        Charrúa       & 0.8956 & 40.94 & 7.98  & 1.652 \\
-        Crucero       & 0.8984 & 35.15 & 6.74  & 1.597 \\
-        Pan de Azúcar & 0.8978 & 34.78 & 6.93  & 1.559 \\
-        Puerto Montt  & 0.8987 & 75.00 & 13.68 & 2.997 \\
-        Quillota      & 0.8958 & 43.06 & 8.26  & 1.709 \\
-        Tarapacá      & 0.8985 & 37.05 & 7.11  & 1.718 \\
+        Atacama       & 0.8980 & 36.08 & 6.70  & 1.257 & 1.939 \\
+        Cardones      & 0.8978 & 33.78 & 6.63  & 1.236 & 1.849 \\
+        Charrúa       & 0.8956 & 40.94 & 7.98  & 1.452 & 1.853 \\
+        Crucero       & 0.8984 & 35.15 & 6.74  & 1.261 & 1.932 \\
+        Pan de Azúcar & 0.8978 & 34.78 & 6.93  & 1.313 & 1.806 \\
+        Puerto Montt  & 0.8987 & 75.00 & 13.68 & 2.820 & 3.174 \\
+        Quillota      & 0.8958 & 43.06 & 8.26  & 1.488 & 1.931 \\
+        Tarapacá      & 0.8985 & 37.05 & 7.11  & 1.392 & 2.045 \\
         \bottomrule
     \end{tabular}
-    \caption{Resultados de LW-ACP ($\gamma = 0.05$) sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.90. Width, MAE y Pinball en USD/MWh.}
+    \caption{Resultados de LW-ACP ($\gamma = 0.05$) sobre S+C-LN, las ocho barras del SEN. Coverage nominal: 0.90. Width, MAE y pinball del límite inferior (inf.) y superior (sup.), Ecuación \ref{eq:pinball_cp}, en USD/MWh.}
     \label{tab:lwacp_resultados}
 \end{table}
 
@@ -884,28 +884,30 @@ A diferencia de lo observado al 95\% de cobertura, donde LW-ACP producía los in
 \subsection{Comparativa de métodos: SCP, ACI, LW-ACP y CQR}
 \label{sec:lwacp_comparativa}
 
-Con todos los métodos evaluados sobre S+C-LN y sobre el mismo predictor puntual crudo, las tres variantes principales de Split CP forman un linaje conceptual de dos pasos, más una comparación externa: Split CP (SCP) es el método base de calibración por cuantil fijo (Sección \ref{sec:split_cp_clasico}); ACI añade adaptación \textit{online} del nivel de cobertura, el mecanismo de Gibbs y Candès (2021, Sección 2.6.4), con $\gamma = 0.05$ (Sección \ref{sec:aci}); y LW-ACP, la contribución de este trabajo, añade además ponderación local por hora (Sección \ref{sec:lwacp_resultados}, Sección \ref{sec:lwacp} del Marco Teórico). CQR se incluye como comparación externa a la familia de Conformal Prediction (Sección \ref{sec:cqr}), al estimar cuantiles condicionales directamente mediante regresión cuantílica en vez de calibrar un cuantil de no conformidad. Esta comparación se realiza al 90\% de cobertura nominal, el nivel principal adoptado en este capítulo (Sección \ref{sec:cp_configuracion_general} de la Metodología). La Tabla \ref{tab:lw_comparativa} resume el ancho medio, la desviación de cobertura, el \textit{interval score} de Winkler, que penaliza conjuntamente el ancho del intervalo y la magnitud de la no-cobertura, a diferencia del ancho y la cobertura marginal por separado (Sección \ref{sec:metricas_cp}), y la pérdida pinball promedio (Ecuación \ref{eq:pinball_cp}), que evalúa la calibración de cada extremo del intervalo por separado en vez de tratarlo como una unidad, de los cinco métodos, promediados sobre las ocho barras.
+Con todos los métodos evaluados sobre S+C-LN y sobre el mismo predictor puntual crudo, las tres variantes principales de Split CP forman un linaje conceptual de dos pasos, más una comparación externa: Split CP (SCP) es el método base de calibración por cuantil fijo (Sección \ref{sec:split_cp_clasico}); ACI añade adaptación \textit{online} del nivel de cobertura, el mecanismo de Gibbs y Candès (2021, Sección 2.6.4), con $\gamma = 0.05$ (Sección \ref{sec:aci}); y LW-ACP, la contribución de este trabajo, añade además ponderación local por hora (Sección \ref{sec:lwacp_resultados}, Sección \ref{sec:lwacp} del Marco Teórico). CQR se incluye como comparación externa a la familia de Conformal Prediction (Sección \ref{sec:cqr}), al estimar cuantiles condicionales directamente mediante regresión cuantílica en vez de calibrar un cuantil de no conformidad. Esta comparación se realiza al 90\% de cobertura nominal, el nivel principal adoptado en este capítulo (Sección \ref{sec:cp_configuracion_general} de la Metodología). La Tabla \ref{tab:lw_comparativa} resume el ancho medio, la desviación de cobertura, el \textit{interval score} de Winkler, que penaliza conjuntamente el ancho del intervalo y la magnitud de la no-cobertura, a diferencia del ancho y la cobertura marginal por separado (Sección \ref{sec:metricas_cp}), y la pérdida pinball de cada extremo (Ecuación \ref{eq:pinball_cp}), que indica cuánto se paga en cada cola del intervalo, de los cinco métodos, promediados sobre las ocho barras.
 
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{lrrrr}
+    \begin{tabular}{lrrrrr}
         \toprule
-        Método & Width & $|$Cov $-$ 0.90$|$ & Winkler & Pinball \\
+        Método & Width & $|$Cov $-$ 0.90$|$ & Winkler & Pinball inf. & Pinball sup. \\
         \midrule
-        Split CP (SCP)              & 40.90 & 0.0112 & 76.65 & 1.916 \\
-        ACI (ACI, $\gamma=0.05$)    & 42.21 & \textbf{0.0023} & 72.31 & 1.808 \\
-        LW Split CP                 & \textbf{40.69} & 0.0108 & 76.23 & 1.906 \\
-        LW-ACP ($\gamma=0.05$)      & 41.98 & 0.0024 & \textbf{71.87} & \textbf{1.797} \\
-        CQR                         & 43.04 & 0.0142 & 72.53 & 1.813 \\
+        Split CP (SCP)              & 40.90 & 0.0112 & 76.65 & 1.584 & 2.248 \\
+        ACI (ACI, $\gamma=0.05$)    & 42.21 & \textbf{0.0023} & 72.31 & \textbf{1.515} & 2.100 \\
+        LW Split CP                 & \textbf{40.69} & 0.0108 & 76.23 & 1.593 & 2.218 \\
+        LW-ACP ($\gamma=0.05$)      & 41.98 & 0.0024 & \textbf{71.87} & 1.527 & \textbf{2.066} \\
+        CQR                         & 43.04 & 0.0142 & 72.53 & 1.516 & 2.111 \\
         \bottomrule
     \end{tabular}
-    \caption{Comparación de los cinco métodos evaluados sobre S+C-LN con el mismo predictor puntual crudo (ocho barras), al 90\% de cobertura nominal. Width, Winkler y Pinball en USD/MWh; desviación absoluta media respecto a la cobertura nominal 0.90.}
+    \caption{Comparación de los cinco métodos evaluados sobre S+C-LN con el mismo predictor puntual crudo (ocho barras), al 90\% de cobertura nominal. Width, Winkler y pinball del límite inferior (inf.) y superior (sup.), Ecuación \ref{eq:pinball_cp}, en USD/MWh; desviación absoluta media respecto a la cobertura nominal 0.90.}
     \label{tab:lw_comparativa}
 \end{table}
 
 Ningún método domina las cuatro métricas de forma simultánea a este nivel, a diferencia de lo que ocurre al 95\% (Tabla \ref{tab:cp_niveles_full}), donde LW-ACP sí lo hace. LW Split CP tiene el ancho medio más bajo (40.69), y ACI la mejor calibración (0.0023); pero ambos quedan por detrás de LW-ACP en Winkler (71.87) y pinball (1.797), las dos métricas que combinan ancho y calibración en una sola cifra. La razón es la misma identificada en las Secciones \ref{sec:aci} y \ref{sec:lwacp_resultados}: a 90\%, la adaptación \textit{online} de $\alpha_t$ (ACI, LW-ACP) ya no reduce el ancho crudo respecto al cuantil fijo (SCP, LW Split CP) (de hecho lo aumenta levemente, 3.2\% en ACI y 2.6\% en LW-ACP respecto a SCP), pero sí reduce la desviación de cobertura de forma muy sustancial (79\% menos en ACI y LW-ACP que en SCP), y esa mejor calibración pesa lo suficiente en el Winkler score y en la pérdida pinball como para que ambos métodos \textit{online} terminen con mejor puntaje agregado a pesar del ancho ligeramente mayor. Entre los dos métodos \textit{online}, la ponderación horaria de LW-ACP aporta una mejora adicional pequeña pero consistente sobre ACI solo (-0.5\% en ancho, -0.6\% en Winkler y pinball), el mismo patrón, de menor magnitud, observado al 95\% (Sección \ref{sec:lwacp_resultados}). Esto confirma, con una métrica agregada y no solo con ancho o cobertura por separado, que la ganancia de LW-ACP sobre SCP es real a ambos niveles de cobertura, pero que su mecanismo difiere: a 95\% mejora ancho y calibración simultáneamente; a 90\%, solo calibración, compensando con margen un ancho levemente mayor.
 
 El ancho más bajo de LW Split CP (40.69) no se traduce en el mejor puntaje agregado porque hereda la misma sobrecobertura estructural de SCP (Sección \ref{sec:lw_split_cp}) sin el mecanismo que la corrige. CQR, calibrado al mismo nivel mediante regresión cuantílica condicional con \textit{cross-conformal} (Sección \ref{sec:cqr}), es el más ancho de los cinco métodos (43.04\,USD/MWh) y el peor calibrado (0.0142 de desviación, seis veces la de ACI y LW-ACP). Su Winkler (72.53) y su pinball (1.813) quedan, sin embargo, muy cerca de los de ACI y por debajo de los de SCP y LW Split CP: con una cobertura similar a la de SCP, la penalización por violaciones que acumula en el Winkler es menor (29.5 frente a 35.7\,USD/MWh), es decir, cuando el valor real queda fuera de su intervalo, queda fuera por menos. El truncamiento en 0 del límite inferior se aplica por igual a los cinco métodos (Sección \ref{sec:split_cp_clasico}), de modo que la diferencia de ancho no se explica por el tratamiento del límite inferior.
+
+La pinball de cada extremo muestra, además, que las fallas de los intervalos no son simétricas. En los cinco métodos y en las ocho barras, la pinball del límite superior es mayor que la del inferior (2.066 frente a 1.527 en LW-ACP, Tabla \ref{tab:lw_comparativa}). La frecuencia con que el valor real queda fuera del intervalo es parecida en ambas colas (5.6\% bajo el límite inferior y 4.7\% sobre el superior en LW-ACP, frente al 5\% esperado en cada una), pero el tamaño de la falla no: cuando el precio supera el límite superior, lo hace en promedio por 17.9\,USD/MWh, y cuando cae bajo el inferior, por 12.0\,USD/MWh. Las fallas por arriba corresponden a \textit{spikes} que el intervalo no alcanza a cubrir y son mayores en las ocho barras, con la diferencia más marcada en el norte (18.8 frente a 9.7\,USD/MWh en Atacama, 20.8 frente a 11.8 en Tarapacá). Parte de la diferencia entre ambas pinball no proviene de las fallas, sino de la posición del valor real dentro del intervalo: en las horas solares de precio nulo, el límite inferior se trunca en 0 (36\% de las horas de prueba) y el valor real queda junto a ese límite, de modo que la pinball superior, que también suma la distancia al límite superior cuando el valor real está dentro del intervalo, es mayor aun sin fallas. La adaptación \textit{online} reduce el tamaño de las fallas en ambas colas respecto a Split CP (de 24.1 a 17.9\,USD/MWh por arriba y de 16.5 a 12.0 por abajo), pero no elimina la asimetría, que es propia de la distribución del error y que un intervalo simétrico alrededor de la predicción puntual no puede reflejar.
 
 Dado que al 90\% ningún método gana en las cuatro métricas a la vez, cabe preguntarse si existe algún nivel de cobertura donde sí ocurra. La respuesta es sí: al 95\% (Tabla \ref{tab:cp_niveles_full}), LW-ACP \textbf{sí} domina las cuatro métricas de forma simultánea, también frente a CQR (67.99\,USD/MWh de ancho, 0.0081 de desviación, Winkler 96.50 y pinball 1.206 a ese nivel). Ahí, la adaptación \textit{online} todavía reduce el ancho crudo respecto al cuantil fijo (58.26 vs.\ 63.80\,USD/MWh de SCP, 8.7\% menor, Sección \ref{sec:lwacp_comparativa}) (a diferencia de lo que ocurre a 90\%), mientras que la calibración sigue siendo la mejor o empatada con ACI (0.0038 ambos) y el Winkler y el pinball son los más bajos de los cinco (89.89 y 1.124 respectivamente, frente a 90.64 y 1.133 de ACI). Es decir, el mismo mecanismo (adaptación \textit{online} de $\alpha_t$, más ponderación horaria) deja de reducir el ancho crudo por debajo de cierto nivel de cobertura exigido, pero nunca deja de ser la mejor opción en las métricas agregadas (Winkler, pinball) en ninguno de los tres niveles evaluados. Esto es consistente con que, a medida que el nivel de cobertura exigido baja, el cuantil de calibración se acerca a la mediana del error en vez de a su cola, donde el cuantil fijo de SCP y LW Split CP ya es naturalmente angosto y no hay mucho margen para que la adaptación \textit{online} lo reduzca más; es en la cola donde el mecanismo de ACI y LW-ACP aporta su mayor ventaja de ancho, no en el centro de la distribución.
 
@@ -967,28 +969,28 @@ El resto del método no cambia: los mismos \textit{scores} normalizados \eqref{e
 \begin{table}[htbp]
     \centering
     \footnotesize
-    \setlength{\tabcolsep}{3pt}
-    \begin{tabular}{llrrrrrrrr}
+    \setlength{\tabcolsep}{2pt}
+    \begin{tabular}{llrrrrrrrrr}
         \toprule
-        Nivel & Método & Cob. & Desv. & Ancho & Winkler & Pinball & SD hora & Trans. & SD mes \\
+        Nivel & Método & Cob. & Desv. & Ancho & Winkler & Pinball inf. & Pinball sup. & SD hora & Trans. & SD mes \\
         \midrule
         \multirow{5}{*}{90\%}
-            & Split CP             & 0.911 & 0.0112 & 40.90 & 76.65 & 1.916 & 0.043 & 0.861 & 0.047 \\
-            & ACI (ACI)            & 0.898 & \textbf{0.0023} & 42.21 & 72.31 & 1.808 & 0.071 & 0.800 & 0.004 \\
-            & LW-ACP               & 0.898 & 0.0024 & 41.98 & 71.87 & 1.797 & 0.071 & 0.799 & 0.004 \\
-            & LW-ACP robusto       & 0.897 & 0.0026 & \textbf{40.40} & \textbf{69.15} & \textbf{1.729} & 0.039 & 0.856 & \textbf{0.003} \\
-            & \quad con $\alpha_t$ por hora & 0.908 & 0.0079 & 40.42 & 71.37 & 1.784 & \textbf{0.009} & \textbf{0.902} & 0.019 \\
+            & Split CP             & 0.911 & 0.0112 & 40.90 & 76.65 & 1.584 & 2.248 & 0.043 & 0.861 & 0.047 \\
+            & ACI (ACI)            & 0.898 & \textbf{0.0023} & 42.21 & 72.31 & 1.515 & 2.100 & 0.071 & 0.800 & 0.004 \\
+            & LW-ACP               & 0.898 & 0.0024 & 41.98 & 71.87 & 1.527 & 2.066 & 0.071 & 0.799 & 0.004 \\
+            & LW-ACP robusto       & 0.897 & 0.0026 & \textbf{40.40} & \textbf{69.15} & \textbf{1.434} & \textbf{2.023} & 0.039 & 0.856 & \textbf{0.003} \\
+            & \quad con $\alpha_t$ por hora & 0.908 & 0.0079 & 40.42 & 71.37 & 1.490 & 2.079 & \textbf{0.009} & \textbf{0.902} & 0.019 \\
         \midrule
         \multirow{5}{*}{95\%}
-            & Split CP             & 0.959 & 0.0089 & 63.80 & 100.78 & 1.260 & 0.018 & 0.943 & 0.028 \\
-            & ACI (ACI)            & 0.946 & \textbf{0.0038} & 58.70 & 90.64 & 1.133 & 0.039 & 0.902 & 0.005 \\
-            & LW-ACP               & 0.946 & \textbf{0.0038} & 58.25 & 89.89 & 1.124 & 0.037 & 0.898 & 0.005 \\
-            & LW-ACP robusto       & 0.946 & 0.0039 & \textbf{55.61} & \textbf{87.75} & \textbf{1.097} & 0.016 & 0.937 & \textbf{0.004} \\
-            & \quad con $\alpha_t$ por hora & 0.954 & 0.0048 & 58.23 & 95.30 & 1.191 & \textbf{0.006} & \textbf{0.951} & 0.015 \\
+            & Split CP             & 0.959 & 0.0089 & 63.80 & 100.78 & 0.958 & 1.562 & 0.018 & 0.943 & 0.028 \\
+            & ACI (ACI)            & 0.946 & \textbf{0.0038} & 58.70 & 90.64 & 0.900 & 1.366 & 0.039 & 0.902 & 0.005 \\
+            & LW-ACP               & 0.946 & \textbf{0.0038} & 58.25 & 89.89 & 0.904 & 1.343 & 0.037 & 0.898 & 0.005 \\
+            & LW-ACP robusto       & 0.946 & 0.0039 & \textbf{55.61} & \textbf{87.75} & \textbf{0.852} & \textbf{1.342} & 0.016 & 0.937 & \textbf{0.004} \\
+            & \quad con $\alpha_t$ por hora & 0.954 & 0.0048 & 58.23 & 95.30 & 0.936 & 1.447 & \textbf{0.006} & \textbf{0.951} & 0.015 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{LW-ACP con la escala robusta \eqref{eq:sigma_robusto} frente a la versión principal y a los métodos de referencia, promedio de las ocho barras, conjunto de prueba. Desv.: distancia entre la cobertura y el nivel nominal. SD hora: desviación estándar de la cobertura entre las 24 horas del día, agregando las ocho barras (Sección \ref{sec:cobertura_condicional}); Trans.: cobertura en las horas de transición solar (7, 8, 19, 20 y 21 horas); SD mes: desviación estándar de la cobertura entre los 12 meses, agregando las ocho barras. ``Con $\alpha_t$ por hora'': la variante robusta con un nivel $\alpha_t$ independiente para cada hora del día. Ancho, Winkler y pinball en USD/MWh.}
+    \caption{LW-ACP con la escala robusta \eqref{eq:sigma_robusto} frente a la versión principal y a los métodos de referencia, promedio de las ocho barras, conjunto de prueba. Desv.: distancia entre la cobertura y el nivel nominal. SD hora: desviación estándar de la cobertura entre las 24 horas del día, agregando las ocho barras (Sección \ref{sec:cobertura_condicional}); Trans.: cobertura en las horas de transición solar (7, 8, 19, 20 y 21 horas); SD mes: desviación estándar de la cobertura entre los 12 meses, agregando las ocho barras. ``Con $\alpha_t$ por hora'': la variante robusta con un nivel $\alpha_t$ independiente para cada hora del día. Ancho, Winkler y pinball inferior y superior en USD/MWh.}
     \label{tab:lwacp_robusto}
 \end{table}
 
@@ -1554,20 +1556,21 @@ En siete de las ocho barras la heterocedasticidad horaria se mantiene en los 24 
 
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{lrrrrr}
+    \small
+    \begin{tabular}{lrrrrrr}
         \toprule
-        Método & Cobertura & $|$Cov $-$ 0.90$|$ & Ancho & Winkler & Pinball \\
+        Método & Cobertura & $|$Cov $-$ 0.90$|$ & Ancho & Winkler & Pinball inf. & Pinball sup. \\
         \midrule
-        Split CP    & 0.918 & 0.018 & 83.41 & 145.90 & 3.648 \\
-        LW Split CP & 0.918 & 0.018 & 83.37 & 144.26 & 3.606 \\
-        ACI         & 0.905 & \textbf{0.005} & \textbf{74.58} & 130.54 & 3.264 \\
-        LW-ACP      & 0.905 & \textbf{0.005} & 74.64 & \textbf{130.44} & \textbf{3.261} \\
+        Split CP    & 0.918 & 0.018 & 83.41 & 145.90 & 2.629 & 4.667 \\
+        LW Split CP & 0.918 & 0.018 & 83.37 & 144.26 & 2.581 & 4.632 \\
+        ACI         & 0.905 & \textbf{0.005} & \textbf{74.58} & 130.54 & \textbf{2.280} & 4.247 \\
+        LW-ACP      & 0.905 & \textbf{0.005} & 74.64 & \textbf{130.44} & 2.281 & \textbf{4.241} \\
         \midrule
-        LW-ACP robusto & 0.905 & 0.005 & 74.76 & 130.42 & 3.261 \\
+        LW-ACP robusto & 0.905 & 0.005 & 74.76 & 130.42 & 2.277 & 4.244 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Conformal Prediction sobre el modelo a 24 horas, calibrado por paso, 90\% de cobertura nominal, promedio de las ocho barras y los 24 pasos. ACI y LW-ACP usan un nivel $\alpha_t$ por hora del día, actualizado con el resultado de la misma hora del día anterior, para no usar resultados posteriores a la emisión del pronóstico. La última fila corresponde a la variante de LW-ACP con escala horaria robusta (Sección \ref{sec:lwacp_robusto}). Ancho, Winkler y pinball en USD/MWh.}
+    \caption{Conformal Prediction sobre el modelo a 24 horas, calibrado por paso, 90\% de cobertura nominal, promedio de las ocho barras y los 24 pasos. ACI y LW-ACP usan un nivel $\alpha_t$ por hora del día, actualizado con el resultado de la misma hora del día anterior, para no usar resultados posteriores a la emisión del pronóstico. La última fila corresponde a la variante de LW-ACP con escala horaria robusta (Sección \ref{sec:lwacp_robusto}). Ancho, Winkler y pinball inferior y superior en USD/MWh.}
     \label{tab:h24_cp_metodos}
 \end{table}
 
