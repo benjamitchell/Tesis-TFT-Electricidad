@@ -669,13 +669,13 @@ Para este trabajo se adopta como variable de contexto la hora del día $h(t) \in
 
 \begin{equation}
     \hat{\sigma}_h = \begin{cases}
-        \text{std}\!\left(\{s_i : i \in \mathcal{C}al,\ h(i) = h\}\right) & \text{si } \left|\{i \in \mathcal{C}al : h(i) = h\}\right| \geq 30 \\[4pt]
+        \max\left\{\text{std}\!\left(\{s_i : i \in \mathcal{C}al,\ h(i) = h\}\right),\ \hat{\sigma}_{\text{global}}\right\} & \text{si } \left|\{i \in \mathcal{C}al : h(i) = h\}\right| \geq 30 \\[4pt]
         \hat{\sigma}_{\text{global}} & \text{en otro caso}
     \end{cases}
     \label{eq:sigma_h}
 \end{equation}
 
-donde $\hat{\sigma}_{\text{global}} = \text{std}(\{s_i\}_{i \in \mathcal{C}al})$ actúa como respaldo para horas con pocas observaciones en calibración, evitando estimaciones inestables de $\hat{\sigma}_h$ con muestras pequeñas.
+donde $\hat{\sigma}_{\text{global}} = \text{std}(\{s_i\}_{i \in \mathcal{C}al})$ actúa como respaldo para horas con pocas observaciones en calibración y como cota inferior de $\hat{\sigma}_h$ en las demás (Sección \ref{sec:lw_split_metodologia}).
 
 \paragraph{LW Split CP.} La variante \textit{Locally-Weighted Split CP} (LW Split CP) aplica la normalización \eqref{eq:lw_score} con $\hat{\sigma}(x_t) = \hat{\sigma}_{h(t)}$ dentro del esquema de Split CP descrito en la Sección 2.6.1: se calcula un único cuantil $q$ sobre los scores normalizados de calibración, con la misma corrección de muestra finita de \eqref{eq:quantile_scp}, y se reescala por $\hat{\sigma}_{h(t)}$ en cada instante de predicción. El resultado es un intervalo cuyo ancho varía determinísticamente según la hora del día, pero que permanece fijo en el tiempo para una misma hora: es la contraparte localmente ponderada de SCP, sin el componente adaptativo de ACI.
 

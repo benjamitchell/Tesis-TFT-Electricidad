@@ -605,9 +605,10 @@ def _estimar_sigma_h(errores_cal, horas_cal, min_muestras=30, eps=1.0):
     sigma_h[h] nunca baja de eps*sigma_global (default eps=1.0: nunca por debajo de la
     varianza global de calibración). Sin este piso, en horas de variabilidad muy baja
     (ej. mediodía/madrugada en barras con curtailment) un outlier puntual normalizado
-    por un sigma_h casi nulo infla el cuantil q para TODAS las horas, no solo esa --
-    verificado en CHARRUA/QUILLOTA, donde LW Split CP/LW-ACP quedaban peor que Split CP
-    plano sin este piso.
+    por un sigma_h casi nulo infla el cuantil q para TODAS las horas, no solo esa.
+    Ese efecto se observo en CHARRUA/QUILLOTA con una corrida anterior de los modelos;
+    con los modelos actuales (S+C-LN, alpha=0.10) LW Split CP sin piso tiene menor
+    Winkler que con piso en las 8 barras.
     """
     sigma_global = max(float(np.std(errores_cal)), 1e-6)
     piso = eps * sigma_global
