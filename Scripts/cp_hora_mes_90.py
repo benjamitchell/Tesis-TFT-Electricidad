@@ -101,12 +101,11 @@ def main():
         mejor_mes = max(covs, key=covs.get)
         print(f"{nombre}: SD_mes={vals.std():.4f}  min={covs[peor_mes]:.4f}(mes {peor_mes})  max={covs[mejor_mes]:.4f}(mes {mejor_mes})  rango=[{vals.min():.3f},{vals.max():.3f}]")
 
-    # Misma figura en espanol (tesis, presentacion) y en ingles (paper IEEE); la tesis
-    # llama "ACP" al metodo que el paper llama ACI
+    # Misma figura en espanol (tesis, presentacion) y en ingles (paper IEEE)
     colores = {"Split CP": "tab:gray", "ACI": "tab:orange", "LW-ACP": "tab:blue"}
     textos = {
         "fig_cp_cobertura_ancho_hora.pdf": (
-            {"Split CP": "Split CP", "ACI": "ACP", "LW-ACP": "LW-ACP"}, "Hora del día",
+            {"Split CP": "Split CP", "ACI": "ACI", "LW-ACP": "LW-ACP"}, "Hora del día",
             "Cobertura empírica", "Cobertura por hora", "Ancho medio del intervalo (USD/MWh)", "Ancho por hora"),
         "fig_cp_cobertura_ancho_hora_en.pdf": (
             {"Split CP": "Split CP", "ACI": "ACI", "LW-ACP": "LW-ACP"}, "Hour of day",
