@@ -504,6 +504,9 @@ def stacking_optimization(lista_barras,
         tft_precios_val = datos_val_precios['y_pred'][:n_val]
         tft_residuos_val = datos_val_residuos['y_pred'][:n_val]
         fechas_val = datos_prophet_val['fechas'][:n_val]
+        # Los pesos se ajustan en la primera mitad de val (predicciones fuera de muestra);
+        # la mejor estrategia se elige en la segunda mitad
+        A = slice(0, n_val // 2)
 
         # TEST - Alinear todo
         y_real_test = datos_prophet_test['y_real'][:n_test]
@@ -568,7 +571,7 @@ def stacking_optimization(lista_barras,
         }
 
         # ESTRATEGIA 3: PROPHET + TFT PRECIOS
-        result = grid_search_modelos(y_real_train, prophet_train, tft_precios_train,
+        result = grid_search_modelos(y_real_val[A], prophet_val[A], tft_precios_val[A],
                                      resolution=grid_resolution,
                                      metrica=metrica_optimizacion,
                                      w_min=w_min)
@@ -614,7 +617,7 @@ def stacking_optimization(lista_barras,
         }
         
         # ESTRATEGIA 5: PROPHET + TFT RESIDUOS (OPT)
-        result = grid_search_modelos(y_real_train, prophet_train, tft_residuos_train,
+        result = grid_search_modelos(y_real_val[A], prophet_val[A], tft_residuos_val[A],
                                      resolution=grid_resolution,
                                      metrica=metrica_optimizacion,
                                      w_min=w_min)
@@ -645,7 +648,7 @@ def stacking_optimization(lista_barras,
         prophet_residuos_val = prophet_val + tft_residuos_val
         prophet_residuos_test = prophet_test + tft_residuos_test
         
-        result = grid_search_modelos(y_real_train, prophet_residuos_train, tft_precios_train,
+        result = grid_search_modelos(y_real_val[A], prophet_residuos_val[A], tft_precios_val[A],
                                      resolution=grid_resolution,
                                      metrica=metrica_optimizacion,
                                      w_min=w_min)
@@ -764,7 +767,10 @@ def stacking_optimization(lista_barras,
             if key.startswith('_'):
                 continue
 
-            score_val = resultado['metricas_val'][metrica_optimizacion]
+            # seleccion en la segunda mitad de val (la primera se uso para los pesos)
+            y_val = resultados_stacking[barra]['_datos_split']['y_real_val']
+            B = slice(len(y_val) // 2, None)
+            score_val = calcular_metricas(y_val[B], resultado['prediccion_val'][B])[metrica_optimizacion]
 
             if score_val < mejor_score_val:
                 mejor_score_val = score_val
@@ -980,15 +986,13 @@ def comparar_metodos_stacking(lista_barras, resultados_stacking,
             if verbose:
                 print(f"    {config['nombre']}")
             
-            # Extraer componentes de TRAIN
-            comp1_train = resultados_stacking[barra][config['componente1_key']]['prediccion_train']
-            comp2_train = resultados_stacking[barra][config['componente2_key']]['prediccion_train']
-            y_real_train = resultados_stacking[barra]['_datos_split']['y_real_train']
-            
             # Extraer componentes de VAL
             comp1_val = resultados_stacking[barra][config['componente1_key']]['prediccion_val']
             comp2_val = resultados_stacking[barra][config['componente2_key']]['prediccion_val']
             y_real_val = resultados_stacking[barra]['_datos_split']['y_real_val']
+            # Ajuste de pesos en la primera mitad de val, igual que stacking_optimization
+            A = slice(0, len(y_real_val) // 2)
+            y_real_train, comp1_train, comp2_train = y_real_val[A], comp1_val[A], comp2_val[A]
             
             # Extraer componentes de TEST
             comp1_test = resultados_stacking[barra][config['componente1_key']]['prediccion_test']
@@ -1012,7 +1016,7 @@ def comparar_metodos_stacking(lista_barras, resultados_stacking,
             
             for nombre_metodo, funcion in metodos:
                 
-                # Optimizar en TRAIN
+                # Optimizar en la primera mitad de VAL
                 result = funcion()
                 w1, w2 = result['w1'], result['w2']
                 tiempo = result['time']

@@ -289,11 +289,11 @@ Comparando directamente contra el $\text{TFT}_\text{LN}$ de precios de la rama P
 
 \subsection{Selección del mejor método de optimización}
 
-Se compararon ocho métodos numéricos (\textit{Grid Search} con 21, 41 y 101 puntos, \textit{Differential Evolution}, L-BFGS-B, Nelder-Mead, \textit{Random Search} con 1\,000 muestras, y SLSQP) para el mismo problema de un grado de libertad ($w_1$, con $w_2=1-w_1$) sobre la función objetivo MAE, más Ridge como comparación aparte: Ridge no optimiza ese mismo objetivo, sino que resuelve en forma cerrada un problema distinto (mínimos cuadrados con penalización $\ell_2$), por lo que se incluyó para verificar que un estimador de uso común no se aleja del resultado de los ocho anteriores, no como un noveno optimizador del mismo problema. Al ser MAE convexa y unimodal en una variable, era esperable que los ocho métodos numéricos convergieran al mismo mínimo, y en efecto lo hacen: las diferencias de MAE entre métodos son inferiores al 0.1\% en las 24 combinaciones de barra y estrategia evaluadas, y Ridge no se aparta de ese mismo óptimo de forma apreciable pese a resolver un problema distinto. La única diferencia práctica es el tiempo de cómputo (\textit{Random Search} el más lento, 0.6--1.2\,s; SLSQP y Ridge los más rápidos, bajo 0.05\,s en la mayoría de las barras), irrelevante a esta escala. Dado que la elección de método no afecta la calidad del ensamble, los resultados reportados en el resto de esta sección emplean indistintamente el método con menor MAE de cada barra y estrategia.
+Se compararon ocho métodos numéricos (\textit{Grid Search} con 21, 41 y 101 puntos, \textit{Differential Evolution}, L-BFGS-B, Nelder-Mead, \textit{Random Search} con 1\,000 muestras, y SLSQP) para el mismo problema de un grado de libertad ($w_1$, con $w_2=1-w_1$) sobre la función objetivo MAE, más Ridge como comparación aparte: Ridge no optimiza ese mismo objetivo, sino que resuelve en forma cerrada un problema distinto (mínimos cuadrados con penalización $\ell_2$), por lo que se incluyó para verificar que un estimador de uso común no se aleja del resultado de los ocho anteriores, no como un noveno optimizador del mismo problema. Todos se ajustan sobre la primera mitad del conjunto de validación (Sección 3.5). Al ser el MAE convexo en una variable, era esperable que los ocho métodos numéricos convergieran al mismo mínimo, y así ocurre en la combinación que resulta elegida en las ocho barras, (Prophet $+$ residuos) $+$ TFT precios: las diferencias de MAE entre métodos son inferiores al 0.01\%. En las otras dos combinaciones las diferencias llegan a 0.4\% (Prophet $+$ TFT precios) y 0.8\% (Prophet $+$ residuos optimizada), combinaciones cuyo óptimo queda en el borde del intervalo ($w_1=0$), donde el resultado depende más de cómo cada método maneja la restricción. Ridge se aparta entre 0.01\% y 1.4\% en la combinación elegida, pero hasta 9.3\% y 63\% en las otras dos: minimizar el error cuadrático no equivale a minimizar el MAE cuando uno de los componentes es mucho peor que el otro. El tiempo de cómputo es irrelevante a esta escala (\textit{Random Search} el más lento, 0.04--0.08\,s; SLSQP y Ridge bajo 0.02\,s). Dado que la elección de método no afecta a la combinación elegida, los resultados del resto de esta sección emplean \textit{Grid Search} con 41 puntos.
 
 \subsection{Selección de la mejor estrategia}
 
-La Tabla \ref{tab:mejores_estrategias} presenta la mejor estrategia por barra según el MAE en \textbf{validación} (Sección \ref{sec:baselines}), incluyendo los pesos aprendidos y la mejora porcentual en el conjunto de prueba, evaluado contra la serie cruda, respecto a Prophet solo y al $\text{TFT}_\text{LN}$ de precios solo.
+La Tabla \ref{tab:mejores_estrategias} presenta la mejor estrategia por barra según el MAE en la segunda mitad de \textbf{validación}, con pesos ajustados en la primera mitad (Secciones 3.5 y \ref{sec:baselines}), incluyendo los pesos aprendidos y la mejora porcentual en el conjunto de prueba, evaluado contra la serie cruda, respecto a Prophet solo y al $\text{TFT}_\text{LN}$ de precios solo.
 
 \begin{table}[htbp]
     \centering
@@ -302,22 +302,22 @@ La Tabla \ref{tab:mejores_estrategias} presenta la mejor estrategia por barra se
         \toprule
         Barra & Mejor estrategia & Pesos & MAE & $\Delta$Prophet & $\Delta$TFT \\
         \midrule
-        Atacama        & (P$+$R) $+$ TFT precios  & $w_1{=}0.623,\,w_2{=}0.377$ & 7.10  & 64.27\% & $-2.17\%$ \\
-        Cardones       & (P$+$R) $+$ TFT precios  & $w_1{=}0.598,\,w_2{=}0.402$ & 6.73  & 68.65\% & 4.14\% \\
-        Charrúa        & (P$+$R) $+$ TFT precios  & $w_1{=}0.427,\,w_2{=}0.573$ & 8.32  & 67.19\% & 2.43\% \\
-        Crucero        & (P$+$R) $+$ TFT precios  & $w_1{=}0.549,\,w_2{=}0.451$ & 6.86  & 70.27\% & 2.87\% \\
-        Pan de Azúcar  & (P$+$R) $+$ TFT precios  & $w_1{=}0.206,\,w_2{=}0.794$ & 7.05  & 69.49\% & 1.76\% \\
-        Puerto Montt   & TFT precios solo         & ---                         & 13.94 & 71.05\% & 0.00\%   \\
-        Quillota       & (P$+$R) $+$ TFT precios  & $w_1{=}0.402,\,w_2{=}0.598$ & 8.62  & 64.52\% & 1.00\% \\
-        Tarapacá       & (P$+$R) $+$ TFT precios  & $w_1{=}0.427,\,w_2{=}0.573$ & 7.06  & 69.56\% & 1.17\% \\
+        Atacama        & (P$+$R) $+$ TFT precios  & $w_1{=}0.450,\,w_2{=}0.550$ & 6.98  & 57.40\% & $-0.55\%$ \\
+        Cardones       & (P$+$R) $+$ TFT precios  & $w_1{=}0.450,\,w_2{=}0.550$ & 6.75  & 66.15\% & 3.73\% \\
+        Charrúa        & (P$+$R) $+$ TFT precios  & $w_1{=}0.575,\,w_2{=}0.425$ & 8.31  & 66.11\% & 2.55\% \\
+        Crucero        & (P$+$R) $+$ TFT precios  & $w_1{=}0.425,\,w_2{=}0.575$ & 6.86  & 68.95\% & 2.82\% \\
+        Pan de Azúcar  & (P$+$R) $+$ TFT precios  & $w_1{=}0.400,\,w_2{=}0.600$ & 6.99  & 68.84\% & 2.52\% \\
+        Puerto Montt   & (P$+$R) $+$ TFT precios  & $w_1{=}0.175,\,w_2{=}0.825$ & 13.91  & 70.96\% & 0.22\% \\
+        Quillota       & (P$+$R) $+$ TFT precios  & $w_1{=}0.200,\,w_2{=}0.800$ & 8.62  & 62.87\% & 0.90\% \\
+        Tarapacá       & (P$+$R) $+$ TFT precios  & $w_1{=}0.300,\,w_2{=}0.700$ & 7.06  & 67.73\% & 1.18\% \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Mejor estrategia de ensamblaje con $\text{TFT}_\text{LN}$ por barra, seleccionada por MAE en validación y evaluada contra la serie cruda. (P$+$R): Prophet$+$residuos; $w_1$ es el peso de (P$+$R), $w_2$ el del TFT de precios. MAE en USD/MWh. $\Delta$Prophet y $\Delta$TFT indican la mejora porcentual en MAE de prueba respecto a Prophet solo y al $\text{TFT}_\text{LN}$ de precios solo respectivamente; un valor negativo indica que la estrategia elegida en validación resulta, por azar, ligeramente peor en prueba que la alternativa más simple.}
+    \caption{Mejor estrategia de ensamblaje con $\text{TFT}_\text{LN}$ por barra, seleccionada por MAE en validación y evaluada contra la serie cruda. (P$+$R): Prophet$+$residuos; $w_1$ es el peso de (P$+$R), $w_2$ el del TFT de precios. MAE en USD/MWh. $\Delta$Prophet y $\Delta$TFT indican la mejora porcentual en MAE de prueba respecto a Prophet solo (truncado en cero, como en la Tabla \ref{tab:prophet_resultados}) y al $\text{TFT}_\text{LN}$ de precios solo respectivamente; un valor negativo indica que la estrategia elegida en validación resulta, por azar, ligeramente peor en prueba que la alternativa más simple.}
     \label{tab:mejores_estrategias}
 \end{table}
 
-Los resultados revelan patrones similares a los de una selección por prueba, con una diferencia importante. Primero, el ensamble supera a Prophet en las ocho barras con mejoras de entre el 64.3\% (Atacama) y el 71.1\% (Puerto Montt) en MAE, confirmando que la combinación de modelos aporta valor significativo respecto a la descomposición temporal por sí sola. Segundo, en Puerto Montt la mejor estrategia es el $\text{TFT}_\text{LN}$ de precios solo; en las siete barras restantes gana (Prophet $+$ residuos) $+$ TFT precios, con mejoras de hasta 4.1\% (Cardones) respecto al TFT solo. Tercero, y a diferencia de una selección por prueba (que por construcción nunca puede rendir peor que la alternativa más simple), en Atacama la estrategia elegida en validación resulta 2.2\% \emph{peor} que el TFT solo una vez evaluada en prueba: es el costo esperable de seleccionar sin mirar el conjunto de evaluación.
+Los resultados revelan patrones similares a los de una selección por prueba, con una diferencia importante. Primero, el ensamble supera a Prophet en las ocho barras con mejoras de entre el 57.4\% (Atacama) y el 71.0\% (Puerto Montt) en MAE, confirmando que la combinación de modelos aporta valor significativo respecto a la descomposición temporal por sí sola. Segundo, en las ocho barras gana (Prophet $+$ residuos) $+$ TFT precios, con mejoras de hasta 3.7\% (Cardones) respecto al TFT solo. Tercero, y a diferencia de una selección por prueba (que por construcción nunca puede rendir peor que la alternativa más simple), en Atacama la estrategia elegida en validación resulta 0.5\% \emph{peor} que el TFT solo una vez evaluada en prueba: es el costo esperable de seleccionar sin mirar el conjunto de evaluación.
 
 Cabe destacar que la estrategia Prophet$+$residuos optimizada presenta un MAE significativamente mayor que las demás estrategias en todas las barras (14--36\,USD/MWh frente a 6--14\,USD/MWh), lo que sugiere que los residuos del TFT por sí solos, sin el anclaje del TFT de precios, no constituyen una señal suficientemente informativa para el ensamble. Esta observación refuerza el rol del $\text{TFT}_\text{LN}$ de precios como componente dominante del modelo híbrido.
 
@@ -509,28 +509,28 @@ El procedimiento de Stacking Optimization descrito en la Sección 3.5 se repite 
         \toprule
         Barra & Mejor estrategia & Pesos & MAE & $\Delta$Prophet & $\Delta$TFT \\
         \midrule
-        Atacama        & TFT$_\text{DyT}$ precios solo  & ---                         & 7.25  & 63.51\% & 0.00\%    \\
-        Cardones       & (P$+$R) $+$ TFT$_\text{DyT}$ P & $w_1{=}0.549,\,w_2{=}0.451$ & 7.18  & 66.54\% & $-1.01\%$ \\
-        Charrúa        & (P$+$R) $+$ TFT$_\text{DyT}$ P & $w_1{=}0.427,\,w_2{=}0.573$ & 8.45  & 66.66\% & 3.21\% \\
-        Crucero        & TFT$_\text{DyT}$ precios solo  & ---                         & 7.22  & 68.73\% & 0.00\%    \\
-        Pan de Azúcar  & (P$+$R) $+$ TFT$_\text{DyT}$ P & $w_1{=}0.721,\,w_2{=}0.279$ & 7.08  & 69.35\% & 3.16\% \\
-        Puerto Montt   & (P$+$R) $+$ TFT$_\text{DyT}$ P & $w_1{=}0.425,\,w_2{=}0.575$ & 13.71 & 71.53\% & 1.82\% \\
-        Quillota       & (P$+$R) $+$ TFT$_\text{DyT}$ P & $w_1{=}0.353,\,w_2{=}0.647$ & 8.89  & 63.38\% & 1.43\% \\
-        Tarapacá       & TFT$_\text{DyT}$ precios solo  & ---                         & 7.50  & 67.66\% & 0.00\%    \\
+        Atacama        & (P$+$R) $+$ TFT$_\text{DyT}$ P & $w_1{=}0.050,\,w_2{=}0.950$ & 7.22  & 55.93\% & 0.30\% \\
+        Cardones       & (P$+$R) $+$ TFT$_\text{DyT}$ P & $w_1{=}0.375,\,w_2{=}0.625$ & 7.10  & 64.44\% & 0.15\% \\
+        Charrúa        & (P$+$R) $+$ TFT$_\text{DyT}$ P & $w_1{=}0.350,\,w_2{=}0.650$ & 8.45  & 65.51\% & 3.18\% \\
+        Crucero        & (P$+$R) $+$ TFT$_\text{DyT}$ P & $w_1{=}0.275,\,w_2{=}0.725$ & 7.10  & 67.87\% & 1.56\% \\
+        Pan de Azúcar  & (P$+$R) $+$ TFT$_\text{DyT}$ P & $w_1{=}0.525,\,w_2{=}0.475$ & 7.02  & 68.71\% & 3.98\% \\
+        Puerto Montt   & (P$+$R) $+$ TFT$_\text{DyT}$ P & $w_1{=}0.400,\,w_2{=}0.600$ & 13.71  & 71.38\% & 1.84\% \\
+        Quillota       & (P$+$R) $+$ TFT$_\text{DyT}$ P & $w_1{=}0.375,\,w_2{=}0.625$ & 8.89  & 61.70\% & 1.39\% \\
+        Tarapacá       & TFT$_\text{DyT}$ precios solo & ---                         & 7.50  & 65.71\% & 0.00\% \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Mejor estrategia de ensamblaje con $\text{TFT}_\text{DyT}$ por barra, seleccionada por MAE en validación y evaluada contra la serie cruda. P$+$R: Prophet $+$ Residuos; TFT$_\text{DyT}$ P: $\text{TFT}_\text{DyT}$ precios. $w_1$ es el peso de (P$+$R), $w_2$ el del TFT de precios. MAE en USD/MWh. $\Delta$Prophet y $\Delta$TFT indican la mejora porcentual en prueba respecto a Prophet solo y al $\text{TFT}_\text{DyT}$ de precios solo respectivamente; un valor negativo indica que la estrategia elegida en validación resulta, por azar, ligeramente peor en prueba.}
+    \caption{Mejor estrategia de ensamblaje con $\text{TFT}_\text{DyT}$ por barra, seleccionada por MAE en la segunda mitad de validación (pesos ajustados en la primera) y evaluada contra la serie cruda. P$+$R: Prophet $+$ Residuos; TFT$_\text{DyT}$ P: $\text{TFT}_\text{DyT}$ precios. $w_1$ es el peso de (P$+$R), $w_2$ el del TFT de precios. MAE en USD/MWh. $\Delta$Prophet y $\Delta$TFT indican la mejora porcentual en prueba respecto a Prophet solo (truncado en cero) y al $\text{TFT}_\text{DyT}$ de precios solo respectivamente; un valor negativo indica que la estrategia elegida en validación resulta, por azar, ligeramente peor en prueba.}
     \label{tab:stacking_dyt_mejores}
 \end{table}
 
-Los resultados revelan patrones similares a los de $\text{TFT}_\text{LN}$. Primero, la estrategia (Prophet $+$ residuos) $+$ TFT$_\text{DyT}$ precios domina en 5 de las 8 barras (Cardones, Charrúa, Pan de Azúcar, Puerto Montt y Quillota), mientras que en las 3 restantes (Atacama, Crucero y Tarapacá) el TFT solo es suficiente. Este reparto es parecido al observado en $\text{TFT}_\text{LN}$ (Tabla \ref{tab:mejores_estrategias}), donde el TFT solo gana únicamente en Puerto Montt: en ambas arquitecturas, la mayoría de las barras se beneficia de incorporar los residuos de Prophet.
+Los resultados revelan patrones similares a los de $\text{TFT}_\text{LN}$. Primero, la estrategia (Prophet $+$ residuos) $+$ TFT$_\text{DyT}$ precios domina en 7 de las 8 barras, y solo en Tarapacá el TFT solo es suficiente. Este reparto es casi idéntico al observado en $\text{TFT}_\text{LN}$ (Tabla \ref{tab:mejores_estrategias}), donde la misma estrategia gana en las ocho barras: en ambas arquitecturas, la mayoría de las barras se beneficia de incorporar los residuos de Prophet.
 
-Segundo, la mejora respecto a Prophet es consistente y grande en todas las barras, entre $63.38\%$ (Quillota) y $71.53\%$ (Puerto Montt) en MAE, magnitud prácticamente idéntica a la obtenida con $\text{TFT}_\text{LN}$ ($64.27\%$--$71.05\%$), confirmando que el ensamble aporta valor significativo independientemente de la arquitectura de normalización.
+Segundo, la mejora respecto a Prophet es consistente y grande en todas las barras, entre $55.93\%$ (Atacama) y $71.38\%$ (Puerto Montt) en MAE, magnitud similar a la obtenida con $\text{TFT}_\text{LN}$ ($57.40\%$--$70.96\%$), confirmando que el ensamble aporta valor significativo independientemente de la arquitectura de normalización.
 
-Tercero, en Cardones el ensamble elegido en validación resulta 1.0\% peor que el TFT solo en prueba, el mismo efecto observado en Atacama bajo $\text{TFT}_\text{LN}$, coherente con una selección que no usa el conjunto de evaluación. En las barras donde el ensamble sí mejora sobre el TFT solo, la magnitud es comparable entre arquitecturas (1.4\%--3.2\% en DyT frente a 1.0\%--4.1\% en LN), sin que una arquitectura muestre sistemáticamente mayor beneficio de incorporar los residuos de Prophet. Esto se retoma en la Sección \ref{sec:ln_vs_dyt}, y refuerza que ambas arquitecturas aportan diversidad complementaria al ensamble sin que una domine uniformemente a la otra.
+Tercero, a diferencia de Atacama bajo $\text{TFT}_\text{LN}$, con DyT ninguna barra resulta peor que el TFT solo en prueba. En las barras donde el ensamble mejora sobre el TFT solo, la magnitud es comparable entre arquitecturas (0.2\%--4.0\% en DyT frente a 0.2\%--3.7\% en LN), sin que una arquitectura muestre sistemáticamente mayor beneficio de incorporar los residuos de Prophet. Esto se retoma en la Sección \ref{sec:ln_vs_dyt}, y refuerza que ambas arquitecturas aportan diversidad complementaria al ensamble sin que una domine uniformemente a la otra.
 
-Respecto a los métodos de optimización, el patrón es idéntico al observado con $\text{TFT}_\text{LN}$: las diferencias en MAE entre métodos para una misma estrategia y barra son inferiores al 0.1\%, con \textit{Random Search} consistentemente como el método más lento (0.5--1.1\,s) y Ridge/SLSQP entre los más rápidos. Esto confirma que la elección del método de optimización no constituye un grado de libertad relevante para los resultados del Stacking, independientemente de la arquitectura del TFT utilizada como componente del ensamble.
+Respecto a los métodos de optimización, el patrón es idéntico al observado con $\text{TFT}_\text{LN}$: en la combinación elegida las diferencias en MAE entre métodos son inferiores al 0.02\%, y en las otras dos llegan a 0.9\%, con \textit{Random Search} como el método más lento (0.04--0.08\,s) y Ridge y SLSQP entre los más rápidos. Esto confirma que la elección del método de optimización no constituye un grado de libertad relevante para los resultados del Stacking, independientemente de la arquitectura del TFT utilizada como componente del ensamble.
 
 \subsection{Comparativa $\text{TFT}_\text{LN}$ vs.\ $\text{TFT}_\text{DyT}$}
 \label{sec:ln_vs_dyt}
@@ -617,12 +617,12 @@ La Tabla \ref{tab:comparativa_stacking} presenta la comparación al nivel releva
         \toprule
         Barra & MAE Stacking LN & MAE Stacking DyT & Diferencia & Ganador \\
         \midrule
-        Atacama       & 7.10  & 7.25  & 0.15 & LN  \\
-        Cardones      & 6.73  & 7.18  & 0.45 & LN  \\
-        Charrúa       & 8.32  & 8.45  & 0.13 & LN  \\
-        Crucero       & 6.86  & 7.22  & 0.36 & LN  \\
-        Pan de Azúcar & 7.05  & 7.08  & 0.03 & LN  \\
-        Puerto Montt  & 13.94 & 13.71 & 0.23 & DyT \\
+        Atacama       & 6.98  & 7.22  & 0.24 & LN  \\
+        Cardones      & 6.75  & 7.10  & 0.34 & LN  \\
+        Charrúa       & 8.31  & 8.45  & 0.15 & LN  \\
+        Crucero       & 6.86  & 7.10  & 0.24 & LN  \\
+        Pan de Azúcar & 6.99  & 7.02  & 0.03 & LN  \\
+        Puerto Montt  & 13.91  & 13.71  & 0.20 & DyT \\
         Quillota      & 8.62  & 8.89  & 0.27 & LN  \\
         Tarapacá      & 7.06  & 7.50  & 0.44 & LN  \\
         \bottomrule
@@ -632,7 +632,7 @@ La Tabla \ref{tab:comparativa_stacking} presenta la comparación al nivel releva
     \label{tab:comparativa_stacking}
 \end{table}
 
-A nivel del ensamble final, $\text{TFT}_\text{LN}$ resulta ganador en 7 de las 8 barras, con Puerto Montt como única excepción a favor de $\text{TFT}_\text{DyT}$. Esto es consistente con la ventaja sistemática de LN detectada por el test de Diebold-Mariano: al ganar de forma típica hora a hora en la mayoría de las barras, LN también tiende a ganar el MAE agregado una vez que sus predicciones se combinan con las de Prophet en el Stacking. Las diferencias absolutas siguen siendo modestas (0.03--0.45\,USD/MWh sobre un MAE típico de 6--9\,USD/MWh), pero ya no son atribuibles únicamente a la variabilidad de inicialización, dado lo mostrado en la Tabla \ref{tab:dm_ln_dyt}.
+A nivel del ensamble final, $\text{TFT}_\text{LN}$ resulta ganador en 7 de las 8 barras, con Puerto Montt como única excepción a favor de $\text{TFT}_\text{DyT}$. Esto es consistente con la ventaja sistemática de LN detectada por el test de Diebold-Mariano: al ganar de forma típica hora a hora en la mayoría de las barras, LN también tiende a ganar el MAE agregado una vez que sus predicciones se combinan con las de Prophet en el Stacking. Las diferencias absolutas siguen siendo modestas (0.03--0.44\,USD/MWh sobre un MAE típico de 6--9\,USD/MWh), pero ya no son atribuibles únicamente a la variabilidad de inicialización, dado lo mostrado en la Tabla \ref{tab:dm_ln_dyt}.
 
 La conclusión metodológica de esta sección es, entonces, más matizada que la de trabajos que reportan equivalencia estricta entre LayerNorm y DyT: en el contexto del pronóstico de precios eléctricos, $\text{TFT}_\text{LN}$ presenta una ventaja sistemática, aunque de magnitud pequeña, sobre $\text{TFT}_\text{DyT}$, particularmente marcada en la rama P+C. Esto no invalida el uso de DyT, sus diferencias con LN siguen siendo pequeñas en términos absolutos, y ambas arquitecturas exhiben patrones de error suficientemente distintos como para que su combinación en un ensamble más amplio (Stacking entre $\text{TFT}_\text{LN}$ y $\text{TFT}_\text{DyT}$, no explorado en este trabajo) sea una dirección de trabajo futuro razonable, pero sí sugiere que, si se debe elegir una única arquitectura de normalización para este problema, LayerNorm es la opción mejor respaldada por la evidencia a una hora. Esa preferencia es, sin embargo, débil: no supera la variabilidad entre semillas (Sección \ref{sec:seeds_ln_dyt}) ni se mantiene a 24 horas (Sección \ref{sec:h24_conclusiones}).
 
@@ -662,7 +662,7 @@ En las tres barras, los intervalos media $\pm$ 1 desviación estándar de LN y D
 \subsection{P+C vs.\ S+C: comparación central}
 \label{sec:pc_vs_sc}
 
-Las secciones anteriores presentaron P+C (Prophet+Clima, con Stacking Optimization) y S+C (Sol+Clima, instancia única del TFT) por separado. Esta subsección los compara directamente, tomando para P+C la mejor estrategia de Stacking de cada barra (seleccionada por MAE en \textbf{validación}, no en prueba, Sección \ref{sec:baselines}, y evaluada contra la serie cruda) y para S+C su única predicción, también contra la serie cruda (Tablas \ref{tab:tft_sc_ln_resultados} y \ref{tab:tft_sc_dyt_resultados}). La Tabla \ref{tab:pc_vs_sc} presenta el resultado para las 16 combinaciones de barra y arquitectura, junto con el test de Diebold-Mariano (Sección \ref{sec:dm_ln_dyt}) sobre los errores absolutos horarios pareados.
+Las secciones anteriores presentaron P+C (Prophet+Clima, con Stacking Optimization) y S+C (Sol+Clima, instancia única del TFT) por separado. Esta subsección los compara directamente, tomando para P+C la mejor estrategia de Stacking de cada barra (pesos ajustados en la primera mitad de \textbf{validación} y estrategia seleccionada por MAE en la segunda, no en prueba, Sección \ref{sec:baselines}, y evaluada contra la serie cruda) y para S+C su única predicción, también contra la serie cruda (Tablas \ref{tab:tft_sc_ln_resultados} y \ref{tab:tft_sc_dyt_resultados}). La Tabla \ref{tab:pc_vs_sc} presenta el resultado para las 16 combinaciones de barra y arquitectura, junto con el test de Diebold-Mariano (Sección \ref{sec:dm_ln_dyt}) sobre los errores absolutos horarios pareados.
 
 \begin{table}[htbp]
     \centering
@@ -671,21 +671,21 @@ Las secciones anteriores presentaron P+C (Prophet+Clima, con Stacking Optimizati
         \toprule
         Barra & Arq. & MAE P+C & MAE S+C & Ganador & DM & $p$-valor & Signif.\ (5\%) \\
         \midrule
-        Atacama       & LN  & 7.10  & 6.71  & S+C & 6.61  & $<0.001$ & Sí* \\
-        Atacama       & DyT & 7.25  & 6.68  & S+C & 8.45  & $<0.001$ & Sí* \\
-        Cardones      & LN  & 6.73  & 6.63  & S+C & 1.93  & $0.053$  & No \\
-        Cardones      & DyT & 7.18  & 6.78  & S+C & 6.07  & $<0.001$ & Sí* \\
-        Charrúa       & LN  & 8.32  & 7.98  & S+C & 5.85  & $<0.001$ & Sí* \\
-        Charrúa       & DyT & 8.45  & 8.28  & S+C & 2.61  & $0.009$  & Sí \\
-        Crucero       & LN  & 6.86  & 6.74  & S+C & 2.22  & $0.026$  & Sí \\
-        Crucero       & DyT & 7.22  & 6.87  & S+C & 5.72  & $<0.001$ & Sí* \\
-        Pan de Azúcar & LN  & 7.05  & 6.93  & S+C & 1.92  & $0.055$  & No \\
-        Pan de Azúcar & DyT & 7.08  & 6.83  & S+C & 3.47  & $<0.001$ & Sí* \\
-        Puerto Montt  & LN  & 13.94 & 13.68 & S+C & 3.43  & $<0.001$ & Sí* \\
-        Puerto Montt  & DyT & 13.71 & 14.01 & P+C & -2.59 & $0.010$  & Sí \\
-        Quillota      & LN  & 8.62  & 8.26  & S+C & 5.48  & $<0.001$ & Sí* \\
-        Quillota      & DyT & 8.89  & 8.58  & S+C & 3.84  & $<0.001$ & Sí* \\
-        Tarapacá      & LN  & 7.06  & 7.11  & P+C & -1.12 & $0.263$  & No \\
+        Atacama       & LN  & 6.98  & 6.70  & S+C & 4.91  & $<0.001$ & Sí* \\
+        Atacama       & DyT & 7.22  & 6.68  & S+C & 8.38  & $<0.001$ & Sí* \\
+        Cardones      & LN  & 6.75  & 6.63  & S+C & 2.55  & $0.011$  & Sí* \\
+        Cardones      & DyT & 7.10  & 6.78  & S+C & 4.90  & $<0.001$ & Sí* \\
+        Charrúa       & LN  & 8.31  & 7.98  & S+C & 5.53  & $<0.001$ & Sí* \\
+        Charrúa       & DyT & 8.45  & 8.28  & S+C & 2.64  & $0.008$  & Sí* \\
+        Crucero       & LN  & 6.86  & 6.74  & S+C & 2.32  & $0.021$  & Sí \\
+        Crucero       & DyT & 7.10  & 6.87  & S+C & 4.11  & $<0.001$ & Sí* \\
+        Pan de Azúcar & LN  & 6.99  & 6.93  & S+C & 1.07  & $0.284$  & No \\
+        Pan de Azúcar & DyT & 7.02  & 6.83  & S+C & 2.79  & $0.005$  & Sí* \\
+        Puerto Montt  & LN  & 13.91  & 13.68  & S+C & 3.00  & $0.003$  & Sí* \\
+        Puerto Montt  & DyT & 13.71  & 14.01  & P+C & -2.62 & $0.009$  & Sí* \\
+        Quillota      & LN  & 8.62  & 8.26  & S+C & 5.52  & $<0.001$ & Sí* \\
+        Quillota      & DyT & 8.89  & 8.58  & S+C & 3.88  & $<0.001$ & Sí* \\
+        Tarapacá      & LN  & 7.06  & 7.11  & P+C & -1.14 & $0.254$  & No \\
         Tarapacá      & DyT & 7.50  & 6.95  & S+C & 7.70  & $<0.001$ & Sí* \\
         \bottomrule
     \end{tabular}
@@ -694,9 +694,9 @@ Las secciones anteriores presentaron P+C (Prophet+Clima, con Stacking Optimizati
     \label{tab:pc_vs_sc}
 \end{table}
 
-\textbf{S+C gana en 14 de las 16 combinaciones} por MAE nominal, con mejoras de entre 1.5\% (Cardones LN) y 7.9\% (Atacama DyT) respecto al MAE de P+C. Las únicas dos excepciones nominales son Tarapacá con LN y Puerto Montt con DyT. El test de Diebold-Mariano confirma que esta ventaja no es atribuible al azar en la mayoría de los casos: la diferencia es estadísticamente significativa en 13 de las 16 combinaciones, y S+C gana en 12 de esas 13 (92\%); la única combinación significativa a favor de P+C es Puerto Montt bajo DyT. En las 3 combinaciones restantes (Cardones y Pan de Azúcar bajo LN, Tarapacá bajo LN) la diferencia nominal de MAE no alcanza significancia estadística, es decir, no hay evidencia suficiente para preferir una rama sobre la otra en esos casos específicos, incluyendo la única excepción nominal de S+C bajo LN (Tarapacá), que en rigor no es una victoria significativa de P+C, sino una ausencia de diferencia detectable. Dado que estas 16 comparaciones constituyen una única familia de hipótesis, se aplica además una corrección de Holm-Bonferroni (controla la probabilidad de al menos un falso positivo en la familia, a diferencia de Bonferroni simple, sin perder potencia innecesariamente): 10 de las 16 combinaciones permanecen significativas, todas a favor de S+C (marcadas con * en la Tabla \ref{tab:pc_vs_sc}); las que dejan de serlo bajo esta corrección más estricta (Charrúa DyT, Crucero LN, Puerto Montt DyT) tenían los $p$-valores más cercanos al umbral de 0.05 dentro del grupo originalmente significativo. El resultado central, que S+C gana de forma sistemática, se sostiene bajo esta corrección más conservadora. Este resultado es notable porque S+C es, por diseño, la estrategia más simple: prescinde de Prophet, de su ajuste por barra, y del modelo de residuos y el Stacking Optimization que P+C requiere para alcanzar su mejor desempeño. La ventaja de S+C es consistente en ambas arquitecturas y en siete de las ocho barras, lo que sugiere que la posición solar, calculada de forma determinista y exacta mediante \texttt{pvlib}, captura el ciclo diario y anual del costo marginal de manera al menos tan efectiva como la descomposición estadística de Prophet, sin acumular su error de ajuste ni requerir el paso adicional de ensamblaje. Puerto Montt, la única barra donde P+C es significativamente ganador en alguna arquitectura, es consistente con su menor dependencia del ciclo solar y su mayor dependencia de la disponibilidad hidroeléctrica, documentada en la Sección \ref{sec:pmontt_desempeno}.
+\textbf{S+C gana en 14 de las 16 combinaciones} por MAE nominal, con mejoras de entre 1.0\% (Pan de Azúcar LN) y 7.5\% (Atacama DyT) respecto al MAE de P+C. Las únicas dos excepciones nominales son Tarapacá con LN y Puerto Montt con DyT. El test de Diebold-Mariano confirma que esta ventaja no es atribuible al azar en la mayoría de los casos: la diferencia es estadísticamente significativa en 14 de las 16 combinaciones, y S+C gana en 13 de esas 14 (93\%); la única combinación significativa a favor de P+C es Puerto Montt bajo DyT. En las 2 combinaciones restantes (Pan de Azúcar y Tarapacá bajo LN) la diferencia nominal de MAE no alcanza significancia estadística, es decir, no hay evidencia suficiente para preferir una rama sobre la otra en esos casos específicos, incluyendo la única excepción nominal de S+C bajo LN (Tarapacá), que en rigor no es una victoria significativa de P+C, sino una ausencia de diferencia detectable. Dado que estas 16 comparaciones constituyen una única familia de hipótesis, se aplica además una corrección de Holm-Bonferroni (controla la probabilidad de al menos un falso positivo en la familia, a diferencia de Bonferroni simple, sin perder potencia innecesariamente): 13 de las 16 combinaciones permanecen significativas, 12 a favor de S+C y una, Puerto Montt bajo DyT, a favor de P+C (marcadas con * en la Tabla \ref{tab:pc_vs_sc}); la única que deja de serlo bajo esta corrección más estricta (Crucero LN) tenía el $p$-valor más cercano al umbral de 0.05 dentro del grupo originalmente significativo. El resultado central, que S+C gana de forma sistemática, se sostiene bajo esta corrección más conservadora. Este resultado es notable porque S+C es, por diseño, la estrategia más simple: prescinde de Prophet, de su ajuste por barra, y del modelo de residuos y el Stacking Optimization que P+C requiere para alcanzar su mejor desempeño. La ventaja de S+C es consistente en ambas arquitecturas y en siete de las ocho barras, lo que sugiere que la posición solar, calculada de forma determinista y exacta mediante \texttt{pvlib}, captura el ciclo diario y anual del costo marginal de manera al menos tan efectiva como la descomposición estadística de Prophet, sin acumular su error de ajuste ni requerir el paso adicional de ensamblaje. Puerto Montt, la única barra donde P+C es significativamente ganador en alguna arquitectura, es consistente con su menor dependencia del ciclo solar y su mayor dependencia de la disponibilidad hidroeléctrica, documentada en la Sección \ref{sec:pmontt_desempeno}.
 
-Este hallazgo, que la estrategia más simple es también la más precisa en la gran mayoría de los casos, es el resultado central de este trabajo, y motiva que S+C sea adoptada como estrategia de referencia en el resto de este capítulo. A 24 horas, sin embargo, P+C es algo más preciso (4.2\% menos MAE; Sección \ref{sec:h24_conclusiones}); lo que se mantiene en los dos horizontes es que S+C alcanza una precisión cercana con un único modelo. Combinado con la ventaja pequeña de $\text{TFT}_\text{LN}$ sobre $\text{TFT}_\text{DyT}$ a una hora (Sección \ref{sec:ln_vs_dyt}), la selección final de este trabajo es \textbf{S+C-LN}: un único modelo, sin Stacking Optimization ni ajuste por barra, adoptado de forma uniforme en Conformal Prediction (Sección 4.6). Las extensiones de la Sección 4.8 retoman la comparación entre ambas arquitecturas donde es relevante para sus propios objetivos (por ejemplo, la robustez de la conclusión sobre Puerto Montt), en vez de asumir S+C-LN de antemano.
+Este hallazgo, que la estrategia más simple es también la más precisa en la gran mayoría de los casos, es el resultado central de este trabajo, y motiva que S+C sea adoptada como estrategia de referencia en el resto de este capítulo. A 24 horas, sin embargo, P+C es algo más preciso (4.5\% menos MAE; Sección \ref{sec:h24_conclusiones}); lo que se mantiene en los dos horizontes es que S+C alcanza una precisión cercana con un único modelo. Combinado con la ventaja pequeña de $\text{TFT}_\text{LN}$ sobre $\text{TFT}_\text{DyT}$ a una hora (Sección \ref{sec:ln_vs_dyt}), la selección final de este trabajo es \textbf{S+C-LN}: un único modelo, sin Stacking Optimization ni ajuste por barra, adoptado de forma uniforme en Conformal Prediction (Sección 4.6). Las extensiones de la Sección 4.8 retoman la comparación entre ambas arquitecturas donde es relevante para sus propios objetivos (por ejemplo, la robustez de la conclusión sobre Puerto Montt), en vez de asumir S+C-LN de antemano.
 
 \section{Conformal Prediction}
 
@@ -1602,7 +1602,7 @@ Con esa evaluación, el orden de la Sección \ref{sec:lwacp_comparativa} se mant
 
 A diferencia de lo observado a una hora, donde LN ganaba en 11 de las 12 combinaciones significativas (Sección \ref{sec:dm_ln_dyt}), a 24 horas solo una de las ocho barras muestra una diferencia significativa tras la corrección, Quillota, a favor de LN; las diferencias nominales se reparten entre ambas arquitecturas (LN es mejor en Tarapacá con $p=0.007$, DyT en Atacama y Cardones con $p=0.011$ y $0.034$). Por paso, de 192 combinaciones de barra y paso, 47 son significativas a favor de LN y 16 a favor de DyT, estas últimas casi todas en Atacama y Cardones. Incluso la preferencia por barra cambia de dirección: Tarapacá, la única barra donde DyT ganaba a una hora en S+C, es una de las que favorece a LN a 24 horas. Junto con el estudio de semillas (Sección \ref{sec:seeds_ln_dyt}), esto indica que la ventaja de LN a una hora es real pero pequeña y no se traslada a otro horizonte: para este problema, ambas arquitecturas son prácticamente equivalentes.
 
-\paragraph{S+C contra P+C.} Esta comparación requiere entrenar la estrategia P+C a 24 horas: un TFT de precios y un TFT sobre los residuos de Prophet, en las mismas ocho barras y con los mismos hiperparámetros que S+C. En cada paso del horizonte se replica el protocolo de Stacking Optimization de la Sección \ref{sec:pc_vs_sc}: seis estrategias de combinación, pesos ajustados en entrenamiento y selección de la mejor estrategia por barra en validación. La Tabla \ref{tab:h24_pc_sc} compara la estrategia elegida con S+C en prueba, con el mismo test de Diebold-Mariano del párrafo anterior.
+\paragraph{S+C contra P+C.} Esta comparación requiere entrenar la estrategia P+C a 24 horas: un TFT de precios y un TFT sobre los residuos de Prophet, en las mismas ocho barras y con los mismos hiperparámetros que S+C. En cada paso del horizonte se replica el protocolo de Stacking Optimization de la Sección \ref{sec:pc_vs_sc}: seis estrategias de combinación, pesos ajustados en la primera mitad de validación y selección de la mejor estrategia por barra en la segunda mitad. La Tabla \ref{tab:h24_pc_sc} compara la estrategia elegida con S+C en prueba, con el mismo test de Diebold-Mariano del párrafo anterior.
 
 \begin{table}[htbp]
     \centering
@@ -1612,16 +1612,16 @@ A diferencia de lo observado a una hora, donde LN ganaba en 11 de las 12 combina
         \toprule
         Barra & Estrategia P+C elegida & MAE S+C & MAE P+C & DM & $p$ & Resultado \\
         \midrule
-        Atacama       & (P+R)+TFT precios & 13.55 & 12.72 & $2.18$  & 0.030 & Empate \\
-        Cardones      & (P+R)+TFT precios & 15.32 & 12.46 & $6.34$  & $<0.001$ & P+C* \\
-        Charrúa       & (P+R)+TFT precios & 18.43 & 18.49 & $-0.11$ & 0.910 & Empate \\
-        Crucero       & (P+R)+TFT precios & 15.94 & 14.41 & $3.51$  & $<0.001$ & P+C* \\
-        Pan de Azúcar & (P+R)+TFT precios & 13.64 & 13.90 & $-0.84$ & 0.404 & Empate \\
-        Puerto Montt  & (P+R)+TFT precios & 38.94 & 35.44 & $2.67$  & 0.008 & P+C* \\
-        Quillota      & (P+R)+TFT precios & 17.51 & 18.78 & $-3.40$ & $<0.001$ & S+C* \\
-        Tarapacá      & P+R directo       & 12.87 & 13.92 & $-3.11$ & 0.002 & S+C* \\
+        Atacama       & (P+R)+TFT precios & 13.55 & 12.55 & $2.68$   & 0.007 & P+C* \\
+        Cardones      & (P+R)+TFT precios & 15.32 & 12.07 & $7.37$   & $<0.001$ & P+C* \\
+        Charrúa       & (P+R)+TFT precios & 18.43 & 18.57 & $-0.27$  & 0.784 & Empate \\
+        Crucero       & (P+R)+TFT precios & 15.94 & 14.68 & $2.81$   & 0.005 & P+C* \\
+        Pan de Azúcar & (P+R)+TFT precios & 13.64 & 13.93 & $-0.92$  & 0.359 & Empate \\
+        Puerto Montt  & (P+R)+TFT precios & 38.94 & 35.43 & $2.68$   & 0.007 & P+C* \\
+        Quillota      & (P+R)+TFT precios & 17.51 & 18.61 & $-2.98$  & 0.003 & S+C* \\
+        Tarapacá      & (P+R)+TFT precios & 12.87 & 13.78 & $-2.92$  & 0.003 & S+C* \\
         \midrule
-        Promedio      &                   & 18.28 & 17.51 &         &       &        \\
+        Promedio      &                   & 18.28 & 17.45 &         &       &        \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
@@ -1629,9 +1629,9 @@ A diferencia de lo observado a una hora, donde LN ganaba en 11 de las 12 combina
     \label{tab:h24_pc_sc}
 \end{table}
 
-A una hora, S+C superaba a P+C en 14 de las 16 combinaciones de barra y arquitectura, y las 10 diferencias que sobreviven a la corrección de Holm-Bonferroni eran todas a su favor (Sección \ref{sec:pc_vs_sc}). A 24 horas la comparación queda dividida y se inclina levemente hacia P+C: P+C gana en Puerto Montt, Cardones y Crucero, S+C gana en Tarapacá y Quillota, y en Atacama, Charrúa y Pan de Azúcar no hay diferencias significativas tras la corrección (en Atacama, P+C es nominalmente mejor, con $p=0.030$). En promedio de las ocho barras, P+C obtiene un MAE 4.2\% menor que S+C (17.51 frente a 18.28\,USD/MWh). Puerto Montt vuelve a ser una de las barras donde P+C rinde mejor, igual que a una hora con DyT, lo que es consistente con su dependencia hidrológica (Sección \ref{sec:pmontt_desempeno}); pero Cardones y Crucero, barras del norte con un ciclo solar marcado, muestran que a este horizonte la ventaja de P+C no se limita a la barra hidrológica. Prophet por sí solo es la peor estrategia en las ocho barras, y su combinación directa con el TFT de precios no mejora a este último: cuando P+C iguala o supera a S+C, lo hace combinando Prophet con dos modelos TFT mediante Stacking Optimization. A 24 horas, por lo tanto, S+C no conserva la ventaja en precisión que tenía a una hora: P+C es algo más preciso en promedio, a cambio de necesitar cuatro piezas (Prophet, dos TFT y la combinación) en lugar de un único modelo.
+A una hora, S+C superaba a P+C en 14 de las 16 combinaciones de barra y arquitectura, y de las 13 diferencias que sobreviven a la corrección de Holm-Bonferroni, 12 eran a su favor (Sección \ref{sec:pc_vs_sc}). A 24 horas la comparación se inclina hacia P+C: P+C gana en Atacama, Cardones, Crucero y Puerto Montt, S+C gana en Tarapacá y Quillota, y en Charrúa y Pan de Azúcar no hay diferencias significativas tras la corrección. En promedio de las ocho barras, P+C obtiene un MAE 4.5\% menor que S+C (17.45 frente a 18.28\,USD/MWh). Puerto Montt vuelve a ser una de las barras donde P+C rinde mejor, igual que a una hora con DyT, lo que es consistente con su dependencia hidrológica (Sección \ref{sec:pmontt_desempeno}); pero Atacama, Cardones y Crucero, barras del norte con un ciclo solar marcado, muestran que a este horizonte la ventaja de P+C no se limita a la barra hidrológica. Prophet por sí solo es la peor estrategia en las ocho barras, y su combinación directa con el TFT de precios no mejora a este último: cuando P+C iguala o supera a S+C, lo hace combinando Prophet con dos modelos TFT mediante Stacking Optimization. A 24 horas, por lo tanto, S+C no conserva la ventaja en precisión que tenía a una hora: P+C es algo más preciso en promedio, a cambio de necesitar cuatro piezas (Prophet, dos TFT y la combinación) en lugar de un único modelo.
 
-\paragraph{Síntesis.} De las cuatro conclusiones puestas a prueba, dos se sostienen a 24 horas: la heterocedasticidad horaria del error (en siete de ocho barras) y la superioridad de los métodos con adaptación \textit{online}, con intervalos un 10.5\% más angostos que Split CP, aunque a este horizonte LW-ACP y ACI quedan empatados. Las otras dos no se sostienen. La ventaja de LayerNorm sobre DyT desaparece: ambas arquitecturas son equivalentes. Y la conclusión central queda acotada al horizonte de una hora: a 24 horas S+C ya no supera a P+C, que es algo más preciso en promedio (4.2\%) y gana en tres barras contra dos. Lo que S+C conserva en ambos horizontes es una precisión cercana a la de P+C con una estructura mucho más simple, no una ventaja de precisión. La importancia de variables sugiere por qué: a 24 horas el precio reciente pierde peso y P+C recurre más al día de la semana, información que la posición solar no contiene.
+\paragraph{Síntesis.} De las cuatro conclusiones puestas a prueba, dos se sostienen a 24 horas: la heterocedasticidad horaria del error (en siete de ocho barras) y la superioridad de los métodos con adaptación \textit{online}, con intervalos un 10.5\% más angostos que Split CP, aunque a este horizonte LW-ACP y ACI quedan empatados. Las otras dos no se sostienen. La ventaja de LayerNorm sobre DyT desaparece: ambas arquitecturas son equivalentes. Y la conclusión central queda acotada al horizonte de una hora: a 24 horas S+C ya no supera a P+C, que es algo más preciso en promedio (4.5\%) y gana en cuatro barras contra dos. Lo que S+C conserva en ambos horizontes es una precisión cercana a la de P+C con una estructura mucho más simple, no una ventaja de precisión. La importancia de variables sugiere por qué: a 24 horas el precio reciente pierde peso y P+C recurre más al día de la semana, información que la posición solar no contiene.
 
 \subsection{Interpretabilidad y ablación}
 \label{sec:interpretabilidad_ablacion}
@@ -1747,7 +1747,7 @@ El segundo cambio está en el decoder de P+C (Tabla \ref{tab:h24_decoder_pc}): \
     \label{tab:h24_decoder_pc}
 \end{table}
 
-A 24 horas, por lo tanto, P+C desplaza peso hacia la información que la posición solar no contiene (Sección \ref{sec:informacion_pc_sc}): el día de la semana. Esto es consistente con su ventaja a este horizonte; de hecho, las tres barras donde P+C supera a S+C (Cardones, Crucero y Puerto Montt) están entre las cuatro con mayor aumento de \texttt{weekly}, aunque con ocho barras esa relación no puede establecerse estadísticamente. La importancia de la VSN indica en qué variables se apoya el modelo, no cuánto reducen el error, por lo que este análisis es una explicación consistente con los resultados y no una prueba causal. Lo que sí muestra con claridad es que la ventaja de S+C depende del horizonte: es máxima cuando el problema lo dominan el precio reciente y el ciclo diario, como a una hora, y se diluye cuando hace falta información de calendario que la posición solar no tiene.
+A 24 horas, por lo tanto, P+C desplaza peso hacia la información que la posición solar no contiene (Sección \ref{sec:informacion_pc_sc}): el día de la semana. Esto es consistente con su ventaja a este horizonte; tres de las cuatro barras donde P+C supera a S+C (Cardones, Crucero y Puerto Montt) son las de mayor aumento de \texttt{weekly}, pero la cuarta, Atacama, tiene uno de los menores (2.5 puntos), y Quillota, donde gana S+C, tiene el cuarto mayor. La relación es, por lo tanto, solo parcial, y con ocho barras no puede establecerse estadísticamente. La importancia de la VSN indica en qué variables se apoya el modelo, no cuánto reducen el error, por lo que este análisis es una explicación consistente con los resultados y no una prueba causal. Lo que sí muestra con claridad es que la ventaja de S+C depende del horizonte: es máxima cuando el problema lo dominan el precio reciente y el ciclo diario, como a una hora, y se diluye cuando hace falta información de calendario que la posición solar no tiene.
 
 \subsection{Sensibilidad a una función de pérdida asimétrica}
 \label{sec:perdida_asimetrica}

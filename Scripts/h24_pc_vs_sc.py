@@ -6,10 +6,11 @@ en las 8 barras con modelo h24, replicando el protocolo de la tesis a h=1
 
   - Seis estrategias de P+C: Prophet solo, TFT precios solo, Prophet + TFT precios,
     Prophet + TFT residuos (suma directa y con pesos) y (Prophet + residuos) + TFT
-    precios. Pesos por grid search de 41 puntos sobre ENTRENAMIENTO, contra la serie
-    usada en el entrenamiento (datasets_norm), igual que a h=1.
-  - Seleccion de la mejor estrategia por barra en VALIDACION (MAE promedio de los 24
-    pasos contra la serie cruda), sin mirar prueba.
+    precios. Pesos por grid search de 41 puntos sobre la PRIMERA mitad de la validacion
+    (donde las predicciones de los TFT son fuera de muestra), contra la serie usada en el
+    entrenamiento (datasets_norm), igual que a h=1 (Scripts/stacking_validacion_tablas.py).
+  - Seleccion de la mejor estrategia por barra en la SEGUNDA mitad de la validacion (MAE
+    promedio de los 24 pasos contra la serie cruda), sin mirar prueba.
   - Comparacion en PRUEBA contra S+C h24 (cache de Scripts/extraer_predicciones_h24.py),
     contra la serie cruda, excluyendo VENTANA_PRECIO_FALLA: MAE promedio de los 24 pasos
     y Diebold-Mariano sobre el error promedio de los 24 pasos de cada pronostico emitido
@@ -99,17 +100,19 @@ def prophet_y_objetivo(datasets_norm, scalers, barra):
 
 
 def estrategias_paso(d, prophet, y_pipe):
-    """Predicciones de las seis estrategias en train/val/test para un paso del horizonte."""
+    """Pesos en la primera mitad de validacion; predicciones de las seis estrategias en val y test
+    para un paso del horizonte, y fecha de corte entre ambas mitades de validacion."""
     marcos = {}
-    for c in ("train", "val", "test"):
+    for c in ("val", "test"):
         m = pd.DataFrame({"precios": d[c]["precios"], "residuos": d[c]["residuos"]}).dropna()
         m["prophet"] = prophet.reindex(m.index).values
         m["y_pipe"] = y_pipe.reindex(m.index).values
-        marcos[c] = m.dropna()
-    tr = marcos["train"]
-    w_pt = grid_search_modelos(tr["y_pipe"].values, tr["prophet"].values, tr["precios"].values, resolution=41)["w1"]
-    w_pr = grid_search_modelos(tr["y_pipe"].values, tr["prophet"].values, tr["residuos"].values, resolution=41)["w1"]
-    w_prt = grid_search_modelos(tr["y_pipe"].values, (tr["prophet"] + tr["residuos"]).values, tr["precios"].values,
+        marcos[c] = m.dropna().sort_index()
+    v = marcos["val"]
+    a = v.iloc[:len(v) // 2]
+    w_pt = grid_search_modelos(a["y_pipe"].values, a["prophet"].values, a["precios"].values, resolution=41)["w1"]
+    w_pr = grid_search_modelos(a["y_pipe"].values, a["prophet"].values, a["residuos"].values, resolution=41)["w1"]
+    w_prt = grid_search_modelos(a["y_pipe"].values, (a["prophet"] + a["residuos"]).values, a["precios"].values,
                                 resolution=41)["w1"]
     preds = {}
     for c in ("val", "test"):
@@ -122,7 +125,7 @@ def estrategias_paso(d, prophet, y_pipe):
             "Prophet + residuos (opt)": w_pr * m["prophet"] + (1 - w_pr) * m["residuos"],
             "(Prophet + residuos) + TFT precios": w_prt * (m["prophet"] + m["residuos"]) + (1 - w_prt) * m["precios"],
         })
-    return preds
+    return preds, v.index[len(v) // 2]
 
 
 def main():
@@ -152,10 +155,12 @@ def main():
         err = {c: {e: {} for e in ESTRATEGIAS} for c in ("val", "test")}
         err_sc = {}
         for h in range(1, N_HORIZONTES + 1):
-            preds = estrategias_paso(pc[barra][h], prophet, y_pipe)
+            preds, corte = estrategias_paso(pc[barra][h], prophet, y_pipe)
             for c in ("val", "test"):
                 for e in ESTRATEGIAS:
                     ea = error_abs(preds[c][e], serie)
+                    if c == "val":
+                        ea = ea[ea.index >= corte]  # la seleccion usa solo la segunda mitad
                     ea.index = ea.index - pd.Timedelta(hours=h)
                     err[c][e][h] = ea
             s = pd.Series(np.asarray(sc[barra][h]["test"]["y_pred"]), index=pd.to_datetime(sc[barra][h]["test"]["fechas"]))
