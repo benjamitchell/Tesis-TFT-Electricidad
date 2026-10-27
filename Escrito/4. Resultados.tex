@@ -570,39 +570,41 @@ Las diferencias absolutas de MAE entre LN y DyT son pequeñas en todos los casos
 \subsubsection{Prueba de Diebold-Mariano pareada por hora}
 \label{sec:dm_ln_dyt}
 
-Para determinar si las diferencias observadas son sistemáticas u obedecen al azar, se compara la exactitud predictiva de LN y DyT mediante el test de Diebold-Mariano (1995) sobre los errores absolutos horarios del conjunto de prueba (evaluados contra la serie cruda, Sección \ref{sec:baselines}), para las 16 combinaciones de barra y rama (P+C y S+C). Diebold-Mariano estima la varianza de la diferencia de pérdidas mediante Newey-West (con truncamiento $\text{lag}=h+1=2$, ponderación de Bartlett), lo que la hace robusta a la autocorrelación serial de los errores horarios. El signo del estadístico DM indica directamente la dirección del efecto: negativo favorece a LN. La Tabla \ref{tab:dm_ln_dyt} presenta los resultados.
+Para determinar si las diferencias observadas son sistemáticas u obedecen al azar, se compara la exactitud predictiva de LN y DyT mediante el test de Diebold-Mariano (1995) sobre los errores absolutos horarios del conjunto de prueba (evaluados contra la serie cruda, Sección \ref{sec:baselines}), para las 16 combinaciones de barra y rama (P+C y S+C). Diebold-Mariano estima la varianza de la diferencia de pérdidas mediante Newey-West \cite{NeweyWest1987}, con ponderación de Bartlett. Para un pronóstico óptimo a $h$ pasos, Diebold y Mariano \cite{DieboldMariano1995} sugieren truncar en $h-1$ rezagos, porque en ese caso el error solo está correlacionado con los $h-1$ anteriores. En los datos de este trabajo, sin embargo, la diferencia de pérdidas entre dos modelos casi no está autocorrelacionada en los rezagos de 1 a 3 horas (a lo más 0.08), pero sí en el de 24 horas (entre 0.03 y 0.21 según la combinación): cuando un modelo le gana al otro a cierta hora del día, tiende a ganarle también a la misma hora del día siguiente. Por eso la varianza se trunca en 24 rezagos. Como prueba de robustez se aplica además la versión diaria del test que recomiendan Lago et al. (2021) \cite{Lago2021Review} para precios horarios, basada en la versión multivariada de Ziel y Weron (2018) \cite{ZielWeron2018}: la pérdida se promedia sobre las horas de cada día y el test se aplica a la serie diaria resultante (347 días), lo que absorbe por construcción la correlación dentro del día. En la serie diaria la autocorrelación decae en dos o tres días, sin picos estacionales, de modo que el truncamiento puede elegirse de forma automática con el criterio de Andrews (1991) \cite{Andrews1991}, que resulta de entre 0 y 7 rezagos según la combinación. El signo del estadístico DM indica directamente la dirección del efecto: negativo favorece a LN. La Tabla \ref{tab:dm_ln_dyt} presenta los resultados.
 
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{llrrrrl}
+    \begin{tabular}{llrrrrrr}
         \toprule
-        Barra & Rama & MAE$_\text{LN}$ & MAE$_\text{DyT}$ & DM & $p$ (dos colas) & Signif.\ (5\%) \\
+        & & & & \multicolumn{2}{c}{Horario (24 rezagos)} & \multicolumn{2}{c}{Diario} \\
+        \cmidrule(lr){5-6} \cmidrule(lr){7-8}
+        Barra & Rama & MAE$_\text{LN}$ & MAE$_\text{DyT}$ & DM & $p$ & DM & $p$ \\
         \midrule
-        Atacama       & S+C & 6.705  & 6.683  & 0.46  & $0.644$  & No \\
-        Cardones      & S+C & 6.626  & 6.777  & -2.81 & $0.005$  & Sí* \\
-        Charrúa       & S+C & 7.980  & 8.275  & -5.51 & $<0.001$ & Sí* \\
-        Crucero       & S+C & 6.742  & 6.873  & -2.77 & $0.006$  & Sí* \\
-        Pan de Azúcar & S+C & 6.925  & 6.829  & 1.59  & $0.111$  & No \\
-        Puerto Montt  & S+C & 13.684 & 14.011 & -2.73 & $0.006$  & Sí* \\
-        Quillota      & S+C & 8.265  & 8.576  & -4.95 & $<0.001$ & Sí* \\
-        Tarapacá      & S+C & 7.115  & 6.953  & 2.89  & $0.004$  & Sí* \\
-        Atacama       & P+C & 6.945  & 7.247  & -4.41 & $<0.001$ & Sí* \\
-        Cardones      & P+C & 7.016  & 7.106  & -1.29 & $0.196$  & No \\
-        Charrúa       & P+C & 8.524  & 8.731  & -2.93 & $0.003$  & Sí* \\
-        Crucero       & P+C & 7.062  & 7.215  & -2.52 & $0.012$  & Sí \\
-        Pan de Azúcar & P+C & 7.174  & 7.311  & -2.15 & $0.031$  & Sí \\
-        Puerto Montt  & P+C & 13.939 & 13.965 & -0.23 & $0.821$  & No \\
-        Quillota      & P+C & 8.702  & 9.020  & -3.71 & $<0.001$ & Sí* \\
-        Tarapacá      & P+C & 7.141  & 7.498  & -5.56 & $<0.001$ & Sí* \\
+        Atacama       & S+C & 6.705 & 6.683 & 0.47 & $0.641$ & 0.32 & $0.747$ \\
+        Cardones      & S+C & 6.626 & 6.777 & -2.72 & $0.007$ & -2.27 & $0.023$ \\
+        Charrúa       & S+C & 7.980 & 8.275 & -5.38 & $<0.001$* & -4.65 & $<0.001$* \\
+        Crucero       & S+C & 6.742 & 6.873 & -2.89 & $0.004$* & -2.31 & $0.021$ \\
+        Pan de Azúcar & S+C & 6.925 & 6.829 & 1.57 & $0.116$ & 1.40 & $0.162$ \\
+        Puerto Montt  & S+C & 13.684 & 14.011 & -2.40 & $0.016$ & -1.71 & $0.087$ \\
+        Quillota      & S+C & 8.265 & 8.576 & -4.57 & $<0.001$* & -4.69 & $<0.001$* \\
+        Tarapacá      & S+C & 7.115 & 6.953 & 2.79 & $0.005$ & 2.08 & $0.038$ \\
+        Atacama       & P+C & 6.945 & 7.247 & -4.56 & $<0.001$* & -4.10 & $<0.001$* \\
+        Cardones      & P+C & 7.016 & 7.106 & -1.13 & $0.258$ & -0.70 & $0.485$ \\
+        Charrúa       & P+C & 8.524 & 8.731 & -2.41 & $0.016$ & -2.24 & $0.025$ \\
+        Crucero       & P+C & 7.062 & 7.215 & -2.53 & $0.011$ & -1.90 & $0.058$ \\
+        Pan de Azúcar & P+C & 7.174 & 7.311 & -2.16 & $0.030$ & -2.32 & $0.020$ \\
+        Puerto Montt  & P+C & 13.939 & 13.965 & -0.21 & $0.831$ & -0.08 & $0.940$ \\
+        Quillota      & P+C & 8.702 & 9.020 & -3.15 & $0.002$* & -3.18 & $0.001$* \\
+        Tarapacá      & P+C & 7.141 & 7.498 & -5.54 & $<0.001$* & -4.64 & $<0.001$* \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Test de Diebold-Mariano (varianza Newey-West, $\text{lag}=h+1=2$) entre los errores absolutos horarios de $\text{TFT}_\text{LN}$ y $\text{TFT}_\text{DyT}$, pareados por hora del conjunto de prueba, evaluados contra la serie cruda. * = significativo también tras corrección de Holm-Bonferroni para las 16 comparaciones de esta tabla ($\alpha=0.05$).}
+    \caption{Test de Diebold-Mariano entre los errores absolutos de $\text{TFT}_\text{LN}$ y $\text{TFT}_\text{DyT}$ en el conjunto de prueba, evaluados contra la serie cruda. Horario: errores pareados por hora, varianza Newey-West con 24 rezagos. Diario: error promedio de cada día, varianza Newey-West con truncamiento de Andrews (1991). DM negativo favorece a LN. * = significativo tras corrección de Holm-Bonferroni para las 16 comparaciones de cada versión ($\alpha=0.05$).}
     \label{tab:dm_ln_dyt}
 \end{table}
 
-En 12 de las 16 combinaciones la diferencia es estadísticamente significativa ($p<0.05$), es decir, no es atribuible al azar. El signo del estadístico DM muestra que $\text{TFT}_\text{LN}$ es el ganador en 11 de esas 12 combinaciones significativas; $\text{TFT}_\text{DyT}$ solo gana de forma significativa en Tarapacá bajo S+C. En la rama P+C, las 6 de 8 barras con diferencia significativa favorecen unánimemente a LN; en S+C, la ventaja es algo más mixta: 5 de las 6 barras con diferencia significativa favorecen a LN, y solo Tarapacá favorece a DyT. En las 4 combinaciones restantes (Atacama y Pan de Azúcar bajo S+C, Cardones y Puerto Montt bajo P+C) el MAE nominal favorece a uno u otro por un margen pequeño, pero la diferencia no alcanza significancia estadística una vez que se descuenta la autocorrelación serial del error horario: no hay evidencia suficiente para preferir una arquitectura sobre la otra en esos casos específicos. Tratando estas 16 comparaciones como una única familia de hipótesis y aplicando corrección de Holm-Bonferroni, 10 de las 16 permanecen significativas; las dos que dejan de serlo (Crucero y Pan de Azúcar bajo P+C) tenían los $p$-valores más débiles del grupo originalmente significativo. La ventaja sistemática de LN se sostiene bajo esta corrección más estricta, aunque con menos combinaciones individuales respaldándola, consistente con la magnitud pequeña de esta ventaja ya discutida en la Sección \ref{sec:seeds_ln_dyt}.
+En 12 de las 16 combinaciones la diferencia es estadísticamente significativa ($p<0.05$), es decir, no es atribuible al azar. El signo del estadístico DM muestra que $\text{TFT}_\text{LN}$ es el ganador en 11 de esas 12 combinaciones significativas; $\text{TFT}_\text{DyT}$ solo gana de forma significativa en Tarapacá bajo S+C. En la rama P+C, las 6 de 8 barras con diferencia significativa favorecen unánimemente a LN; en S+C, la ventaja es algo más mixta: 5 de las 6 barras con diferencia significativa favorecen a LN, y solo Tarapacá favorece a DyT. En las 4 combinaciones restantes (Atacama y Pan de Azúcar bajo S+C, Cardones y Puerto Montt bajo P+C) el MAE nominal favorece a uno u otro por un margen pequeño, pero la diferencia no alcanza significancia estadística una vez que se descuenta la autocorrelación serial del error horario: no hay evidencia suficiente para preferir una arquitectura sobre la otra en esos casos específicos. Tratando estas 16 comparaciones como una única familia de hipótesis y aplicando corrección de Holm-Bonferroni, solo 6 de las 16 permanecen significativas, todas a favor de LN (Charrúa, Crucero y Quillota bajo S+C; Atacama, Quillota y Tarapacá bajo P+C); la ventaja de DyT en Tarapacá bajo S+C no sobrevive a la corrección. La versión diaria del test es algo más exigente: 10 combinaciones significativas sin corregir y 5 tras la corrección, también todas a favor de LN. La dirección del efecto es, por lo tanto, consistente, ya que ninguna diferencia que sobreviva a la corrección favorece a DyT, pero solo una minoría de las combinaciones la respalda de forma individual, en línea con la magnitud pequeña de esta ventaja discutida en la Sección \ref{sec:seeds_ln_dyt}.
 
 Una hipótesis para esta ventaja sistemática de LN, aunque de magnitud pequeña, es la diferencia estructural entre ambos mecanismos de normalización descrita en la Sección 2.4.4: LayerNorm recalcula la escala de activación de forma local, para cada paso temporal, mientras que DyT aplica un único escalar $\alpha$ global aprendido durante el entrenamiento. En una serie con heterocedasticidad horaria pronunciada como el costo marginal, la misma que motiva a LW-ACP en la Sección 2.6.5, esa adaptación local podría dar a LN una ventaja consistente aunque pequeña en la mayoría de las horas. Esta hipótesis es consistente con que la ventaja de LN no alcanza significancia precisamente en Puerto Montt bajo P+C, una de las barras con dinámicas de precio menos regidas por el ciclo solar diario.
 
@@ -667,34 +669,36 @@ Las secciones anteriores presentaron P+C (Prophet+Clima, con Stacking Optimizati
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{llrrlrrl}
+    \begin{tabular}{llrrlrrrr}
         \toprule
-        Barra & Arq. & MAE P+C & MAE S+C & Ganador & DM & $p$-valor & Signif.\ (5\%) \\
+        & & & & & \multicolumn{2}{c}{Horario (24 rezagos)} & \multicolumn{2}{c}{Diario} \\
+        \cmidrule(lr){6-7} \cmidrule(lr){8-9}
+        Barra & Arq. & MAE P+C & MAE S+C & Ganador & DM & $p$ & DM & $p$ \\
         \midrule
-        Atacama       & LN  & 6.98  & 6.70  & S+C & 4.91  & $<0.001$ & Sí* \\
-        Atacama       & DyT & 7.22  & 6.68  & S+C & 8.38  & $<0.001$ & Sí* \\
-        Cardones      & LN  & 6.75  & 6.63  & S+C & 2.55  & $0.011$  & Sí* \\
-        Cardones      & DyT & 7.10  & 6.78  & S+C & 4.90  & $<0.001$ & Sí* \\
-        Charrúa       & LN  & 8.31  & 7.98  & S+C & 5.53  & $<0.001$ & Sí* \\
-        Charrúa       & DyT & 8.45  & 8.28  & S+C & 2.64  & $0.008$  & Sí* \\
-        Crucero       & LN  & 6.86  & 6.74  & S+C & 2.32  & $0.021$  & Sí \\
-        Crucero       & DyT & 7.10  & 6.87  & S+C & 4.11  & $<0.001$ & Sí* \\
-        Pan de Azúcar & LN  & 6.99  & 6.93  & S+C & 1.07  & $0.284$  & No \\
-        Pan de Azúcar & DyT & 7.02  & 6.83  & S+C & 2.79  & $0.005$  & Sí* \\
-        Puerto Montt  & LN  & 13.91  & 13.68  & S+C & 3.00  & $0.003$  & Sí* \\
-        Puerto Montt  & DyT & 13.71  & 14.01  & P+C & -2.62 & $0.009$  & Sí* \\
-        Quillota      & LN  & 8.62  & 8.26  & S+C & 5.52  & $<0.001$ & Sí* \\
-        Quillota      & DyT & 8.89  & 8.58  & S+C & 3.88  & $<0.001$ & Sí* \\
-        Tarapacá      & LN  & 7.06  & 7.11  & P+C & -1.14 & $0.254$  & No \\
-        Tarapacá      & DyT & 7.50  & 6.95  & S+C & 7.70  & $<0.001$ & Sí* \\
+        Atacama       & LN  & 6.98 & 6.70 & S+C & 5.10 & $<0.001$* & 4.05 & $<0.001$* \\
+        Atacama       & DyT & 7.22 & 6.68 & S+C & 8.09 & $<0.001$* & 6.84 & $<0.001$* \\
+        Cardones      & LN  & 6.75 & 6.63 & S+C & 2.48 & $0.013$ & 2.25 & $0.024$ \\
+        Cardones      & DyT & 7.10 & 6.78 & S+C & 5.11 & $<0.001$* & 4.04 & $<0.001$* \\
+        Charrúa       & LN  & 8.31 & 7.98 & S+C & 5.18 & $<0.001$* & 4.75 & $<0.001$* \\
+        Charrúa       & DyT & 8.45 & 8.28 & S+C & 2.50 & $0.012$ & 2.16 & $0.031$ \\
+        Crucero       & LN  & 6.86 & 6.74 & S+C & 2.15 & $0.032$ & 1.54 & $0.124$ \\
+        Crucero       & DyT & 7.10 & 6.87 & S+C & 4.09 & $<0.001$* & 3.25 & $0.001$* \\
+        Pan de Azúcar & LN  & 6.99 & 6.93 & S+C & 1.05 & $0.294$ & 0.78 & $0.433$ \\
+        Pan de Azúcar & DyT & 7.02 & 6.83 & S+C & 2.58 & $0.010$ & 2.36 & $0.018$ \\
+        Puerto Montt  & LN  & 13.91 & 13.68 & S+C & 2.90 & $0.004$* & 2.43 & $0.015$ \\
+        Puerto Montt  & DyT & 13.71 & 14.01 & P+C & -2.35 & $0.019$ & -2.22 & $0.027$ \\
+        Quillota      & LN  & 8.62 & 8.26 & S+C & 4.91 & $<0.001$* & 4.32 & $<0.001$* \\
+        Quillota      & DyT & 8.89 & 8.58 & S+C & 4.23 & $<0.001$* & 4.06 & $<0.001$* \\
+        Tarapacá      & LN  & 7.06 & 7.11 & P+C & -1.15 & $0.251$ & -0.87 & $0.386$ \\
+        Tarapacá      & DyT & 7.50 & 6.95 & S+C & 7.57 & $<0.001$* & 6.39 & $<0.001$* \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Comparación P+C (mejor estrategia de Stacking, seleccionada en validación) vs.\ S+C, MAE de prueba en USD/MWh, para las 8 barras y ambas arquitecturas, evaluado contra la serie cruda, con test de Diebold-Mariano (varianza Newey-West) sobre los errores absolutos horarios pareados. El signo de DM favorece a S+C cuando es positivo. * = significativo también tras corrección de Holm-Bonferroni para las 16 comparaciones de esta tabla ($\alpha=0.05$).}
+    \caption{Comparación P+C (mejor estrategia de Stacking, seleccionada en validación) vs.\ S+C, MAE de prueba en USD/MWh, para las 8 barras y ambas arquitecturas, evaluado contra la serie cruda, con test de Diebold-Mariano en sus versiones horaria (varianza Newey-West con 24 rezagos) y diaria (error promedio de cada día, truncamiento de Andrews), Sección \ref{sec:dm_ln_dyt}. El signo de DM favorece a S+C cuando es positivo. * = significativo tras corrección de Holm-Bonferroni para las 16 comparaciones de cada versión ($\alpha=0.05$).}
     \label{tab:pc_vs_sc}
 \end{table}
 
-\textbf{S+C gana en 14 de las 16 combinaciones} por MAE nominal, con mejoras de entre 1.0\% (Pan de Azúcar LN) y 7.5\% (Atacama DyT) respecto al MAE de P+C. Las únicas dos excepciones nominales son Tarapacá con LN y Puerto Montt con DyT. El test de Diebold-Mariano confirma que esta ventaja no es atribuible al azar en la mayoría de los casos: la diferencia es estadísticamente significativa en 14 de las 16 combinaciones, y S+C gana en 13 de esas 14 (93\%); la única combinación significativa a favor de P+C es Puerto Montt bajo DyT. En las 2 combinaciones restantes (Pan de Azúcar y Tarapacá bajo LN) la diferencia nominal de MAE no alcanza significancia estadística, es decir, no hay evidencia suficiente para preferir una rama sobre la otra en esos casos específicos, incluyendo la única excepción nominal de S+C bajo LN (Tarapacá), que en rigor no es una victoria significativa de P+C, sino una ausencia de diferencia detectable. Dado que estas 16 comparaciones constituyen una única familia de hipótesis, se aplica además una corrección de Holm-Bonferroni (controla la probabilidad de al menos un falso positivo en la familia, a diferencia de Bonferroni simple, sin perder potencia innecesariamente): 13 de las 16 combinaciones permanecen significativas, 12 a favor de S+C y una, Puerto Montt bajo DyT, a favor de P+C (marcadas con * en la Tabla \ref{tab:pc_vs_sc}); la única que deja de serlo bajo esta corrección más estricta (Crucero LN) tenía el $p$-valor más cercano al umbral de 0.05 dentro del grupo originalmente significativo. El resultado central, que S+C gana de forma sistemática, se sostiene bajo esta corrección más conservadora. Este resultado es notable porque S+C es, por diseño, la estrategia más simple: prescinde de Prophet, de su ajuste por barra, y del modelo de residuos y el Stacking Optimization que P+C requiere para alcanzar su mejor desempeño. La ventaja de S+C es consistente en ambas arquitecturas y en siete de las ocho barras, lo que sugiere que la posición solar, calculada de forma determinista y exacta mediante \texttt{pvlib}, captura el ciclo diario y anual del costo marginal de manera al menos tan efectiva como la descomposición estadística de Prophet, sin acumular su error de ajuste ni requerir el paso adicional de ensamblaje. Puerto Montt, la única barra donde P+C es significativamente ganador en alguna arquitectura, es consistente con su menor dependencia del ciclo solar y su mayor dependencia de la disponibilidad hidroeléctrica, documentada en la Sección \ref{sec:pmontt_desempeno}.
+\textbf{S+C gana en 14 de las 16 combinaciones} por MAE nominal, con mejoras de entre 1.0\% (Pan de Azúcar LN) y 7.5\% (Atacama DyT) respecto al MAE de P+C. Las únicas dos excepciones nominales son Tarapacá con LN y Puerto Montt con DyT. El test de Diebold-Mariano confirma que esta ventaja no es atribuible al azar en la mayoría de los casos: la diferencia es estadísticamente significativa en 14 de las 16 combinaciones, y S+C gana en 13 de esas 14 (93\%); la única combinación significativa a favor de P+C es Puerto Montt bajo DyT. En las 2 combinaciones restantes (Pan de Azúcar y Tarapacá bajo LN) la diferencia nominal de MAE no alcanza significancia estadística, es decir, no hay evidencia suficiente para preferir una rama sobre la otra en esos casos específicos, incluyendo la única excepción nominal de S+C bajo LN (Tarapacá), que en rigor no es una victoria significativa de P+C, sino una ausencia de diferencia detectable. Dado que estas 16 comparaciones constituyen una única familia de hipótesis, se aplica además una corrección de Holm-Bonferroni (controla la probabilidad de al menos un falso positivo en la familia, a diferencia de Bonferroni simple, sin perder potencia innecesariamente): 9 de las 16 combinaciones permanecen significativas, todas a favor de S+C (marcadas con * en la Tabla \ref{tab:pc_vs_sc}). Dejan de serlo la victoria de P+C en Puerto Montt bajo DyT y cuatro victorias de S+C con $p$-valores sin corregir de entre 0.010 y 0.032. La versión diaria del test da el mismo resultado con un margen algo menor: 13 combinaciones significativas sin corregir y 8 tras la corrección, todas a favor de S+C. El resultado central se sostiene así en ambas versiones: ninguna diferencia que sobreviva a la corrección favorece a P+C, aunque la ventaja de S+C es significativa de forma individual en la mitad de las combinaciones, no en todas. Este resultado es notable porque S+C es, por diseño, la estrategia más simple: prescinde de Prophet, de su ajuste por barra, y del modelo de residuos y el Stacking Optimization que P+C requiere para alcanzar su mejor desempeño. La ventaja de S+C es consistente en ambas arquitecturas y en siete de las ocho barras, lo que sugiere que la posición solar, calculada de forma determinista y exacta mediante \texttt{pvlib}, captura el ciclo diario y anual del costo marginal de manera al menos tan efectiva como la descomposición estadística de Prophet, sin acumular su error de ajuste ni requerir el paso adicional de ensamblaje. Puerto Montt, la única barra donde P+C gana con significancia sin corregir en alguna arquitectura (DyT), es consistente con su menor dependencia del ciclo solar y su mayor dependencia de la disponibilidad hidroeléctrica, documentada en la Sección \ref{sec:pmontt_desempeno}.
 
 Este hallazgo, que la estrategia más simple es también la más precisa en la gran mayoría de los casos, es el resultado central de este trabajo, y motiva que S+C sea adoptada como estrategia de referencia en el resto de este capítulo. A 24 horas, sin embargo, P+C es algo más preciso (4.5\% menos MAE; Sección \ref{sec:h24_conclusiones}); lo que se mantiene en los dos horizontes es que S+C alcanza una precisión cercana con un único modelo. Combinado con la ventaja pequeña de $\text{TFT}_\text{LN}$ sobre $\text{TFT}_\text{DyT}$ a una hora (Sección \ref{sec:ln_vs_dyt}), la selección final de este trabajo es \textbf{S+C-LN}: un único modelo, sin Stacking Optimization ni ajuste por barra, adoptado de forma uniforme en Conformal Prediction (Sección 4.6). Las extensiones de la Sección 4.8 retoman la comparación entre ambas arquitecturas donde es relevante para sus propios objetivos (por ejemplo, la robustez de la conclusión sobre Puerto Montt), en vez de asumir S+C-LN de antemano.
 
@@ -1630,7 +1634,7 @@ A diferencia de lo observado a una hora, donde LN ganaba en 11 de las 12 combina
     \label{tab:h24_pc_sc}
 \end{table}
 
-A una hora, S+C superaba a P+C en 14 de las 16 combinaciones de barra y arquitectura, y de las 13 diferencias que sobreviven a la corrección de Holm-Bonferroni, 12 eran a su favor (Sección \ref{sec:pc_vs_sc}). A 24 horas la comparación se inclina hacia P+C: P+C gana en Atacama, Cardones, Crucero y Puerto Montt, S+C gana en Tarapacá y Quillota, y en Charrúa y Pan de Azúcar no hay diferencias significativas tras la corrección. En promedio de las ocho barras, P+C obtiene un MAE 4.5\% menor que S+C (17.45 frente a 18.28\,USD/MWh). Puerto Montt vuelve a ser una de las barras donde P+C rinde mejor, igual que a una hora con DyT, lo que es consistente con su dependencia hidrológica (Sección \ref{sec:pmontt_desempeno}); pero Atacama, Cardones y Crucero, barras del norte con un ciclo solar marcado, muestran que a este horizonte la ventaja de P+C no se limita a la barra hidrológica. Prophet por sí solo es la peor estrategia en las ocho barras, y su combinación directa con el TFT de precios no mejora a este último: cuando P+C iguala o supera a S+C, lo hace combinando Prophet con dos modelos TFT mediante Stacking Optimization. A 24 horas, por lo tanto, S+C no conserva la ventaja en precisión que tenía a una hora: P+C es algo más preciso en promedio, a cambio de necesitar cuatro piezas (Prophet, dos TFT y la combinación) en lugar de un único modelo.
+A una hora, S+C superaba a P+C en 14 de las 16 combinaciones de barra y arquitectura, y las 9 diferencias que sobrevivían a la corrección de Holm-Bonferroni eran todas a su favor (Sección \ref{sec:pc_vs_sc}). A 24 horas la comparación se inclina hacia P+C: P+C gana en Atacama, Cardones, Crucero y Puerto Montt, S+C gana en Tarapacá y Quillota, y en Charrúa y Pan de Azúcar no hay diferencias significativas tras la corrección. En promedio de las ocho barras, P+C obtiene un MAE 4.5\% menor que S+C (17.45 frente a 18.28\,USD/MWh). Puerto Montt vuelve a ser una de las barras donde P+C rinde mejor, igual que a una hora con DyT, lo que es consistente con su dependencia hidrológica (Sección \ref{sec:pmontt_desempeno}); pero Atacama, Cardones y Crucero, barras del norte con un ciclo solar marcado, muestran que a este horizonte la ventaja de P+C no se limita a la barra hidrológica. Prophet por sí solo es la peor estrategia en las ocho barras, y su combinación directa con el TFT de precios no mejora a este último: cuando P+C iguala o supera a S+C, lo hace combinando Prophet con dos modelos TFT mediante Stacking Optimization. A 24 horas, por lo tanto, S+C no conserva la ventaja en precisión que tenía a una hora: P+C es algo más preciso en promedio, a cambio de necesitar cuatro piezas (Prophet, dos TFT y la combinación) en lugar de un único modelo.
 
 \paragraph{Síntesis.} De las cuatro conclusiones puestas a prueba, dos se sostienen a 24 horas: la heterocedasticidad horaria del error (en siete de ocho barras) y la superioridad de los métodos con adaptación \textit{online}, con intervalos un 10.5\% más angostos que Split CP, aunque a este horizonte LW-ACP y ACI quedan empatados. Las otras dos no se sostienen. La ventaja de LayerNorm sobre DyT desaparece: ambas arquitecturas son equivalentes. Y la conclusión central queda acotada al horizonte de una hora: a 24 horas S+C ya no supera a P+C, que es algo más preciso en promedio (4.5\%) y gana en cuatro barras contra dos. Lo que S+C conserva en ambos horizontes es una precisión cercana a la de P+C con una estructura mucho más simple, no una ventaja de precisión. La importancia de variables sugiere por qué: a 24 horas el precio reciente pierde peso y P+C recurre más al día de la semana, información que la posición solar no contiene.
 
