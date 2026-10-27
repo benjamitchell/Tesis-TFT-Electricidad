@@ -1124,7 +1124,7 @@ La Tabla \ref{tab:importancia_sc_encoder} presenta la importancia en el encoder,
     \label{tab:importancia_sc_encoder}
 \end{table}
 
-\texttt{y\_real} domina el encoder de forma universal (54.5\%--84.1\%), y Puerto Montt es el caso extremo, con la mayor concentración en la serie propia (84.1\%) y, en este caso, también el menor peso conjunto de posición solar (9.0\%) y clima (5.2\%) de las ocho barras, consistente con que Puerto Montt es también la barra con menor mejora al agregar features exógenas en el estudio de ablación (Sección 4.8.5, mejora de apenas 2.9\%) y con menor ventaja estadística de LN sobre DyT (Sección \ref{sec:ln_vs_dyt}). En las siete barras restantes, la posición solar recibe consistentemente más peso que el clima (14.4\%--25.1\% frente a 10.5\%--19.8\%), con Quillota como caso más marcado (25.1\% posición solar).
+\texttt{y\_real} domina el encoder de forma universal (54.5\%--84.1\%), y Puerto Montt es el caso extremo, con la mayor concentración en la serie propia (84.1\%) y, en este caso, también el menor peso conjunto de posición solar (9.0\%) y clima (5.2\%) de las ocho barras, consistente con que Puerto Montt es también la barra con menor mejora al agregar features exógenas en el estudio de ablación (Sección \ref{sec:ablacion}, mejora de apenas 2.9\%) y con menor ventaja estadística de LN sobre DyT (Sección \ref{sec:ln_vs_dyt}). En las siete barras restantes, la posición solar recibe consistentemente más peso que el clima (14.4\%--25.1\% frente a 10.5\%--19.8\%), con Quillota como caso más marcado (25.1\% posición solar).
 
 La Tabla \ref{tab:importancia_sc_decoder} presenta la importancia completa en el decoder, donde solo existen las tres variables solares y el índice temporal.
 
@@ -1154,39 +1154,9 @@ El peso de \texttt{relative\_time\_idx} en el decoder requiere una precaución d
 
 En síntesis, el TFT de S+C usa la posición solar tanto para describir el pasado, en el encoder, como para anticipar el instante pronosticado, en el decoder, lo que es consistente con que la ventaja predictiva de S+C sobre P+C (Sección \ref{sec:pc_vs_sc}) no sea incidental.
 
-\subsection{Información compartida entre P+C y S+C}
-\label{sec:informacion_pc_sc}
-
-P+C y S+C describen el instante pronosticado con variables distintas: P+C, con los componentes de Prophet (\texttt{trend}, \texttt{yearly}, \texttt{weekly}, \texttt{daily}) y el indicador de feriado; S+C, con la posición solar. Para saber cuánta información comparten, se mide con qué precisión las variables solares (\texttt{elevacion\_solar}, \texttt{cos\_elevacion} y \texttt{es\_horario\_verano}), en conjunto y de forma no lineal, reconstruyen cada componente de Prophet: un modelo de \textit{gradient boosting} ajustado sobre el conjunto de entrenamiento de cada barra y evaluado con validación cruzada en cinco bloques contiguos. Un $R^2$ cercano a 1 indica que el componente es redundante con la posición solar; uno cercano a 0, que contiene información que ella no tiene. Como las variables son las mismas en ambos horizontes, este análisis vale tanto para el modelo a una hora como para el modelo a 24 horas (Sección \ref{sec:h24_conclusiones}).
-
-\begin{table}[htbp]
-    \centering
-    \begin{tabular}{lrrrr}
-        \toprule
-        Barra & \texttt{daily} & \texttt{yearly} & \texttt{weekly} & \texttt{trend} \\
-        \midrule
-        Atacama       & 0.85 & 0.49 & 0.00 & $\le 0$ \\
-        Cardones      & 0.85 & 0.60 & 0.00 & $\le 0$ \\
-        Charrúa       & 0.82 & 0.61 & 0.00 & $\le 0$ \\
-        Crucero       & 0.87 & 0.66 & 0.00 & $\le 0$ \\
-        Pan de Azúcar & 0.84 & 0.61 & 0.00 & $\le 0$ \\
-        Puerto Montt  & 0.16 & 0.04 & 0.00 & $\le 0$ \\
-        Quillota      & 0.83 & 0.62 & 0.00 & $\le 0$ \\
-        Tarapacá      & 0.89 & 0.68 & 0.00 & $\le 0$ \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.2cm}
-    \caption{$R^2$ con que las variables de posición solar de S+C reconstruyen cada componente de Prophet de P+C, conjunto de entrenamiento, validación cruzada en cinco bloques contiguos. Para \texttt{trend} el $R^2$ es negativo en todas las barras: un nivel de largo plazo no se puede extrapolar desde variables cíclicas.}
-    \label{tab:informacion_pc_sc}
-\end{table}
-
-La posición solar contiene casi todo el componente diario de Prophet ($R^2$ entre 0.82 y 0.89 en siete barras) y buena parte del anual (0.49--0.68), pero nada del semanal ni de la tendencia (Tabla \ref{tab:informacion_pc_sc}). Las correlaciones correspondientes son negativas ($-0.83$ a $-0.86$ entre \texttt{daily} y \texttt{elevacion\_solar}; $-0.65$ a $-0.77$ entre \texttt{yearly} y \texttt{es\_horario\_verano}) porque la generación solar baja el precio: Prophet aprende que el costo marginal es menor en las horas y en los meses de mayor radiación, justo cuando las variables solares son altas. Puerto Montt vuelve a ser la excepción ($R^2$ de 0.16 y 0.04), consistente con un precio que no sigue el ciclo solar (Sección \ref{sec:pmontt_desempeno}). En suma, lo que P+C sabe del instante pronosticado y S+C no es el calendario (día de la semana y feriados) y el nivel de largo plazo del precio.
-
-A una hora, ambos modelos se apoyan sobre todo en el precio recién observado: \texttt{y\_real} concentra en promedio el 66.0\% del encoder de S+C (Tabla \ref{tab:importancia_sc_encoder}) y el 48.8\% del de P+C. En el decoder, excluido \texttt{relative\_time\_idx} por ser constante, cada uno toma la hora del día de su propia fuente: S+C de la posición solar y P+C de \texttt{daily} (26.2\% en promedio), junto con \texttt{trend} (30.8\%), que le indica el nivel de la serie; \texttt{weekly} recibe un 10.7\%. Ambas estrategias acceden, por lo tanto, a la información que domina a este horizonte, la hora del día, y S+C lo hace con un único modelo, sin Prophet ni Stacking. Es consistente con que S+C sea la estrategia más precisa a una hora (Sección \ref{sec:pc_vs_sc}).
-
 \section{Extensiones y análisis complementarios}
 
-Además de la comparación central entre P+C y S+C presentada en las secciones anteriores, esta sección reúne los análisis complementarios descritos en la Sección 3.8: un tratamiento diferenciado de Puerto Montt con features hídricas propias, la comparación contra el costo marginal programado del CEN, la sensibilidad a una función de pérdida asimétrica, un estudio preliminar de granularidad temporal, un estudio de ablación de features, un piloto de entrenamiento sin recorte de outliers, la evaluación a horizonte \textit{day-ahead} y una comparación con resultados reportados en la literatura reciente para las barras Crucero y Puerto Montt.
+Además de la comparación central entre P+C y S+C presentada en las secciones anteriores, esta sección reúne los análisis complementarios descritos en la Sección \ref{sec:extensiones_meta}, ordenados en cuatro bloques. El primero evalúa variantes del modelo: variables hídricas para Puerto Montt (Sección \ref{sec:pmontt_desempeno}), el entrenamiento sin recorte de outliers (Sección \ref{sec:piloto_outliers}) y un modelo global para las ocho barras (Sección \ref{sec:matriz_outliers}). El segundo extiende el trabajo a 24 horas (Sección \ref{sec:h24_dayahead}) y explica sus diferencias con el horizonte de una hora mediante la interpretabilidad del modelo y una ablación de variables (Sección \ref{sec:interpretabilidad_ablacion}). El tercero revisa la robustez de la evaluación frente a una función de pérdida asimétrica (Sección \ref{sec:perdida_asimetrica}). El cuarto contrasta el modelo con referencias externas: la literatura reciente para el mismo mercado (Sección \ref{sec:crucero_leon}) y el costo marginal programado del CEN (Sección \ref{sec:cen_programado}).
 
 \subsection{Puerto Montt: features hídricas (H+C y S+H+C)}
 \label{sec:pmontt_desempeno}
@@ -1215,7 +1185,7 @@ Puerto Montt aparece sistemáticamente como la barra de peor desempeño del sist
 
 Puerto Montt no es una barra ``más difícil'' al azar: tiene una media de costo marginal de \textasciitilde100 USD/MWh frente a \textasciitilde61--66 USD/MWh del resto, y una desviación estándar de \textasciitilde94 USD/MWh, cerca de 1.6 veces la del resto (\textasciitilde56--60 USD/MWh). No es, sin embargo, un problema de spikes puntuales extremos: su máximo tras la limpieza de outliers (464.13 USD/MWh) es del mismo orden que el de las demás barras, que rondan los 320--340 USD/MWh. Se trata más bien de un nivel de precio sistemáticamente más alto y más disperso, consistente con la dependencia hidrológica de la zona (ciclos de deshielo y precipitaciones que operan en escalas de meses, más lentas que la ventana de contexto de 168 horas del TFT).
 
-La Tabla \ref{tab:pmontt_comparacion} presenta la comparación de las cuatro estrategias descritas en la Sección 3.8.1: H+C, P+C, S+C y S+H+C, para ambas arquitecturas.
+La Tabla \ref{tab:pmontt_comparacion} presenta la comparación de las cuatro estrategias descritas en la Sección \ref{sec:pmontt_meta}: H+C, P+C, S+C y S+H+C, para ambas arquitecturas.
 
 \begin{table}[htbp]
     \centering
@@ -1272,256 +1242,10 @@ El test confirma que la ausencia de mejora de S+H+C no es casualidad de una sola
 
 \textbf{En síntesis:} Puerto Montt sigue siendo la barra de peor desempeño del sistema bajo cualquiera de las cuatro estrategias evaluadas, y esto parece ser una propiedad estructural de sus datos (mayor nivel y dispersión del precio, dinámica hidrológica de baja frecuencia) más que un problema de features solucionable con las variables hídricas probadas aquí, con o sin señal solar. S+C (o, en DyT, P+C) siguen siendo la mejor opción disponible para esta barra; tanto H+C como S+H+C quedan documentadas como hipótesis razonables que, con la información disponible, no se confirman.
 
-\subsection{Comparación contra el costo marginal programado del CEN}
-\label{sec:cen_programado}
-
-El CEN publica el \textit{costo marginal programado}, el valor esperado del costo marginal resultante de la Programación de la Operación, obtenido a través de su API pública (Sistema de Información Pública, \texttt{sipub.coordinador.cl}). Se compara aquí contra la predicción de S+C-LN, ambos evaluados contra el costo marginal real de la misma barra, sobre las 8\,298 horas del conjunto de prueba (13 de mayo de 2025 -- 24 de abril de 2026), para las seis barras cuyo mnemotécnico se logró identificar en el catálogo de la API (Atacama y Tarapacá no están disponibles bajo ningún mnemotécnico de barra 220kV probado, ni en este ni en ningún otro período consultado). Ambos pronósticos no se emiten con la misma anticipación: el programado se fija antes de la operación real, mientras que S+C-LN pronostica la hora siguiente con el costo marginal observado hasta la hora anterior. Por eso la Tabla \ref{tab:cen_programado} agrega el modelo a 24 horas (Sección \ref{sec:h24_dayahead}).
-
-\begin{table}[htbp]
-    \centering
-    \begin{tabular}{lrrrrr}
-        \toprule
-        & & \multicolumn{2}{c}{S+C-LN, 1 hora} & \multicolumn{2}{c}{S+C-LN, 24 horas} \\
-        Barra & MAE CEN & MAE & vs.\ CEN & MAE & vs.\ CEN \\
-        \midrule
-        Puerto Montt  & 32.98 & 13.68 & $-58.5\%$ & 38.89 & $+17.9\%$ \\
-        Crucero       & 17.10 & 6.74  & $-60.6\%$ & 15.94 & $-6.8\%$  \\
-        Cardones      & 14.52 & 6.63  & $-54.4\%$ & 15.32 & $+5.5\%$  \\
-        Pan de Azúcar & 15.09 & 6.93  & $-54.1\%$ & 13.64 & $-9.6\%$  \\
-        Charrúa       & 17.01 & 7.98  & $-53.1\%$ & 18.41 & $+8.2\%$  \\
-        Quillota      & 17.26 & 8.26  & $-52.1\%$ & 17.50 & $+1.4\%$  \\
-        \bottomrule
-    \end{tabular}
-    \caption{S+C-LN vs.\ el costo marginal programado publicado por el CEN, ambos evaluados contra el costo marginal real, conjunto de prueba. MAE en USD/MWh; ``vs.\ CEN'' es la diferencia relativa de MAE (negativo: menor error que el CEN). El MAE a 24 horas es el promedio de los 24 pasos del horizonte (Tabla \ref{tab:h24_resumen}), con pronósticos emitidos a todas las horas.}
-    \label{tab:cen_programado}
-\end{table}
-
-Con una hora de anticipación, S+C-LN reduce el MAE entre 52.1\% y 60.6\% respecto al costo marginal programado en las seis barras. Con un día de anticipación, la comparación cambia: el modelo a 24 horas reduce el error en Pan de Azúcar (9.6\%) y Crucero (6.8\%), queda prácticamente empatado en Quillota (1.4\% más error) y lo aumenta en Cardones (5.5\%), Charrúa (8.2\%) y Puerto Montt (17.9\%). La ventaja a una hora proviene, por lo tanto, principalmente de incorporar el costo marginal recién observado, información que el programado no tiene al momento de fijarse, y no de una representación del sistema superior a la de la Programación de la Operación. Esto es consistente con que el programado no es un pronóstico estadístico optimizado para minimizar el error puntual, sino el resultado de optimizar el despacho del sistema completo con restricciones técnicas y de seguridad que este trabajo no modela. Lo que la comparación sí muestra es el valor de esa información reciente: un pronóstico actualizado hora a hora reduce a menos de la mitad el error respecto de la cifra programada. Completar Atacama y Tarapacá, cuyo mnemotécnico no se logró ubicar en el catálogo de la API, es la continuación natural de esta comparación.
-
-\subsection{Sensibilidad a una función de pérdida asimétrica}
-\label{sec:perdida_asimetrica}
-
-Todas las métricas usadas hasta aquí (MAE, RMSE) son simétricas: penalizan por igual sobreestimar y subestimar el costo marginal. En el mercado spot, sin embargo, el costo de un error de pronóstico es asimétrico y depende de la posición del agente: un generador que subestima el precio real deja de capturar el ingreso adicional que habría obtenido vendiendo a un precio mayor; un comercializador o consumidor que subestima el precio queda expuesto a un costo de abastecimiento mayor al presupuestado cuando el precio real resulta más alto de lo previsto. En ambos casos, el error más costoso es la subestimación del precio, no la sobreestimación, aunque la magnitud relativa de esa asimetría depende del agente y del contrato específico.
-
-Se evalúa la sensibilidad de la ventaja de S+C-LN sobre la línea base de persistencia (Sección \ref{sec:baselines}) frente a esta asimetría, mediante la pérdida lineal-lineal (\textit{linlin} o \textit{pinball}) con parámetro $\tau \in (0,1)$:
-
-\begin{equation}
-    L_\tau(e) = \tau \max(e, 0) + (1-\tau)\max(-e, 0), \qquad e = y_t - \hat{y}_t
-    \label{eq:linlin}
-\end{equation}
-
-que penaliza la subestimación ($e>0$) con peso $\tau$ y la sobreestimación ($e<0$) con peso $1-\tau$; $\tau=0.5$ recupera el caso simétrico (equivalente a la mitad del MAE). La Tabla \ref{tab:perdida_asimetrica} presenta el \textit{skill score} de S+C-LN respecto a persistencia, $1 - L_\tau(\text{S+C-LN})/L_\tau(\text{persistencia})$, para tres valores de $\tau$: 0.2 (sobreestimar es cuatro veces más costoso que subestimar), 0.5 (simétrico) y 0.8 (subestimar es cuatro veces más costoso que sobreestimar).
-
-\begin{table}[htbp]
-    \centering
-    \begin{tabular}{lrrr}
-        \toprule
-        Barra & Skill ($\tau=0.2$) & Skill ($\tau=0.5$) & Skill ($\tau=0.8$) \\
-        \midrule
-        Atacama        & +0.367 & +0.352 & +0.337 \\
-        Cardones       & +0.378 & +0.359 & +0.340 \\
-        Charrúa        & +0.243 & +0.224 & +0.204 \\
-        Crucero        & +0.361 & +0.353 & +0.346 \\
-        Pan de Azúcar  & +0.331 & +0.333 & +0.335 \\
-        Puerto Montt   & $-$0.019 & +0.036 & +0.091 \\
-        Quillota       & +0.208 & +0.206 & +0.204 \\
-        Tarapacá       & +0.358 & +0.357 & +0.355 \\
-        \bottomrule
-    \end{tabular}
-    \caption{\textit{Skill score} de S+C-LN respecto a persistencia bajo la pérdida asimétrica \eqref{eq:linlin}, para tres valores de $\tau$, conjunto de prueba completo. $\tau=0.5$ es el caso simétrico; valores positivos indican que S+C-LN supera a la persistencia bajo esa asimetría de costos.}
-    \label{tab:perdida_asimetrica}
-\end{table}
-
-En siete de las ocho barras, la ventaja de S+C-LN sobre la persistencia es robusta a la asimetría de costos: el \textit{skill score} se mantiene positivo y de magnitud similar (0.20--0.38) en todo el rango de $\tau$ evaluado, con variaciones de a lo más 0.02--0.03 entre los extremos. Puerto Montt es la excepción, y de forma reveladora: con $\tau=0.2$ (sobreestimar es lo costoso), S+C-LN resulta ligeramente \textbf{peor} que la persistencia ($-$0.019); recién entre $\tau=0.2$ y $\tau=0.35$ el \textit{skill score} cruza a positivo, y solo alcanza +0.091 en el extremo opuesto ($\tau=0.8$). Es decir, en la barra de peor desempeño del sistema, la conclusión de que S+C-LN supera a un pronóstico ingenuo \textbf{depende de qué tipo de error le resulta más costoso al agente}, algo que el MAE simétrico, usado en el resto de este capítulo, no puede revelar por construcción. Para las siete barras restantes, en cambio, la ventaja del modelo es una conclusión sólida independientemente de esa asimetría.
-
-\subsection{Estudio de granularidad temporal}
-\label{sec:granularidad}
-
-Se compara la estrategia ganadora S+C a tres resoluciones temporales (Día, Horario y 15 minutos) para las barras piloto ATACAMA, CARDONES y P.MONTT, en ambas arquitecturas (Sección 3.8.4). La Tabla \ref{tab:granularidad_periodos} muestra que los tres experimentos no cubren el mismo período histórico, dada la disponibilidad distinta de datos crudos por granularidad.
-
-\begin{table}[htbp]
-    \centering
-    \begin{tabular}{lll}
-        \toprule
-        Granularidad & Entrenamiento & Prueba \\
-        \midrule
-        Día        & 2020-02-15 -- 2023-12-19 & 2024-10-25 -- 2025-08-31 \\
-        Horario    & 2020-01-04 -- 2024-06-01 & 2025-05-13 -- 2026-04-24 \\
-        15 minutos & 2024-07-16 -- 2025-11-28 & 2026-03-16 -- 2026-07-01 \\
-        \bottomrule
-    \end{tabular}
-    \caption{Período histórico cubierto por cada granularidad (barra ATACAMA; idéntico para CARDONES y P.MONTT). Los tres conjuntos de prueba no se solapan entre sí.}
-    \label{tab:granularidad_periodos}
-\end{table}
-
-La Tabla \ref{tab:granularidad_metricas} presenta el desempeño en el conjunto de prueba para las tres granularidades.
-
-\begin{table}[htbp]
-    \centering
-    \small
-    \begin{tabular}{lllrrrr}
-        \toprule
-        Barra & Arq. & Granularidad & $N$ & MAE & RMSE & R² \\
-        \midrule
-        ATACAMA  & DyT & Día        & 311   & 15.91 & 24.11 & 0.272 \\
-        ATACAMA  & DyT & Horario    & 8298  & 6.68  & 16.48 & 0.844 \\
-        ATACAMA  & DyT & 15 min     & 10326 & 6.67  & 18.10 & 0.878 \\
-        ATACAMA  & LN  & Día        & 311   & 15.71 & 22.66 & 0.356 \\
-        ATACAMA  & LN  & Horario    & 8298  & 6.70  & 16.52 & 0.843 \\
-        ATACAMA  & LN  & 15 min     & 10326 & 6.55  & 18.04 & 0.879 \\
-        CARDONES & DyT & Día        & 311   & 15.66 & 21.31 & 0.404 \\
-        CARDONES & DyT & Horario    & 8298  & 6.78  & 17.16 & 0.833 \\
-        CARDONES & DyT & 15 min     & 10326 & 7.31  & 20.32 & 0.854 \\
-        CARDONES & LN  & Día        & 311   & 14.96 & 20.53 & 0.447 \\
-        CARDONES & LN  & Horario    & 8298  & 6.63  & 15.61 & 0.858 \\
-        CARDONES & LN  & 15 min     & 10326 & 7.21  & 20.57 & 0.851 \\
-        P.MONTT  & DyT & Día        & 311   & 25.20 & 35.08 & 0.364 \\
-        P.MONTT  & DyT & Horario    & 8298  & 14.01 & 26.04 & 0.820 \\
-        P.MONTT  & DyT & 15 min     & 10326 & 8.36  & 23.75 & 0.867 \\
-        P.MONTT  & LN  & Día        & 311   & 25.20 & 33.62 & 0.416 \\
-        P.MONTT  & LN  & Horario    & 8298  & 13.68 & 25.80 & 0.823 \\
-        P.MONTT  & LN  & 15 min     & 10326 & 8.42  & 23.93 & 0.865 \\
-        \bottomrule
-    \end{tabular}
-    \caption{Desempeño de S+C en el conjunto de prueba por granularidad, barra y arquitectura, evaluado contra la serie cruda sin recorte de outliers (Sección \ref{sec:baselines}).}
-    \label{tab:granularidad_metricas}
-\end{table}
-
-El R² mejora sustancialmente al pasar de Día a Horario en las tres barras y ambas arquitecturas, pero la mejora adicional de Horario a 15 minutos es mucho más modesta que lo que sugería la serie recortada, y deja de ser monótona en un caso: CARDONES LN pasa de 0.858 en Horario a 0.851 en 15 minutos, una caída marginal de 0.7 puntos porcentuales, dentro del margen de ruido esperable. En las cinco combinaciones restantes la mejora de Horario a 15 minutos es de entre 2.1 y 4.7 puntos porcentuales --lejos de los \textasciitilde10 puntos que se observaban antes de corregir el recorte de outliers, que afectaba proporcionalmente más a la resolución de 15 minutos por concentrar una fracción mayor de valores extremos dentro de cada ventana de calibración--. El caso más contundente sigue siendo P.MONTT, la barra más difícil del sistema: R² pasa de \textasciitilde0.36--0.42 en Día a \textasciitilde0.82 en Horario a \textasciitilde0.87 en 15 minutos. El MAE, en cambio, no es directamente comparable entre granularidades, cada una tiene su propia escala de variabilidad, por lo que el R², al ser adimensional, es la métrica más honesta para esta comparación.
-
-La Tabla \ref{tab:granularidad_extremos} extiende la comparación con percentiles de error.
-
-\begin{table}[htbp]
-    \centering
-    \small
-    \begin{tabular}{lllrrrr}
-        \toprule
-        Barra & Arq. & Granularidad & MAE & P90 & P95 & Máximo \\
-        \midrule
-        ATACAMA  & DyT & Día        & 15.91 & 35.78 & 49.50 & 148.63 \\
-        ATACAMA  & DyT & Horario    & 6.68  & 17.92 & 28.05 & 449.00 \\
-        ATACAMA  & DyT & 15 min     & 6.67  & 16.17 & 34.00 & 184.59 \\
-        ATACAMA  & LN  & Día        & 15.71 & 34.23 & 42.52 & 140.12 \\
-        ATACAMA  & LN  & Horario    & 6.70  & 18.32 & 28.37 & 447.71 \\
-        ATACAMA  & LN  & 15 min     & 6.55  & 15.75 & 35.22 & 182.13 \\
-        CARDONES & DyT & Día        & 15.66 & 32.60 & 40.32 & 118.94 \\
-        CARDONES & DyT & Horario    & 6.78  & 18.49 & 29.15 & 417.64 \\
-        CARDONES & DyT & 15 min     & 7.31  & 17.49 & 38.77 & 173.15 \\
-        CARDONES & LN  & Día        & 14.96 & 29.92 & 39.77 & 114.25 \\
-        CARDONES & LN  & Horario    & 6.63  & 18.30 & 28.98 & 415.65 \\
-        CARDONES & LN  & 15 min     & 7.21  & 17.45 & 40.52 & 173.97 \\
-        P.MONTT  & DyT & Día        & 25.20 & 56.51 & 73.23 & 159.39 \\
-        P.MONTT  & DyT & Horario    & 14.01 & 38.53 & 57.95 & 218.46 \\
-        P.MONTT  & DyT & 15 min     & 8.36  & 18.64 & 40.55 & 244.84 \\
-        P.MONTT  & LN  & Día        & 25.20 & 52.07 & 65.15 & 131.25 \\
-        P.MONTT  & LN  & Horario    & 13.68 & 38.68 & 57.73 & 238.67 \\
-        P.MONTT  & LN  & 15 min     & 8.42  & 19.14 & 41.55 & 247.47 \\
-        \bottomrule
-    \end{tabular}
-    \caption{Percentiles de error absoluto por granularidad, barra y arquitectura, conjunto de prueba, evaluado contra la serie cruda sin recorte de outliers.}
-    \label{tab:granularidad_extremos}
-\end{table}
-
-Nótese que el error máximo absoluto en USD/MWh en realidad \emph{aumenta} al pasar de Día a Horario, de forma mucho más marcada que en la serie recortada (por ejemplo, ATACAMA LN: 140 $\to$ 448 $\to$ 182 USD/MWh), pese a que el MAE y el R² mejoran sustancialmente. El salto de Día a Horario es ahora el más grande de los dos, no el de Horario a 15 minutos: al recuperar la serie cruda, Horario queda expuesto a los mismos \textit{spikes} de gran magnitud que 15 minutos, mientras que Día, al promediar dentro del día, los diluye. Esto es consistente con que los spikes de costo marginal son eventos puntuales de gran magnitud que ninguna resolución logra anticipar por completo, mientras que la mejora de MAE/R² refleja la reducción del error típico, no del error extremo.
-
-La Tabla \ref{tab:granularidad_cp} presenta los resultados de Conformal Prediction para las tres granularidades, evaluados contra la serie cruda. A diferencia de la versión anterior de esta tabla, no se selecciona un ``método ganador'' por combinación mirando su desempeño en prueba (Sección \ref{sec:baselines}); en su lugar se reportan directamente Split CP clásico y LW-ACP ($\gamma=0.05$, Sección \ref{sec:lwacp_resultados}), los dos métodos ya caracterizados en el resto del capítulo. Para la granularidad Día se omite LW-ACP: con una observación por día no existe heterocedasticidad horaria intradiaria que ponderar, por lo que el mecanismo de $\hat\sigma_h$ no es aplicable.
-
-\begin{table}[htbp]
-    \centering
-    \small
-    \begin{tabular}{lllrrrr}
-        \toprule
-        & & & \multicolumn{2}{c}{Split CP} & \multicolumn{2}{c}{LW-ACP} \\
-        Barra & Arq. & Granularidad & Coverage & Width & Coverage & Width \\
-        \midrule
-        ATACAMA  & DyT & Día     & 0.8479 & 52.29  & --     & --     \\
-        ATACAMA  & DyT & Horario & 0.9212 & 33.93  & 0.8984 & 34.43  \\
-        ATACAMA  & DyT & 15 min  & 0.8066 & 12.35  & 0.8733 & 24.74  \\
-        ATACAMA  & LN  & Día     & 0.8220 & 46.79  & --     & --     \\
-        ATACAMA  & LN  & Horario & 0.9134 & 32.73  & 0.8980 & 36.08  \\
-        ATACAMA  & LN  & 15 min  & 0.8193 & 12.29  & 0.8736 & 24.81  \\
-        CARDONES & DyT & Día     & 0.8155 & 51.21  & --     & --     \\
-        CARDONES & DyT & Horario & 0.9153 & 33.36  & 0.8979 & 33.94  \\
-        CARDONES & DyT & 15 min  & 0.8134 & 12.94  & 0.8705 & 26.47  \\
-        CARDONES & LN  & Día     & 0.8188 & 47.38  & --     & --     \\
-        CARDONES & LN  & Horario & 0.9153 & 33.50  & 0.8978 & 33.78  \\
-        CARDONES & LN  & 15 min  & 0.8166 & 12.22  & 0.8709 & 26.46  \\
-        P.MONTT  & DyT & Día     & 0.8900 & 106.24 & --     & --     \\
-        P.MONTT  & DyT & Horario & 0.9141 & 75.97  & 0.8988 & 71.05  \\
-        P.MONTT  & DyT & 15 min  & 0.8793 & 27.12  & 0.8899 & 38.92  \\
-        P.MONTT  & LN  & Día     & 0.9223 & 108.80 & --     & --     \\
-        P.MONTT  & LN  & Horario & 0.9117 & 75.77  & 0.8987 & 75.00  \\
-        P.MONTT  & LN  & 15 min  & 0.8747 & 25.78  & 0.8896 & 39.70  \\
-        \bottomrule
-    \end{tabular}
-    \caption{Conformal Prediction por granularidad, evaluado contra la serie cruda sin recorte de outliers, con el piso $\hat\sigma_h \geq \hat\sigma_{\text{global}}$ de la Sección \ref{sec:lw_split_cp} ya aplicado. Coverage nominal: 0.90. Width en USD/MWh. LW-ACP no aplica a Día (sin heterocedasticidad horaria intradiaria que explotar).}
-    \label{tab:granularidad_cp}
-\end{table}
-
-En general el ancho del intervalo se reduce al aumentar la resolución. La cobertura, en cambio, solo queda cerca del nominal en la resolución Horaria: en Día y en 15 minutos Split CP sub-cubre en Atacama y Cardones (0.81--0.85 frente a 0.90), consistente con ventanas de calibración más cortas y estacionalmente sesgadas en esas dos granularidades (310 días con una observación diaria, y 107 días a 15 minutos), y a 15 minutos LW-ACP recupera parte de esa brecha (0.87--0.89) a costa de un intervalo más ancho. Una versión anterior de esta tabla, calculada al 95\% de cobertura nominal y antes de introducir el piso $\hat\sigma_h \geq \hat\sigma_{\text{global}}$ (Sección \ref{sec:lw_split_cp}), mostraba un caso anómalo en ATACAMA a 15 minutos, con un ancho de LW-ACP de hasta 104\,USD/MWh, casi el triple que a resolución Horaria. Ese caso se examina en detalle a continuación, junto con el efecto del piso sobre él.
-
-\subsubsection{Inestabilidad de $\hat\sigma_h$ en 15 minutos, y su corrección}
-
-Los métodos LW Split CP y LW-ACP normalizan cada \textit{score} de calibración por una estimación local de la escala del error específica de la hora del día, $\hat\sigma_h$ (Sección 2.6.5). En ATACAMA a 15 minutos, durante las horas 11, 14, 15 y 16, el precio real es exactamente 0 USD/MWh en el 100\% de las observaciones de calibración, producto de sobreoferta solar sostenida. Con el valor real constante, $\hat\sigma_h$ colapsaba, antes de aplicar el piso, a valores casi nulos (0.0012--0.0049) en esas horas, frente a $\hat\sigma_h \approx 13$--$15$ en horas de transición solar (7h, 19h). Como LW-ACP normaliza cada \textit{score} de calibración por el $\hat\sigma_h$ de su propia hora antes de calcular el cuantil adaptado, una hora con $\hat\sigma_h$ casi nulo generaba \textit{scores} normalizados gigantes, que inflaban el ancho del intervalo para todas las horas de prueba, no solo la afectada: el origen del ancho promedio de hasta 104\,USD/MWh que mostraba ATACAMA a 15 minutos en una versión anterior de este análisis, muy por encima de Split CP (31.6 en esa misma versión, antes de truncar el límite inferior en 0 --Sección \ref{sec:split_cp_clasico}--).
-
-No era solo la resolución: también contribuía el confound estacional del período histórico. El conjunto de calibración de 15 minutos cubre apenas 107 días (28 de noviembre de 2025 a 16 de marzo de 2026), un período que cae íntegramente en temporada de alta generación solar (verano y comienzos de otoño en Chile), lo que favorece que varias horas del bloque solar registren precio cero en el 100\% de las observaciones de calibración. El conjunto de calibración de Horario, en cambio, cubre 345 días e incluye meses de invierno, donde el precio en esas mismas horas sí toma valores positivos con cierta frecuencia, lo que evita que $\hat\sigma_h$ colapse de la misma forma.
-
-El piso $\hat\sigma_h \geq \hat\sigma_{\text{global}}$, introducido en la Sección \ref{sec:lw_split_cp} para un problema análogo detectado en la resolución Horaria, \textbf{resuelve también este caso}: con el piso aplicado, más el truncamiento en 0 del límite inferior ya incorporado en la Tabla \ref{tab:granularidad_cp}, el ancho de LW-ACP en ATACAMA a 15 minutos baja, al 95\% de cobertura nominal en que se detectó el problema, de $\sim$104 a 34.2\,USD/MWh (LN) y 34.3\,USD/MWh (DyT), y queda en 24.8 y 24.7\,USD/MWh al 90\% reportado en la tabla, en línea con el resto de las combinaciones de esa granularidad y sin el comportamiento degenerado observado antes. Esto es evidencia de que el piso no es un parche específico para las dos barras horarias donde se detectó originalmente, sino una corrección general y necesaria del mecanismo de normalización de $\hat\sigma_h$ (Ecuación \eqref{eq:sigma_h}), aplicable en cualquier escenario donde una hora del día pueda quedar con varianza de calibración casi nula --ya sea por curtailment sostenido, como en 15 minutos, o por contaminación puntual de la calibración, como en el caso horario original--.
-
-\subsubsection{Comparación justa Horario vs. 15 minutos (misma ventana calendario)}
-
-La comparación anterior arrastra un confound: no es el mismo período histórico entre granularidades (Tabla \ref{tab:granularidad_periodos}), por lo que parte de la ventaja de 15 minutos podría deberse al período más reciente y no a la resolución en sí. Para aislar el efecto, se entrena un modelo S+C adicional a resolución Horaria pero restringido a la misma ventana histórica que el piloto de 15 minutos (Sección 3.8.4); su prueba queda truncada al 24 de abril de 2026 por la disponibilidad de datos crudos de precio. La prueba del piloto de 15 minutos original se recorta a esa misma ventana calendario (16 de marzo -- 24 de abril de 2026) para una comparación estrictamente pareada. La Tabla \ref{tab:h_vs_15min} presenta los resultados.
-
-\begin{table}[htbp]
-    \centering
-    \begin{tabular}{llrrrr}
-        \toprule
-        Barra & Versión & $N$ & MAE & RMSE & R² \\
-        \midrule
-        ATACAMA  & Horario (ventana acotada)        & 926  & 4.50 & 8.41  & 0.918 \\
-        ATACAMA  & 15 min (recortado a ventana h)    & 3701 & 2.51 & 6.16  & 0.958 \\
-        CARDONES & Horario (ventana acotada)        & 926  & 4.29 & 8.20  & 0.920 \\
-        CARDONES & 15 min (recortado a ventana h)    & 3701 & 2.30 & 6.00  & 0.960 \\
-        P.MONTT  & Horario (ventana acotada)        & 926  & 7.87 & 14.01 & 0.687 \\
-        P.MONTT  & 15 min (recortado a ventana h)    & 3701 & 3.58 & 8.78  & 0.891 \\
-        \bottomrule
-    \end{tabular}
-    \caption{Comparación Horario vs. 15 minutos sobre la misma ventana calendario (16 de marzo -- 24 de abril de 2026, 39 días), estrategia S+C LN.}
-    \label{tab:h_vs_15min}
-\end{table}
-
-Con el confound de período controlado, \textbf{la ventaja de 15 minutos se mantiene}, de hecho se amplifica: el MAE de 15 minutos es 44--55\% menor que el de Horario en las tres barras (ATACAMA: 2.51 vs. 4.50; CARDONES: 2.30 vs. 4.29; P.MONTT: 3.58 vs. 7.87 USD/MWh), con R² más alto en los tres casos (hasta 0.96 en ATACAMA/CARDONES). Esto descarta que la mejora observada en la Tabla \ref{tab:granularidad_metricas} fuera enteramente un artefacto del período histórico distinto: incluso comparando exactamente la misma ventana calendario, predecir con datos de 15 minutos produce errores puntuales menores que predecir con datos horarios. Una hipótesis razonable es que, al reducir el paso temporal, el modelo dispone de una señal más granular de la dinámica de corto plazo (por ejemplo, las rampas de entrada/salida del bloque solar) que se pierde al promediar a resolución horaria. La comparación con Día sigue sin poder controlarse de la misma forma, dado que no se dispone de un pipeline Día restringido a esta ventana, por lo que esa parte de la conclusión se mantiene como confound abierto.
-
-En síntesis, la evidencia es más sólida para la hipótesis de que una mayor resolución temporal mejora la capacidad predictiva del modelo, verificada mediante el control del confound de período entre Horario y 15 minutos; para Día el resultado sigue siendo preliminar. La inestabilidad del mecanismo $\hat\sigma_h$ detectada en 15 minutos, documentada en la sección anterior, quedó resuelta con el mismo piso de varianza introducido para la resolución Horaria, sin necesidad de un ajuste adicional específico para ventanas de calibración cortas y estacionalmente sesgadas.
-
-\subsection{Ablación de features}
-\label{sec:ablacion}
-
-El pipeline principal S+C usa como \texttt{known\_reals} la posición solar y como \texttt{unknown\_reals} el precio más cinco variables climáticas horarias. Para aislar cuánto aporta esa información exógena por sobre la autocorrelación de la propia serie, se entrena un TFT ``solo precios'' (sin ningún \texttt{known\_real}, sin variables climáticas) para cuatro barras, usando el mismo período histórico y las mismas fechas de corte que el pipeline principal (Sección 3.8.5). La Tabla \ref{tab:ablacion} presenta la comparación.
-
-\begin{table}[htbp]
-    \centering
-    \begin{tabular}{lrrrrrrr}
-        \toprule
-        & \multicolumn{3}{c}{Sin features} & \multicolumn{3}{c}{S+C} & \\
-        Barra & MAE & RMSE & R² & MAE & RMSE & R² & Mejora MAE \\
-        \midrule
-        ATACAMA  & 7.69  & 17.39 & 0.826 & 6.70  & 16.52 & 0.843 & 12.9\% \\
-        CRUCERO  & 7.58  & 17.11 & 0.835 & 6.74  & 16.64 & 0.844 & 11.1\% \\
-        P.MONTT  & 14.09 & 26.50 & 0.814 & 13.68 & 25.80 & 0.823 & 2.9\%  \\
-        TARAPACA & 7.58  & 17.45 & 0.850 & 7.11  & 17.77 & 0.845 & 6.2\%  \\
-        \bottomrule
-    \end{tabular}
-    \caption{Comparación entre el TFT ``solo precios'' (sin features exógenas) y S+C, conjunto de prueba, arquitectura LN, evaluado contra la serie cruda sin recorte de outliers. Mejora MAE = reducción porcentual del MAE al agregar las features de S+C.}
-    \label{tab:ablacion}
-\end{table}
-
-Las features exógenas reducen el MAE de prueba en las cuatro barras, pero con una magnitud muy distinta: la mejora es sustancial en ATACAMA (12.9\%) y CRUCERO (11.1\%), moderada en TARAPACA (6.2\%), y marginal en P.MONTT (2.9\%). El patrón es consistente con lo observado en la Sección 4.7.1: el costo marginal de Puerto Montt está dominado por la dinámica hidrológica de la zona centro-sur, no por el ciclo solar diario que domina en las barras del norte, por lo que la posición solar y el clima horario aportan relativamente poca información nueva por sobre la autocorrelación de la propia serie. En las barras del norte, en cambio, donde la generación fotovoltaica explica gran parte de la variabilidad diaria del precio, conocer la posición solar futura (\texttt{known\_real}) le da al modelo una ventaja real por sobre simplemente extrapolar el pasado reciente de la serie.
-
 \subsection{Piloto: entrenamiento sin recorte de outliers}
 \label{sec:piloto_outliers}
 
-La Tabla \ref{tab:piloto_outliers_h1} presenta, a horizonte $h=1$, el MAE general y el MAE condicional al régimen de precio alto (percentil 95 o superior de la serie cruda de prueba) del modelo entrenado sin recorte de outliers (Sección \ref{sec:piloto_outliers_meta} de la Metodología), comparado contra el modelo principal, para las ocho barras del SEN (las cuatro barras originales del piloto y las cuatro restantes, en las que se extendió el procedimiento). Además de las variaciones porcentuales, se reporta el valor $p$ de la prueba de Diebold-Mariano sobre el error absoluto (Sección \ref{sec:dm_ln_dyt}) y el valor $p$ de un \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto. Ambos modelos se evalúan contra la serie cruda, sobre las mismas fechas de prueba.
+La segunda variante deja de lado la estrategia de variables y revisa el preprocesamiento: si el recorte de outliers en entrenamiento (Sección 3.2.1) afectó al modelo propuesto. La Tabla \ref{tab:piloto_outliers_h1} presenta, a horizonte $h=1$, el MAE general y el MAE condicional al régimen de precio alto (percentil 95 o superior de la serie cruda de prueba) del modelo entrenado sin recorte de outliers (Sección \ref{sec:piloto_outliers_meta} de la Metodología), comparado contra el modelo principal, para las ocho barras del SEN (las cuatro barras originales del piloto y las cuatro restantes, en las que se extendió el procedimiento). Además de las variaciones porcentuales, se reporta el valor $p$ de la prueba de Diebold-Mariano sobre el error absoluto (Sección \ref{sec:dm_ln_dyt}) y el valor $p$ de un \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto. Ambos modelos se evalúan contra la serie cruda, sobre las mismas fechas de prueba.
 
 \begin{table}[htbp]
     \centering
@@ -1591,33 +1315,12 @@ En cuanto a la Conformal Prediction, la Tabla \ref{tab:piloto_cp} muestra que qu
     \label{tab:piloto_cp}
 \end{table}
 
-La matriz completa, que cruza este tratamiento con un modelo global entrenado sobre las ocho barras a la vez, se presenta al final de esta sección (Sección \ref{sec:matriz_outliers}).
+La matriz completa, que cruza este tratamiento con un modelo global entrenado sobre las ocho barras a la vez, se presenta en la Sección \ref{sec:matriz_outliers}.
 
-La Tabla \ref{tab:piloto_outliers_h24} repite la misma comparación a horizonte $h=24$ (Sección \ref{sec:h24_dayahead}), para las cuatro barras originales del piloto, usando el MAE promedio sobre los 24 pasos del horizonte.
-
-\begin{table}[htbp]
-    \centering
-    \begin{tabular}{lrrr}
-        \toprule
-        Barra & MAE actual ($h=24$) & MAE piloto ($h=24$) & $\Delta$ MAE \\
-        \midrule
-        Atacama       & 13.54 & 11.58 & $-14.5\%$ \\
-        Charrúa       & 18.41 & 19.69 & $+7.0\%$  \\
-        Pan de Azúcar & 13.64 & 14.15 & $+3.7\%$  \\
-        Tarapacá      & 12.86 & 13.90 & $+8.0\%$  \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.2cm}
-    \caption{MAE de prueba promediado sobre los 24 pasos del horizonte \textit{day-ahead}, USD/MWh. $\Delta$ = variación porcentual del piloto respecto al modelo actual.}
-    \label{tab:piloto_outliers_h24}
-\end{table}
-
-A $h=24$ el resultado se invierte en tres de las cuatro barras: solo Atacama mejora (14.5\%), mientras que Charrúa, Pan de Azúcar y Tarapacá empeoran entre 3.7\% y 8.0\%. El efecto del recorte de outliers depende, entonces, del horizonte de predicción: la variabilidad adicional que el conjunto de entrenamiento sin recortar introduce ayuda al modelo a capturar el régimen de precios altos cuando predice un solo paso hacia adelante, pero esa misma variabilidad dificulta la generalización cuando el modelo debe predecir 24 pasos simultáneos, un régimen ya de por sí más exigente (Sección \ref{sec:h24_dayahead}). Este resultado mixto es la razón por la que la evaluación a $h=24$ no se extiende a las ocho barras: el piloto se extendió únicamente a $h=1$, donde el efecto es consistente, y a $h=24$ queda como evidencia exploratoria de cuatro barras.
-
-\subsubsection{Tratamiento de outliers y modelo global}
+\subsection{Modelo global}
 \label{sec:matriz_outliers}
 
-Esta subsección cruza el piloto de entrenamiento sin recorte de outliers con una segunda dimensión: la granularidad del modelo. Se comparan cuatro modelos S+C-LN a $h=1$: el modelo por barra con recorte de outliers en entrenamiento (el modelo principal de este trabajo), el modelo por barra sin recorte (el piloto extendido a las ocho barras), y dos modelos globales, es decir, un único TFT entrenado sobre las ocho barras a la vez con la barra como covariable estática categórica, uno con y otro sin recorte de outliers en entrenamiento (Sección \ref{sec:piloto_outliers_meta}). Los cuatro comparten arquitectura, hiperparámetros, \textit{features} y fechas de corte, y se evalúan sobre las mismas fechas de prueba contra la serie cruda, excluyendo la ventana de precio administrativo. La Tabla \ref{tab:matriz_outliers_granularidad} resume el promedio de las ocho barras.
+Establecido el efecto del recorte de outliers en los modelos por barra, la siguiente variante pregunta si un único modelo para las ocho barras rinde mejor que ocho modelos especializados. Esta subsección cruza el piloto de entrenamiento sin recorte de outliers con una segunda dimensión: la granularidad del modelo. Se comparan cuatro modelos S+C-LN a $h=1$: el modelo por barra con recorte de outliers en entrenamiento (el modelo principal de este trabajo), el modelo por barra sin recorte (el piloto extendido a las ocho barras), y dos modelos globales, es decir, un único TFT entrenado sobre las ocho barras a la vez con la barra como covariable estática categórica, uno con y otro sin recorte de outliers en entrenamiento (Sección \ref{sec:piloto_outliers_meta}). Los cuatro comparten arquitectura, hiperparámetros, \textit{features} y fechas de corte, y se evalúan sobre las mismas fechas de prueba contra la serie cruda, excluyendo la ventana de precio administrativo. La Tabla \ref{tab:matriz_outliers_granularidad} resume el promedio de las ocho barras.
 
 \begin{table}[htbp]
     \centering
@@ -1669,7 +1372,7 @@ Esta subsección cruza el piloto de entrenamiento sin recorte de outliers con un
 \subsection{Evaluación a horizonte \textit{day-ahead} ($h=24$)}
 \label{sec:h24_dayahead}
 
-La Tabla \ref{tab:h24_resumen} presenta el MAE promedio sobre los 24 pasos del horizonte, el MAE del primer y del último paso, y el \textit{skill score} promedio respecto a la persistencia estacional de 24 horas (Sección \ref{sec:baselines}), para las ocho barras y ambas arquitecturas evaluadas a $h=24$ (Sección \ref{sec:h24_dayahead_meta} de la Metodología).
+Resueltas las preguntas sobre las variantes del modelo, esta subsección aborda la extensión natural del trabajo: si los resultados obtenidos a una hora se mantienen a 24 horas. La Tabla \ref{tab:h24_resumen} presenta el MAE promedio sobre los 24 pasos del horizonte, el MAE del primer y del último paso, y el \textit{skill score} promedio respecto a la persistencia estacional de 24 horas (Sección \ref{sec:baselines}), para las ocho barras y ambas arquitecturas evaluadas a $h=24$ (Sección \ref{sec:h24_dayahead_meta} de la Metodología).
 
 \begin{table}[htbp]
     \centering
@@ -1725,6 +1428,32 @@ Como seguimiento acotado a este resultado, la Tabla \ref{tab:h24_bigcap} compara
 \end{table}
 
 Duplicar la capacidad del modelo mejora el MAE promedio en ambas barras (2.5\%--5.1\%) y acerca el \textit{skill score} promedio a cero sin llegar a hacerlo positivo. El patrón por paso es revelador: el modelo de mayor capacidad predice peor el primer paso del horizonte (Atacama: 9.92 $\to$ 11.28\,USD/MWh; Puerto Montt: 22.47 $\to$ 27.55\,USD/MWh) pero mejor el último (Atacama: 14.64 $\to$ 13.61\,USD/MWh; Puerto Montt: 41.73 $\to$ 40.92\,USD/MWh), es decir, deja de sobre-especializarse en el paso más cercano al presente y generaliza de forma más pareja a lo largo de las 24 horas, a costa de algo de precisión en el corto plazo. La capacidad del modelo es, entonces, un factor relevante para la degradación observada en $h=24$, aunque no suficiente por sí solo para revertirla (ningún \textit{skill score} promedio cruza a valores positivos), y una exploración más sistemática de capacidad (o de otros hiperparámetros no ajustados para este horizonte, Sección \ref{sec:h24_dayahead_meta}) queda como línea de trabajo futuro razonable dado el costo computacional medido de este experimento (entre 4 y 5 horas por barra en GPU).
+
+\subsubsection{Entrenamiento sin recorte de outliers a 24 horas}
+\label{sec:h24_outliers}
+
+El modelo entrenado sin recorte de outliers (Sección \ref{sec:piloto_outliers}) se evaluó también a este horizonte, en las cuatro barras originales del piloto.
+
+La Tabla \ref{tab:piloto_outliers_h24} repite la misma comparación a horizonte $h=24$ (Sección \ref{sec:h24_dayahead}), para las cuatro barras originales del piloto, usando el MAE promedio sobre los 24 pasos del horizonte.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrr}
+        \toprule
+        Barra & MAE actual ($h=24$) & MAE piloto ($h=24$) & $\Delta$ MAE \\
+        \midrule
+        Atacama       & 13.54 & 11.58 & $-14.5\%$ \\
+        Charrúa       & 18.41 & 19.69 & $+7.0\%$  \\
+        Pan de Azúcar & 13.64 & 14.15 & $+3.7\%$  \\
+        Tarapacá      & 12.86 & 13.90 & $+8.0\%$  \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{MAE de prueba promediado sobre los 24 pasos del horizonte \textit{day-ahead}, USD/MWh. $\Delta$ = variación porcentual del piloto respecto al modelo actual.}
+    \label{tab:piloto_outliers_h24}
+\end{table}
+
+A $h=24$ el resultado se invierte en tres de las cuatro barras: solo Atacama mejora (14.5\%), mientras que Charrúa, Pan de Azúcar y Tarapacá empeoran entre 3.7\% y 8.0\%. El efecto del recorte de outliers depende, entonces, del horizonte de predicción: la variabilidad adicional que el conjunto de entrenamiento sin recortar introduce ayuda al modelo a capturar el régimen de precios altos cuando predice un solo paso hacia adelante, pero esa misma variabilidad dificulta la generalización cuando el modelo debe predecir 24 pasos simultáneos, un régimen ya de por sí más exigente (Sección \ref{sec:h24_dayahead}). Este resultado mixto es la razón por la que la evaluación a $h=24$ no se extiende a las ocho barras: el piloto se extendió únicamente a $h=1$, donde el efecto es consistente, y a $h=24$ queda como evidencia exploratoria de cuatro barras.
 
 \subsubsection{Conformal Prediction a horizonte day-ahead}
 \label{sec:h24_cp}
@@ -1902,7 +1631,71 @@ A diferencia de lo observado a una hora, donde LN ganaba en 11 de las 12 combina
 
 A una hora, S+C superaba a P+C en 14 de las 16 combinaciones de barra y arquitectura, y las 10 diferencias que sobreviven a la corrección de Holm-Bonferroni eran todas a su favor (Sección \ref{sec:pc_vs_sc}). A 24 horas la comparación queda dividida y se inclina levemente hacia P+C: P+C gana en Puerto Montt, Cardones y Crucero, S+C gana en Tarapacá y Quillota, y en Atacama, Charrúa y Pan de Azúcar no hay diferencias significativas tras la corrección (en Atacama, P+C es nominalmente mejor, con $p=0.030$). En promedio de las ocho barras, P+C obtiene un MAE 4.2\% menor que S+C (17.51 frente a 18.28\,USD/MWh). Puerto Montt vuelve a ser una de las barras donde P+C rinde mejor, igual que a una hora con DyT, lo que es consistente con su dependencia hidrológica (Sección \ref{sec:pmontt_desempeno}); pero Cardones y Crucero, barras del norte con un ciclo solar marcado, muestran que a este horizonte la ventaja de P+C no se limita a la barra hidrológica. Prophet por sí solo es la peor estrategia en las ocho barras, y su combinación directa con el TFT de precios no mejora a este último: cuando P+C iguala o supera a S+C, lo hace combinando Prophet con dos modelos TFT mediante Stacking Optimization. A 24 horas, por lo tanto, S+C no conserva la ventaja en precisión que tenía a una hora: P+C es algo más preciso en promedio, a cambio de necesitar cuatro piezas (Prophet, dos TFT y la combinación) en lugar de un único modelo.
 
-\paragraph{¿Por qué cambia la comparación a 24 horas?} La importancia de variables de ambos modelos a 24 horas, calculada igual que a una hora (Sección \ref{sec:interpretabilidad_sc}), muestra dos cambios. El primero es que el precio reciente pierde peso (Tabla \ref{tab:h24_encoder_yreal}): \texttt{y\_real} pasa de concentrar en promedio el 66.0\% del encoder de S+C al 29.3\%, y en P+C del 48.8\% al 22.2\%. Ese peso se redistribuye hacia el clima (en S+C, de 12.6\% a 39.6\%) y, en P+C, también hacia los componentes de Prophet (de 26.9\% a 34.6\%). Con un día de anticipación, el último precio observado informa mucho menos sobre la hora pronosticada, y el modelo necesita otra información para describir cómo será ese día.
+\paragraph{Síntesis.} De las cuatro conclusiones puestas a prueba, dos se sostienen a 24 horas: la heterocedasticidad horaria del error (en siete de ocho barras) y la superioridad de los métodos con adaptación \textit{online}, con intervalos un 10.5\% más angostos que Split CP, aunque a este horizonte LW-ACP y ACI quedan empatados. Las otras dos no se sostienen. La ventaja de LayerNorm sobre DyT desaparece: ambas arquitecturas son equivalentes. Y la conclusión central queda acotada al horizonte de una hora: a 24 horas S+C ya no supera a P+C, que es algo más preciso en promedio (4.2\%) y gana en tres barras contra dos. Lo que S+C conserva en ambos horizontes es una precisión cercana a la de P+C con una estructura mucho más simple, no una ventaja de precisión. La importancia de variables sugiere por qué: a 24 horas el precio reciente pierde peso y P+C recurre más al día de la semana, información que la posición solar no contiene.
+
+\subsection{Interpretabilidad y ablación}
+\label{sec:interpretabilidad_ablacion}
+
+Las diferencias entre horizontes plantean en qué información se apoya cada modelo. Esta subsección reúne la ablación de las variables exógenas, la información que comparten las covariables de P+C y S+C, y la importancia de variables a una y a 24 horas, que explica por qué cambia la comparación entre ambas estrategias.
+
+\subsubsection{Ablación de features}
+\label{sec:ablacion}
+
+El pipeline principal S+C usa como \texttt{known\_reals} la posición solar y como \texttt{unknown\_reals} el precio más cinco variables climáticas horarias. Para aislar cuánto aporta esa información exógena por sobre la autocorrelación de la propia serie, se entrena un TFT ``solo precios'' (sin ningún \texttt{known\_real}, sin variables climáticas) para cuatro barras, usando el mismo período histórico y las mismas fechas de corte que el pipeline principal (Sección \ref{sec:ablacion_meta}). La Tabla \ref{tab:ablacion} presenta la comparación.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrrrrr}
+        \toprule
+        & \multicolumn{3}{c}{Sin features} & \multicolumn{3}{c}{S+C} & \\
+        Barra & MAE & RMSE & R² & MAE & RMSE & R² & Mejora MAE \\
+        \midrule
+        ATACAMA  & 7.69  & 17.39 & 0.826 & 6.70  & 16.52 & 0.843 & 12.9\% \\
+        CRUCERO  & 7.58  & 17.11 & 0.835 & 6.74  & 16.64 & 0.844 & 11.1\% \\
+        P.MONTT  & 14.09 & 26.50 & 0.814 & 13.68 & 25.80 & 0.823 & 2.9\%  \\
+        TARAPACA & 7.58  & 17.45 & 0.850 & 7.11  & 17.77 & 0.845 & 6.2\%  \\
+        \bottomrule
+    \end{tabular}
+    \caption{Comparación entre el TFT ``solo precios'' (sin features exógenas) y S+C, conjunto de prueba, arquitectura LN, evaluado contra la serie cruda sin recorte de outliers. Mejora MAE = reducción porcentual del MAE al agregar las features de S+C.}
+    \label{tab:ablacion}
+\end{table}
+
+Las features exógenas reducen el MAE de prueba en las cuatro barras, pero con una magnitud muy distinta: la mejora es sustancial en ATACAMA (12.9\%) y CRUCERO (11.1\%), moderada en TARAPACA (6.2\%), y marginal en P.MONTT (2.9\%). El patrón es consistente con lo observado en la Sección 4.7.1: el costo marginal de Puerto Montt está dominado por la dinámica hidrológica de la zona centro-sur, no por el ciclo solar diario que domina en las barras del norte, por lo que la posición solar y el clima horario aportan relativamente poca información nueva por sobre la autocorrelación de la propia serie. En las barras del norte, en cambio, donde la generación fotovoltaica explica gran parte de la variabilidad diaria del precio, conocer la posición solar futura (\texttt{known\_real}) le da al modelo una ventaja real por sobre simplemente extrapolar el pasado reciente de la serie.
+
+\subsubsection{Información compartida entre P+C y S+C}
+\label{sec:informacion_pc_sc}
+
+P+C y S+C describen el instante pronosticado con variables distintas: P+C, con los componentes de Prophet (\texttt{trend}, \texttt{yearly}, \texttt{weekly}, \texttt{daily}) y el indicador de feriado; S+C, con la posición solar. Para saber cuánta información comparten, se mide con qué precisión las variables solares (\texttt{elevacion\_solar}, \texttt{cos\_elevacion} y \texttt{es\_horario\_verano}), en conjunto y de forma no lineal, reconstruyen cada componente de Prophet: un modelo de \textit{gradient boosting} ajustado sobre el conjunto de entrenamiento de cada barra y evaluado con validación cruzada en cinco bloques contiguos. Un $R^2$ cercano a 1 indica que el componente es redundante con la posición solar; uno cercano a 0, que contiene información que ella no tiene. Como las variables son las mismas en ambos horizontes, este análisis vale tanto para el modelo a una hora como para el modelo a 24 horas (Sección \ref{sec:h24_conclusiones}).
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrr}
+        \toprule
+        Barra & \texttt{daily} & \texttt{yearly} & \texttt{weekly} & \texttt{trend} \\
+        \midrule
+        Atacama       & 0.85 & 0.49 & 0.00 & $\le 0$ \\
+        Cardones      & 0.85 & 0.60 & 0.00 & $\le 0$ \\
+        Charrúa       & 0.82 & 0.61 & 0.00 & $\le 0$ \\
+        Crucero       & 0.87 & 0.66 & 0.00 & $\le 0$ \\
+        Pan de Azúcar & 0.84 & 0.61 & 0.00 & $\le 0$ \\
+        Puerto Montt  & 0.16 & 0.04 & 0.00 & $\le 0$ \\
+        Quillota      & 0.83 & 0.62 & 0.00 & $\le 0$ \\
+        Tarapacá      & 0.89 & 0.68 & 0.00 & $\le 0$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{$R^2$ con que las variables de posición solar de S+C reconstruyen cada componente de Prophet de P+C, conjunto de entrenamiento, validación cruzada en cinco bloques contiguos. Para \texttt{trend} el $R^2$ es negativo en todas las barras: un nivel de largo plazo no se puede extrapolar desde variables cíclicas.}
+    \label{tab:informacion_pc_sc}
+\end{table}
+
+La posición solar contiene casi todo el componente diario de Prophet ($R^2$ entre 0.82 y 0.89 en siete barras) y buena parte del anual (0.49--0.68), pero nada del semanal ni de la tendencia (Tabla \ref{tab:informacion_pc_sc}). Las correlaciones correspondientes son negativas ($-0.83$ a $-0.86$ entre \texttt{daily} y \texttt{elevacion\_solar}; $-0.65$ a $-0.77$ entre \texttt{yearly} y \texttt{es\_horario\_verano}) porque la generación solar baja el precio: Prophet aprende que el costo marginal es menor en las horas y en los meses de mayor radiación, justo cuando las variables solares son altas. Puerto Montt vuelve a ser la excepción ($R^2$ de 0.16 y 0.04), consistente con un precio que no sigue el ciclo solar (Sección \ref{sec:pmontt_desempeno}). En suma, lo que P+C sabe del instante pronosticado y S+C no es el calendario (día de la semana y feriados) y el nivel de largo plazo del precio.
+
+A una hora, ambos modelos se apoyan sobre todo en el precio recién observado: \texttt{y\_real} concentra en promedio el 66.0\% del encoder de S+C (Tabla \ref{tab:importancia_sc_encoder}) y el 48.8\% del de P+C. En el decoder, excluido \texttt{relative\_time\_idx} por ser constante, cada uno toma la hora del día de su propia fuente: S+C de la posición solar y P+C de \texttt{daily} (26.2\% en promedio), junto con \texttt{trend} (30.8\%), que le indica el nivel de la serie; \texttt{weekly} recibe un 10.7\%. Ambas estrategias acceden, por lo tanto, a la información que domina a este horizonte, la hora del día, y S+C lo hace con un único modelo, sin Prophet ni Stacking. Es consistente con que S+C sea la estrategia más precisa a una hora (Sección \ref{sec:pc_vs_sc}).
+
+\subsubsection{¿Por qué cambia la comparación a 24 horas?}
+\label{sec:h24_porque}
+
+La importancia de variables de ambos modelos a 24 horas, calculada igual que a una hora (Sección \ref{sec:interpretabilidad_sc}), muestra dos cambios. El primero es que el precio reciente pierde peso (Tabla \ref{tab:h24_encoder_yreal}): \texttt{y\_real} pasa de concentrar en promedio el 66.0\% del encoder de S+C al 29.3\%, y en P+C del 48.8\% al 22.2\%. Ese peso se redistribuye hacia el clima (en S+C, de 12.6\% a 39.6\%) y, en P+C, también hacia los componentes de Prophet (de 26.9\% a 34.6\%). Con un día de anticipación, el último precio observado informa mucho menos sobre la hora pronosticada, y el modelo necesita otra información para describir cómo será ese día.
 
 \begin{table}[htbp]
     \centering
@@ -1956,14 +1749,48 @@ El segundo cambio está en el decoder de P+C (Tabla \ref{tab:h24_decoder_pc}): \
 
 A 24 horas, por lo tanto, P+C desplaza peso hacia la información que la posición solar no contiene (Sección \ref{sec:informacion_pc_sc}): el día de la semana. Esto es consistente con su ventaja a este horizonte; de hecho, las tres barras donde P+C supera a S+C (Cardones, Crucero y Puerto Montt) están entre las cuatro con mayor aumento de \texttt{weekly}, aunque con ocho barras esa relación no puede establecerse estadísticamente. La importancia de la VSN indica en qué variables se apoya el modelo, no cuánto reducen el error, por lo que este análisis es una explicación consistente con los resultados y no una prueba causal. Lo que sí muestra con claridad es que la ventaja de S+C depende del horizonte: es máxima cuando el problema lo dominan el precio reciente y el ciclo diario, como a una hora, y se diluye cuando hace falta información de calendario que la posición solar no tiene.
 
-\paragraph{Síntesis.} De las cuatro conclusiones puestas a prueba, dos se sostienen a 24 horas: la heterocedasticidad horaria del error (en siete de ocho barras) y la superioridad de los métodos con adaptación \textit{online}, con intervalos un 10.5\% más angostos que Split CP, aunque a este horizonte LW-ACP y ACI quedan empatados. Las otras dos no se sostienen. La ventaja de LayerNorm sobre DyT desaparece: ambas arquitecturas son equivalentes. Y la conclusión central queda acotada al horizonte de una hora: a 24 horas S+C ya no supera a P+C, que es algo más preciso en promedio (4.2\%) y gana en tres barras contra dos. Lo que S+C conserva en ambos horizontes es una precisión cercana a la de P+C con una estructura mucho más simple, no una ventaja de precisión. La importancia de variables sugiere por qué: a 24 horas el precio reciente pierde peso y P+C recurre más al día de la semana, información que la posición solar no contiene.
+\subsection{Sensibilidad a una función de pérdida asimétrica}
+\label{sec:perdida_asimetrica}
+
+Las subsecciones anteriores evalúan el modelo con métricas simétricas; esta revisa la robustez de esa evaluación. Todas las métricas usadas hasta aquí (MAE, RMSE) son simétricas: penalizan por igual sobreestimar y subestimar el costo marginal. En el mercado spot, sin embargo, el costo de un error de pronóstico es asimétrico y depende de la posición del agente: un generador que subestima el precio real deja de capturar el ingreso adicional que habría obtenido vendiendo a un precio mayor; un comercializador o consumidor que subestima el precio queda expuesto a un costo de abastecimiento mayor al presupuestado cuando el precio real resulta más alto de lo previsto. En ambos casos, el error más costoso es la subestimación del precio, no la sobreestimación, aunque la magnitud relativa de esa asimetría depende del agente y del contrato específico.
+
+Se evalúa la sensibilidad de la ventaja de S+C-LN sobre la línea base de persistencia (Sección \ref{sec:baselines}) frente a esta asimetría, mediante la pérdida lineal-lineal (\textit{linlin} o \textit{pinball}) con parámetro $\tau \in (0,1)$:
+
+\begin{equation}
+    L_\tau(e) = \tau \max(e, 0) + (1-\tau)\max(-e, 0), \qquad e = y_t - \hat{y}_t
+    \label{eq:linlin}
+\end{equation}
+
+que penaliza la subestimación ($e>0$) con peso $\tau$ y la sobreestimación ($e<0$) con peso $1-\tau$; $\tau=0.5$ recupera el caso simétrico (equivalente a la mitad del MAE). La Tabla \ref{tab:perdida_asimetrica} presenta el \textit{skill score} de S+C-LN respecto a persistencia, $1 - L_\tau(\text{S+C-LN})/L_\tau(\text{persistencia})$, para tres valores de $\tau$: 0.2 (sobreestimar es cuatro veces más costoso que subestimar), 0.5 (simétrico) y 0.8 (subestimar es cuatro veces más costoso que sobreestimar).
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrr}
+        \toprule
+        Barra & Skill ($\tau=0.2$) & Skill ($\tau=0.5$) & Skill ($\tau=0.8$) \\
+        \midrule
+        Atacama        & +0.367 & +0.352 & +0.337 \\
+        Cardones       & +0.378 & +0.359 & +0.340 \\
+        Charrúa        & +0.243 & +0.224 & +0.204 \\
+        Crucero        & +0.361 & +0.353 & +0.346 \\
+        Pan de Azúcar  & +0.331 & +0.333 & +0.335 \\
+        Puerto Montt   & $-$0.019 & +0.036 & +0.091 \\
+        Quillota       & +0.208 & +0.206 & +0.204 \\
+        Tarapacá       & +0.358 & +0.357 & +0.355 \\
+        \bottomrule
+    \end{tabular}
+    \caption{\textit{Skill score} de S+C-LN respecto a persistencia bajo la pérdida asimétrica \eqref{eq:linlin}, para tres valores de $\tau$, conjunto de prueba completo. $\tau=0.5$ es el caso simétrico; valores positivos indican que S+C-LN supera a la persistencia bajo esa asimetría de costos.}
+    \label{tab:perdida_asimetrica}
+\end{table}
+
+En siete de las ocho barras, la ventaja de S+C-LN sobre la persistencia es robusta a la asimetría de costos: el \textit{skill score} se mantiene positivo y de magnitud similar (0.20--0.38) en todo el rango de $\tau$ evaluado, con variaciones de a lo más 0.02--0.03 entre los extremos. Puerto Montt es la excepción, y de forma reveladora: con $\tau=0.2$ (sobreestimar es lo costoso), S+C-LN resulta ligeramente \textbf{peor} que la persistencia ($-$0.019); recién entre $\tau=0.2$ y $\tau=0.35$ el \textit{skill score} cruza a positivo, y solo alcanza +0.091 en el extremo opuesto ($\tau=0.8$). Es decir, en la barra de peor desempeño del sistema, la conclusión de que S+C-LN supera a un pronóstico ingenuo \textbf{depende de qué tipo de error le resulta más costoso al agente}, algo que el MAE simétrico, usado en el resto de este capítulo, no puede revelar por construcción. Para las siete barras restantes, en cambio, la ventaja del modelo es una conclusión sólida independientemente de esa asimetría.
 
 \subsection{Comparación con la literatura: CRUCERO y P.MONTT 2024}
 \label{sec:crucero_leon}
 
-León et al. (2026) \cite{LeonSMPChile} comparan modelos de \textit{machine learning} clásico (Bayesian Ridge, Random Forest Regressor, SVR, Decision Tree Regressor, ARD, Regresión Lineal) para predecir el costo marginal horario en tres barras representativas del SEN, Crucero, Alto Jahuel y Puerto Montt, usando datos de 2024 y evaluación \textit{holdout} sobre enero y julio, bajo dos metodologías: M1 (entrena con todas las barras del SEN) y M2 (entrena solo con barras del \textit{cluster} geográfico correlacionado). El horizonte de pronóstico es el mismo de este trabajo, una hora: sus modelos reciben el costo marginal de las cinco horas anteriores ($t-1$ a $t-5$), junto con la generación por tecnología y la demanda neta, y los propios autores señalan la extensión a pronósticos multipaso o \textit{day-ahead} como trabajo futuro. Es, por lo tanto, una comparación a igual horizonte, a diferencia de la comparación con el costo marginal programado del CEN (Sección \ref{sec:cen_programado}). Su mejor modelo para Crucero es Random Forest Regressor (RFR): MAE=7.71, RMSE=14.56, R²=0.87 bajo M1 y MAE=7.79, RMSE=14.80, R²=0.86 bajo M2. Para Puerto Montt, su mejor modelo es Support Vector Regressor (SVR): MAE=17.39, RMSE=34.81, R²=0.76 bajo M1 y MAE=17.11, RMSE=34.46, R²=0.76 bajo M2.
+Las dos últimas subsecciones contrastan el modelo con referencias externas: primero, el trabajo publicado más cercano sobre el mismo mercado. León et al. (2026) \cite{LeonSMPChile} comparan modelos de \textit{machine learning} clásico (Bayesian Ridge, Random Forest Regressor, SVR, Decision Tree Regressor, ARD, Regresión Lineal) para predecir el costo marginal horario en tres barras representativas del SEN, Crucero, Alto Jahuel y Puerto Montt, usando datos de 2024 y evaluación \textit{holdout} sobre enero y julio, bajo dos metodologías: M1 (entrena con todas las barras del SEN) y M2 (entrena solo con barras del \textit{cluster} geográfico correlacionado). El horizonte de pronóstico es el mismo de este trabajo, una hora: sus modelos reciben el costo marginal de las cinco horas anteriores ($t-1$ a $t-5$), junto con la generación por tecnología y la demanda neta, y los propios autores señalan la extensión a pronósticos multipaso o \textit{day-ahead} como trabajo futuro. Es, por lo tanto, una comparación a igual horizonte, a diferencia de la comparación con el costo marginal programado del CEN (Sección \ref{sec:cen_programado}). Su mejor modelo para Crucero es Random Forest Regressor (RFR): MAE=7.71, RMSE=14.56, R²=0.87 bajo M1 y MAE=7.79, RMSE=14.80, R²=0.86 bajo M2. Para Puerto Montt, su mejor modelo es Support Vector Regressor (SVR): MAE=17.39, RMSE=34.81, R²=0.76 bajo M1 y MAE=17.11, RMSE=34.46, R²=0.76 bajo M2.
 
-Para una comparación aproximada, se entrenan dos TFT S+C adicionales restringidos a datos de 2024, uno para CRUCERO y otro para P.MONTT, cada uno con un split cronológico propio 70/15/15 (Sección 3.8.8); ambos resultan en una prueba prácticamente idéntica (7 de noviembre -- 31 de diciembre de 2024, 1319 horas), por la similar disponibilidad de datos crudos en 2024 para ambas barras. No se replica el esquema de prueba de León et al.: reservar enero y julio y repartir al azar el resto del año entre entrenamiento y validación responde a su objetivo de contrastar la operación de verano e invierno, pero expone al modelo a datos posteriores a los meses que luego predice. Este trabajo mantiene la división cronológica en todos sus experimentos, de modo que el modelo nunca ve información posterior a la que pronostica; por eso ambas evaluaciones comparten el año de datos y el horizonte, pero no el período de prueba, y la comparación debe leerse como aproximada. La Tabla \ref{tab:crucero_leon} presenta la comparación.
+Para una comparación aproximada, se entrenan dos TFT S+C adicionales restringidos a datos de 2024, uno para CRUCERO y otro para P.MONTT, cada uno con un split cronológico propio 70/15/15 (Sección \ref{sec:crucero_leon_meta}); ambos resultan en una prueba prácticamente idéntica (7 de noviembre -- 31 de diciembre de 2024, 1319 horas), por la similar disponibilidad de datos crudos en 2024 para ambas barras. No se replica el esquema de prueba de León et al.: reservar enero y julio y repartir al azar el resto del año entre entrenamiento y validación responde a su objetivo de contrastar la operación de verano e invierno, pero expone al modelo a datos posteriores a los meses que luego predice. Este trabajo mantiene la división cronológica en todos sus experimentos, de modo que el modelo nunca ve información posterior a la que pronostica; por eso ambas evaluaciones comparten el año de datos y el horizonte, pero no el período de prueba, y la comparación debe leerse como aproximada. La Tabla \ref{tab:crucero_leon} presenta la comparación.
 
 \begin{table}[htbp]
     \centering
@@ -1989,3 +1816,29 @@ Para una comparación aproximada, se entrenan dos TFT S+C adicionales restringid
 En Crucero, el TFT S+C obtiene un MAE 34\% menor que el mejor modelo de León et al. (5.11 vs. 7.71 USD/MWh) y un R² más alto (0.90 vs. 0.87). En Puerto Montt, el TFT S+C también reduce el MAE y el RMSE en torno a un 20\% respecto al mejor modelo de León et al. (MAE: 13.64 vs. 17.11 USD/MWh; RMSE: 27.72 vs. 34.46 USD/MWh), pero con un R² notoriamente más bajo (0.56 vs. 0.76). Esta aparente contradicción, mejor error absoluto pero peor varianza explicada, se origina en la ventana de prueba: el precio real de Puerto Montt en la prueba de este trabajo (7 de noviembre--31 de diciembre de 2024) tiene una desviación estándar de 41.7\,USD/MWh, frente a 67.0\,USD/MWh en la ventana de enero y julio usada por León et al., que mezcla verano e invierno y por tanto exhibe mayor variabilidad estacional. Dado que $R^2 = 1 - \text{MSE}/\text{Var}(y)$, un mismo error absoluto produce un R² menor cuando la varianza del período evaluado es menor; de hecho, relativizando el MSE de este trabajo contra la varianza de la ventana de León et al. se obtiene un R² implícito de $\approx 0.83$, consistente con el $0.823$ que Puerto Montt alcanza en el pipeline principal sobre el rango completo 2020--2026 (Tabla \ref{tab:tft_sc_ln_resultados}). El MAE y el RMSE, al no depender de la varianza del conjunto evaluado, son en este caso las métricas más directamente comparables entre ambos trabajos.
 
 En ambas barras, y pese a las salvedades de protocolo ya señaladas para Crucero, distinto período de \textit{holdout}, no directamente comparable mes a mes, la magnitud de la mejora en error absoluto sugiere que la arquitectura TFT, al modelar directamente la secuencia horaria completa mediante atención y LSTM en vez de tratar cada observación de forma independiente, captura mejor la dinámica de corto plazo del costo marginal que los modelos de regresión clásicos evaluados en el paper, incluso entrenando con menos de un año de datos y, en el caso de Puerto Montt, en la barra que el propio León et al. identifican como la más difícil del sistema por su congestión estructural.
+
+\subsection{Comparación contra el costo marginal programado del CEN}
+\label{sec:cen_programado}
+
+La segunda referencia externa es institucional: el pronóstico que publica el propio coordinador del sistema. El CEN publica el \textit{costo marginal programado}, el valor esperado del costo marginal resultante de la Programación de la Operación, obtenido a través de su API pública (Sistema de Información Pública, \texttt{sipub.coordinador.cl}). Se compara aquí contra la predicción de S+C-LN, ambos evaluados contra el costo marginal real de la misma barra, sobre las 8\,298 horas del conjunto de prueba (13 de mayo de 2025 -- 24 de abril de 2026), para las seis barras cuyo mnemotécnico se logró identificar en el catálogo de la API (Atacama y Tarapacá no están disponibles bajo ningún mnemotécnico de barra 220kV probado, ni en este ni en ningún otro período consultado). Ambos pronósticos no se emiten con la misma anticipación: el programado se fija antes de la operación real, mientras que S+C-LN pronostica la hora siguiente con el costo marginal observado hasta la hora anterior. Por eso la Tabla \ref{tab:cen_programado} agrega el modelo a 24 horas (Sección \ref{sec:h24_dayahead}).
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrrr}
+        \toprule
+        & & \multicolumn{2}{c}{S+C-LN, 1 hora} & \multicolumn{2}{c}{S+C-LN, 24 horas} \\
+        Barra & MAE CEN & MAE & vs.\ CEN & MAE & vs.\ CEN \\
+        \midrule
+        Puerto Montt  & 32.98 & 13.68 & $-58.5\%$ & 38.89 & $+17.9\%$ \\
+        Crucero       & 17.10 & 6.74  & $-60.6\%$ & 15.94 & $-6.8\%$  \\
+        Cardones      & 14.52 & 6.63  & $-54.4\%$ & 15.32 & $+5.5\%$  \\
+        Pan de Azúcar & 15.09 & 6.93  & $-54.1\%$ & 13.64 & $-9.6\%$  \\
+        Charrúa       & 17.01 & 7.98  & $-53.1\%$ & 18.41 & $+8.2\%$  \\
+        Quillota      & 17.26 & 8.26  & $-52.1\%$ & 17.50 & $+1.4\%$  \\
+        \bottomrule
+    \end{tabular}
+    \caption{S+C-LN vs.\ el costo marginal programado publicado por el CEN, ambos evaluados contra el costo marginal real, conjunto de prueba. MAE en USD/MWh; ``vs.\ CEN'' es la diferencia relativa de MAE (negativo: menor error que el CEN). El MAE a 24 horas es el promedio de los 24 pasos del horizonte (Tabla \ref{tab:h24_resumen}), con pronósticos emitidos a todas las horas.}
+    \label{tab:cen_programado}
+\end{table}
+
+Con una hora de anticipación, S+C-LN reduce el MAE entre 52.1\% y 60.6\% respecto al costo marginal programado en las seis barras. Con un día de anticipación, la comparación cambia: el modelo a 24 horas reduce el error en Pan de Azúcar (9.6\%) y Crucero (6.8\%), queda prácticamente empatado en Quillota (1.4\% más error) y lo aumenta en Cardones (5.5\%), Charrúa (8.2\%) y Puerto Montt (17.9\%). La ventaja a una hora proviene, por lo tanto, principalmente de incorporar el costo marginal recién observado, información que el programado no tiene al momento de fijarse, y no de una representación del sistema superior a la de la Programación de la Operación. Esto es consistente con que el programado no es un pronóstico estadístico optimizado para minimizar el error puntual, sino el resultado de optimizar el despacho del sistema completo con restricciones técnicas y de seguridad que este trabajo no modela. Lo que la comparación sí muestra es el valor de esa información reciente: un pronóstico actualizado hora a hora reduce a menos de la mitad el error respecto de la cifra programada. Completar Atacama y Tarapacá, cuyo mnemotécnico no se logró ubicar en el catálogo de la API, es la continuación natural de esta comparación.

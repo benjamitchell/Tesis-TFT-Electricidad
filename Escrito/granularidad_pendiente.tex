@@ -1,0 +1,174 @@
+% granularidad_pendiente.tex -- Estudio de granularidad temporal, retirado del escrito el
+% 2026-10-26 porque los modelos no predicen la misma escala de tiempo (pendiente: skill
+% frente a la persistencia de cada resolucion). NO se incluye en main.tex.
+% Texto movido tal cual desde la Seccion 3.8 (Metodologia) y la Seccion 4.8 (Resultados).
+
+% ===================== Metodologia (antes Seccion 3.8.4) =====================
+
+\subsection{Estudio de granularidad temporal}
+
+Para explorar si una resolución temporal distinta a la horaria mejora la capacidad predictiva del modelo, se reentrena la estrategia ganadora S+C a dos resoluciones adicionales para tres barras piloto (Atacama, Cardones, P.Montt) y ambas arquitecturas (LN, DyT): \textbf{Día}, agregando el costo marginal horario a promedio diario, y \textbf{15 minutos}, usando el costo marginal a resolución nativa de 15 minutos del CEN. En ambos casos se mantiene la misma arquitectura, hiperparámetros y proporción de encoder/predicción (168 pasos de contexto, horizonte de 1 paso), reinterpretando la unidad temporal según la granularidad: 168 días de contexto para Día, 168 intervalos de 15 minutos (42 horas) para 15 minutos.
+
+Esta comparación tiene una limitación metodológica relevante: los tres experimentos cubren períodos históricos distintos y no completamente superpuestos, dado que la disponibilidad de datos crudos difiere por granularidad (Día: 2020--2025; Horario: 2020--2026; 15 minutos: solo ~2024--2026, con datos de 15 minutos disponibles a partir de mediados de 2024). Para aislar el efecto de la resolución del efecto del período histórico, se entrena un cuarto modelo adicional: \textbf{Horario restringido a la ventana calendario del piloto de 15 minutos} (entrenamiento/validación hasta el 16 de marzo de 2026, prueba entre el 16 de marzo y el 24 de abril de 2026, truncada por la disponibilidad de datos crudos de precio), que permite comparar Horario y 15 minutos sobre exactamente el mismo período, recortando también la prueba del piloto de 15 minutos original a esa misma ventana.
+
+% ===================== Resultados (antes Seccion 4.8.4) =====================
+
+\subsection{Estudio de granularidad temporal}
+\label{sec:granularidad}
+
+Se compara la estrategia ganadora S+C a tres resoluciones temporales (Día, Horario y 15 minutos) para las barras piloto ATACAMA, CARDONES y P.MONTT, en ambas arquitecturas (Sección 3.8.4). La Tabla \ref{tab:granularidad_periodos} muestra que los tres experimentos no cubren el mismo período histórico, dada la disponibilidad distinta de datos crudos por granularidad.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lll}
+        \toprule
+        Granularidad & Entrenamiento & Prueba \\
+        \midrule
+        Día        & 2020-02-15 -- 2023-12-19 & 2024-10-25 -- 2025-08-31 \\
+        Horario    & 2020-01-04 -- 2024-06-01 & 2025-05-13 -- 2026-04-24 \\
+        15 minutos & 2024-07-16 -- 2025-11-28 & 2026-03-16 -- 2026-07-01 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Período histórico cubierto por cada granularidad (barra ATACAMA; idéntico para CARDONES y P.MONTT). Los tres conjuntos de prueba no se solapan entre sí.}
+    \label{tab:granularidad_periodos}
+\end{table}
+
+La Tabla \ref{tab:granularidad_metricas} presenta el desempeño en el conjunto de prueba para las tres granularidades.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lllrrrr}
+        \toprule
+        Barra & Arq. & Granularidad & $N$ & MAE & RMSE & R² \\
+        \midrule
+        ATACAMA  & DyT & Día        & 311   & 15.91 & 24.11 & 0.272 \\
+        ATACAMA  & DyT & Horario    & 8298  & 6.68  & 16.48 & 0.844 \\
+        ATACAMA  & DyT & 15 min     & 10326 & 6.67  & 18.10 & 0.878 \\
+        ATACAMA  & LN  & Día        & 311   & 15.71 & 22.66 & 0.356 \\
+        ATACAMA  & LN  & Horario    & 8298  & 6.70  & 16.52 & 0.843 \\
+        ATACAMA  & LN  & 15 min     & 10326 & 6.55  & 18.04 & 0.879 \\
+        CARDONES & DyT & Día        & 311   & 15.66 & 21.31 & 0.404 \\
+        CARDONES & DyT & Horario    & 8298  & 6.78  & 17.16 & 0.833 \\
+        CARDONES & DyT & 15 min     & 10326 & 7.31  & 20.32 & 0.854 \\
+        CARDONES & LN  & Día        & 311   & 14.96 & 20.53 & 0.447 \\
+        CARDONES & LN  & Horario    & 8298  & 6.63  & 15.61 & 0.858 \\
+        CARDONES & LN  & 15 min     & 10326 & 7.21  & 20.57 & 0.851 \\
+        P.MONTT  & DyT & Día        & 311   & 25.20 & 35.08 & 0.364 \\
+        P.MONTT  & DyT & Horario    & 8298  & 14.01 & 26.04 & 0.820 \\
+        P.MONTT  & DyT & 15 min     & 10326 & 8.36  & 23.75 & 0.867 \\
+        P.MONTT  & LN  & Día        & 311   & 25.20 & 33.62 & 0.416 \\
+        P.MONTT  & LN  & Horario    & 8298  & 13.68 & 25.80 & 0.823 \\
+        P.MONTT  & LN  & 15 min     & 10326 & 8.42  & 23.93 & 0.865 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Desempeño de S+C en el conjunto de prueba por granularidad, barra y arquitectura, evaluado contra la serie cruda sin recorte de outliers (Sección \ref{sec:baselines}).}
+    \label{tab:granularidad_metricas}
+\end{table}
+
+El R² mejora sustancialmente al pasar de Día a Horario en las tres barras y ambas arquitecturas, pero la mejora adicional de Horario a 15 minutos es mucho más modesta que lo que sugería la serie recortada, y deja de ser monótona en un caso: CARDONES LN pasa de 0.858 en Horario a 0.851 en 15 minutos, una caída marginal de 0.7 puntos porcentuales, dentro del margen de ruido esperable. En las cinco combinaciones restantes la mejora de Horario a 15 minutos es de entre 2.1 y 4.7 puntos porcentuales --lejos de los \textasciitilde10 puntos que se observaban antes de corregir el recorte de outliers, que afectaba proporcionalmente más a la resolución de 15 minutos por concentrar una fracción mayor de valores extremos dentro de cada ventana de calibración--. El caso más contundente sigue siendo P.MONTT, la barra más difícil del sistema: R² pasa de \textasciitilde0.36--0.42 en Día a \textasciitilde0.82 en Horario a \textasciitilde0.87 en 15 minutos. El MAE, en cambio, no es directamente comparable entre granularidades, cada una tiene su propia escala de variabilidad, por lo que el R², al ser adimensional, es la métrica más honesta para esta comparación.
+
+La Tabla \ref{tab:granularidad_extremos} extiende la comparación con percentiles de error.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lllrrrr}
+        \toprule
+        Barra & Arq. & Granularidad & MAE & P90 & P95 & Máximo \\
+        \midrule
+        ATACAMA  & DyT & Día        & 15.91 & 35.78 & 49.50 & 148.63 \\
+        ATACAMA  & DyT & Horario    & 6.68  & 17.92 & 28.05 & 449.00 \\
+        ATACAMA  & DyT & 15 min     & 6.67  & 16.17 & 34.00 & 184.59 \\
+        ATACAMA  & LN  & Día        & 15.71 & 34.23 & 42.52 & 140.12 \\
+        ATACAMA  & LN  & Horario    & 6.70  & 18.32 & 28.37 & 447.71 \\
+        ATACAMA  & LN  & 15 min     & 6.55  & 15.75 & 35.22 & 182.13 \\
+        CARDONES & DyT & Día        & 15.66 & 32.60 & 40.32 & 118.94 \\
+        CARDONES & DyT & Horario    & 6.78  & 18.49 & 29.15 & 417.64 \\
+        CARDONES & DyT & 15 min     & 7.31  & 17.49 & 38.77 & 173.15 \\
+        CARDONES & LN  & Día        & 14.96 & 29.92 & 39.77 & 114.25 \\
+        CARDONES & LN  & Horario    & 6.63  & 18.30 & 28.98 & 415.65 \\
+        CARDONES & LN  & 15 min     & 7.21  & 17.45 & 40.52 & 173.97 \\
+        P.MONTT  & DyT & Día        & 25.20 & 56.51 & 73.23 & 159.39 \\
+        P.MONTT  & DyT & Horario    & 14.01 & 38.53 & 57.95 & 218.46 \\
+        P.MONTT  & DyT & 15 min     & 8.36  & 18.64 & 40.55 & 244.84 \\
+        P.MONTT  & LN  & Día        & 25.20 & 52.07 & 65.15 & 131.25 \\
+        P.MONTT  & LN  & Horario    & 13.68 & 38.68 & 57.73 & 238.67 \\
+        P.MONTT  & LN  & 15 min     & 8.42  & 19.14 & 41.55 & 247.47 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Percentiles de error absoluto por granularidad, barra y arquitectura, conjunto de prueba, evaluado contra la serie cruda sin recorte de outliers.}
+    \label{tab:granularidad_extremos}
+\end{table}
+
+Nótese que el error máximo absoluto en USD/MWh en realidad \emph{aumenta} al pasar de Día a Horario, de forma mucho más marcada que en la serie recortada (por ejemplo, ATACAMA LN: 140 $\to$ 448 $\to$ 182 USD/MWh), pese a que el MAE y el R² mejoran sustancialmente. El salto de Día a Horario es ahora el más grande de los dos, no el de Horario a 15 minutos: al recuperar la serie cruda, Horario queda expuesto a los mismos \textit{spikes} de gran magnitud que 15 minutos, mientras que Día, al promediar dentro del día, los diluye. Esto es consistente con que los spikes de costo marginal son eventos puntuales de gran magnitud que ninguna resolución logra anticipar por completo, mientras que la mejora de MAE/R² refleja la reducción del error típico, no del error extremo.
+
+La Tabla \ref{tab:granularidad_cp} presenta los resultados de Conformal Prediction para las tres granularidades, evaluados contra la serie cruda. A diferencia de la versión anterior de esta tabla, no se selecciona un ``método ganador'' por combinación mirando su desempeño en prueba (Sección \ref{sec:baselines}); en su lugar se reportan directamente Split CP clásico y LW-ACP ($\gamma=0.05$, Sección \ref{sec:lwacp_resultados}), los dos métodos ya caracterizados en el resto del capítulo. Para la granularidad Día se omite LW-ACP: con una observación por día no existe heterocedasticidad horaria intradiaria que ponderar, por lo que el mecanismo de $\hat\sigma_h$ no es aplicable.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lllrrrr}
+        \toprule
+        & & & \multicolumn{2}{c}{Split CP} & \multicolumn{2}{c}{LW-ACP} \\
+        Barra & Arq. & Granularidad & Coverage & Width & Coverage & Width \\
+        \midrule
+        ATACAMA  & DyT & Día     & 0.8479 & 52.29  & --     & --     \\
+        ATACAMA  & DyT & Horario & 0.9212 & 33.93  & 0.8984 & 34.43  \\
+        ATACAMA  & DyT & 15 min  & 0.8066 & 12.35  & 0.8733 & 24.74  \\
+        ATACAMA  & LN  & Día     & 0.8220 & 46.79  & --     & --     \\
+        ATACAMA  & LN  & Horario & 0.9134 & 32.73  & 0.8980 & 36.08  \\
+        ATACAMA  & LN  & 15 min  & 0.8193 & 12.29  & 0.8736 & 24.81  \\
+        CARDONES & DyT & Día     & 0.8155 & 51.21  & --     & --     \\
+        CARDONES & DyT & Horario & 0.9153 & 33.36  & 0.8979 & 33.94  \\
+        CARDONES & DyT & 15 min  & 0.8134 & 12.94  & 0.8705 & 26.47  \\
+        CARDONES & LN  & Día     & 0.8188 & 47.38  & --     & --     \\
+        CARDONES & LN  & Horario & 0.9153 & 33.50  & 0.8978 & 33.78  \\
+        CARDONES & LN  & 15 min  & 0.8166 & 12.22  & 0.8709 & 26.46  \\
+        P.MONTT  & DyT & Día     & 0.8900 & 106.24 & --     & --     \\
+        P.MONTT  & DyT & Horario & 0.9141 & 75.97  & 0.8988 & 71.05  \\
+        P.MONTT  & DyT & 15 min  & 0.8793 & 27.12  & 0.8899 & 38.92  \\
+        P.MONTT  & LN  & Día     & 0.9223 & 108.80 & --     & --     \\
+        P.MONTT  & LN  & Horario & 0.9117 & 75.77  & 0.8987 & 75.00  \\
+        P.MONTT  & LN  & 15 min  & 0.8747 & 25.78  & 0.8896 & 39.70  \\
+        \bottomrule
+    \end{tabular}
+    \caption{Conformal Prediction por granularidad, evaluado contra la serie cruda sin recorte de outliers, con el piso $\hat\sigma_h \geq \hat\sigma_{\text{global}}$ de la Sección \ref{sec:lw_split_cp} ya aplicado. Coverage nominal: 0.90. Width en USD/MWh. LW-ACP no aplica a Día (sin heterocedasticidad horaria intradiaria que explotar).}
+    \label{tab:granularidad_cp}
+\end{table}
+
+En general el ancho del intervalo se reduce al aumentar la resolución. La cobertura, en cambio, solo queda cerca del nominal en la resolución Horaria: en Día y en 15 minutos Split CP sub-cubre en Atacama y Cardones (0.81--0.85 frente a 0.90), consistente con ventanas de calibración más cortas y estacionalmente sesgadas en esas dos granularidades (310 días con una observación diaria, y 107 días a 15 minutos), y a 15 minutos LW-ACP recupera parte de esa brecha (0.87--0.89) a costa de un intervalo más ancho. Una versión anterior de esta tabla, calculada al 95\% de cobertura nominal y antes de introducir el piso $\hat\sigma_h \geq \hat\sigma_{\text{global}}$ (Sección \ref{sec:lw_split_cp}), mostraba un caso anómalo en ATACAMA a 15 minutos, con un ancho de LW-ACP de hasta 104\,USD/MWh, casi el triple que a resolución Horaria. Ese caso se examina en detalle a continuación, junto con el efecto del piso sobre él.
+
+\subsubsection{Inestabilidad de $\hat\sigma_h$ en 15 minutos, y su corrección}
+
+Los métodos LW Split CP y LW-ACP normalizan cada \textit{score} de calibración por una estimación local de la escala del error específica de la hora del día, $\hat\sigma_h$ (Sección 2.6.5). En ATACAMA a 15 minutos, durante las horas 11, 14, 15 y 16, el precio real es exactamente 0 USD/MWh en el 100\% de las observaciones de calibración, producto de sobreoferta solar sostenida. Con el valor real constante, $\hat\sigma_h$ colapsaba, antes de aplicar el piso, a valores casi nulos (0.0012--0.0049) en esas horas, frente a $\hat\sigma_h \approx 13$--$15$ en horas de transición solar (7h, 19h). Como LW-ACP normaliza cada \textit{score} de calibración por el $\hat\sigma_h$ de su propia hora antes de calcular el cuantil adaptado, una hora con $\hat\sigma_h$ casi nulo generaba \textit{scores} normalizados gigantes, que inflaban el ancho del intervalo para todas las horas de prueba, no solo la afectada: el origen del ancho promedio de hasta 104\,USD/MWh que mostraba ATACAMA a 15 minutos en una versión anterior de este análisis, muy por encima de Split CP (31.6 en esa misma versión, antes de truncar el límite inferior en 0 --Sección \ref{sec:split_cp_clasico}--).
+
+No era solo la resolución: también contribuía el confound estacional del período histórico. El conjunto de calibración de 15 minutos cubre apenas 107 días (28 de noviembre de 2025 a 16 de marzo de 2026), un período que cae íntegramente en temporada de alta generación solar (verano y comienzos de otoño en Chile), lo que favorece que varias horas del bloque solar registren precio cero en el 100\% de las observaciones de calibración. El conjunto de calibración de Horario, en cambio, cubre 345 días e incluye meses de invierno, donde el precio en esas mismas horas sí toma valores positivos con cierta frecuencia, lo que evita que $\hat\sigma_h$ colapse de la misma forma.
+
+El piso $\hat\sigma_h \geq \hat\sigma_{\text{global}}$, introducido en la Sección \ref{sec:lw_split_cp} para un problema análogo detectado en la resolución Horaria, \textbf{resuelve también este caso}: con el piso aplicado, más el truncamiento en 0 del límite inferior ya incorporado en la Tabla \ref{tab:granularidad_cp}, el ancho de LW-ACP en ATACAMA a 15 minutos baja, al 95\% de cobertura nominal en que se detectó el problema, de $\sim$104 a 34.2\,USD/MWh (LN) y 34.3\,USD/MWh (DyT), y queda en 24.8 y 24.7\,USD/MWh al 90\% reportado en la tabla, en línea con el resto de las combinaciones de esa granularidad y sin el comportamiento degenerado observado antes. Esto es evidencia de que el piso no es un parche específico para las dos barras horarias donde se detectó originalmente, sino una corrección general y necesaria del mecanismo de normalización de $\hat\sigma_h$ (Ecuación \eqref{eq:sigma_h}), aplicable en cualquier escenario donde una hora del día pueda quedar con varianza de calibración casi nula --ya sea por curtailment sostenido, como en 15 minutos, o por contaminación puntual de la calibración, como en el caso horario original--.
+
+\subsubsection{Comparación justa Horario vs. 15 minutos (misma ventana calendario)}
+
+La comparación anterior arrastra un confound: no es el mismo período histórico entre granularidades (Tabla \ref{tab:granularidad_periodos}), por lo que parte de la ventaja de 15 minutos podría deberse al período más reciente y no a la resolución en sí. Para aislar el efecto, se entrena un modelo S+C adicional a resolución Horaria pero restringido a la misma ventana histórica que el piloto de 15 minutos (Sección 3.8.4); su prueba queda truncada al 24 de abril de 2026 por la disponibilidad de datos crudos de precio. La prueba del piloto de 15 minutos original se recorta a esa misma ventana calendario (16 de marzo -- 24 de abril de 2026) para una comparación estrictamente pareada. La Tabla \ref{tab:h_vs_15min} presenta los resultados.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{llrrrr}
+        \toprule
+        Barra & Versión & $N$ & MAE & RMSE & R² \\
+        \midrule
+        ATACAMA  & Horario (ventana acotada)        & 926  & 4.50 & 8.41  & 0.918 \\
+        ATACAMA  & 15 min (recortado a ventana h)    & 3701 & 2.51 & 6.16  & 0.958 \\
+        CARDONES & Horario (ventana acotada)        & 926  & 4.29 & 8.20  & 0.920 \\
+        CARDONES & 15 min (recortado a ventana h)    & 3701 & 2.30 & 6.00  & 0.960 \\
+        P.MONTT  & Horario (ventana acotada)        & 926  & 7.87 & 14.01 & 0.687 \\
+        P.MONTT  & 15 min (recortado a ventana h)    & 3701 & 3.58 & 8.78  & 0.891 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Comparación Horario vs. 15 minutos sobre la misma ventana calendario (16 de marzo -- 24 de abril de 2026, 39 días), estrategia S+C LN.}
+    \label{tab:h_vs_15min}
+\end{table}
+
+Con el confound de período controlado, \textbf{la ventaja de 15 minutos se mantiene}, de hecho se amplifica: el MAE de 15 minutos es 44--55\% menor que el de Horario en las tres barras (ATACAMA: 2.51 vs. 4.50; CARDONES: 2.30 vs. 4.29; P.MONTT: 3.58 vs. 7.87 USD/MWh), con R² más alto en los tres casos (hasta 0.96 en ATACAMA/CARDONES). Esto descarta que la mejora observada en la Tabla \ref{tab:granularidad_metricas} fuera enteramente un artefacto del período histórico distinto: incluso comparando exactamente la misma ventana calendario, predecir con datos de 15 minutos produce errores puntuales menores que predecir con datos horarios. Una hipótesis razonable es que, al reducir el paso temporal, el modelo dispone de una señal más granular de la dinámica de corto plazo (por ejemplo, las rampas de entrada/salida del bloque solar) que se pierde al promediar a resolución horaria. La comparación con Día sigue sin poder controlarse de la misma forma, dado que no se dispone de un pipeline Día restringido a esta ventana, por lo que esa parte de la conclusión se mantiene como confound abierto.
+
+En síntesis, la evidencia es más sólida para la hipótesis de que una mayor resolución temporal mejora la capacidad predictiva del modelo, verificada mediante el control del confound de período entre Horario y 15 minutos; para Día el resultado sigue siendo preliminar. La inestabilidad del mecanismo $\hat\sigma_h$ detectada en 15 minutos, documentada en la sección anterior, quedó resuelta con el mismo piso de varianza introducido para la resolución Horaria, sin necesidad de un ajuste adicional específico para ventanas de calibración cortas y estacionalmente sesgadas.
