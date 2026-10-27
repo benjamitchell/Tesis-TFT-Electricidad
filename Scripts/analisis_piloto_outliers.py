@@ -133,8 +133,8 @@ def main():
         e_pil = np.abs(y - mt["p_pil"].values)
 
         # 1. Diebold-Mariano (a = piloto: DM<0 favorece al piloto)
-        dm_mae = diebold_mariano(y, mt["p_pil"].values, mt["p_act"].values, h=1, loss="mae")
-        dm_mse = diebold_mariano(y, mt["p_pil"].values, mt["p_act"].values, h=1, loss="mse")
+        dm_mae = diebold_mariano(y, mt["p_pil"].values, mt["p_act"].values, h=1, loss="mae", max_lag=24)
+        dm_mse = diebold_mariano(y, mt["p_pil"].values, mt["p_act"].values, h=1, loss="mse", max_lag=24)
         filas_dm.append({
             "Barra": barra, "n": len(mt),
             "MAE_actual": e_act.mean(), "MAE_piloto": e_pil.mean(),

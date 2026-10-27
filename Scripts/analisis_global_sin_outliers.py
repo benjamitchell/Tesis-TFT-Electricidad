@@ -115,8 +115,8 @@ def main():
                 filas_cp.append(fila)
 
         for nuevo, ref in PARES:
-            dm_mae = diebold_mariano(y, mt[nuevo].values, mt[ref].values, h=1, loss="mae")
-            dm_mse = diebold_mariano(y, mt[nuevo].values, mt[ref].values, h=1, loss="mse")
+            dm_mae = diebold_mariano(y, mt[nuevo].values, mt[ref].values, h=1, loss="mae", max_lag=24)
+            dm_mse = diebold_mariano(y, mt[nuevo].values, mt[ref].values, h=1, loss="mse", max_lag=24)
             par = pd.DataFrame({"fecha": mt["fecha"], "y": y, "p_act": mt[ref].values, "p_pil": mt[nuevo].values})
             obs95, lo95, hi95, p95 = bootstrap_delta_regimen(par, m95)
             filas_par.append({

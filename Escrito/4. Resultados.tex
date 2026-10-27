@@ -1198,9 +1198,9 @@ La Tabla \ref{tab:pmontt_comparacion} presenta la comparación de las cuatro est
         Estrategia & Arq. & MAE & RMSE & R² & P90 & P95 & Máximo \\
         \midrule
         S+C   & LN  & 13.68 & 25.80 & 0.823 & 38.68 & 57.73 & 238.67 \\
-        P+C   & DyT & 13.71 & 25.00 & 0.834 & 36.70 & 54.66 & 225.95 \\
+        P+C   & DyT & 13.71 & 25.00 & 0.834 & 36.58 & 54.54 & 225.84 \\
+        P+C   & LN  & 13.91 & 25.92 & 0.822 & 40.12 & 57.57 & 231.71 \\
         H+C   & LN  & 13.93 & 26.26 & 0.818 & 40.57 & 58.58 & 234.51 \\
-        P+C   & LN  & 13.94 & 25.98 & 0.821 & 40.50 & 57.71 & 231.90 \\
         S+C   & DyT & 14.01 & 26.04 & 0.820 & 38.53 & 57.95 & 218.46 \\
         S+H+C & LN  & 14.04 & 26.55 & 0.813 & 38.92 & 59.23 & 236.25 \\
         H+C   & DyT & 14.38 & 26.76 & 0.811 & 40.43 & 60.29 & 244.34 \\
@@ -1218,29 +1218,31 @@ La Tabla \ref{tab:pmontt_dm} presenta el test de Diebold-Mariano (Sección \ref{
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{llrrrrl}
+    \begin{tabular}{llrrrrrrr}
         \toprule
-        Arq. & Comparación & $N$ horas & MAE$_1$ & MAE$_2$ & DM & Signif. (5\%) \\
+        & & & & & \multicolumn{2}{c}{Horario (24 rezagos)} & \multicolumn{2}{c}{Diario} \\
+        \cmidrule(lr){6-7} \cmidrule(lr){8-9}
+        Arq. & Comparación & $N$ horas & MAE$_1$ & MAE$_2$ & DM & $p$ & DM & $p$ \\
         \midrule
-        LN  & H+C vs P+C   & 8274 & 13.934 & 13.942 & -0.18 & No \\
-        LN  & H+C vs S+C   & 8274 & 13.934 & 13.689 & 3.49  & Sí \\
-        LN  & H+C vs S+H+C & 8274 & 13.934 & 14.038 & -0.85 & No \\
-        LN  & P+C vs S+C   & 8298 & 13.939 & 13.684 & 3.43  & Sí \\
-        LN  & P+C vs S+H+C & 8274 & 13.942 & 14.038 & -0.77 & No \\
-        LN  & S+C vs S+H+C & 8274 & 13.689 & 14.038 & -3.67 & Sí \\
-        DyT & H+C vs P+C   & 8274 & 14.382 & 13.718 & 6.10  & Sí \\
-        DyT & H+C vs S+C   & 8274 & 14.382 & 14.018 & 2.91  & Sí \\
-        DyT & H+C vs S+H+C & 8274 & 14.382 & 14.421 & -0.28 & No \\
-        DyT & P+C vs S+C   & 8298 & 13.711 & 14.011 & -2.59 & Sí \\
-        DyT & P+C vs S+H+C & 8274 & 13.718 & 14.421 & -5.27 & Sí \\
-        DyT & S+C vs S+H+C & 8274 & 14.018 & 14.421 & -3.68 & Sí \\
+        LN  & H+C vs P+C   & 8274 & 13.934 & 13.911 & 0.46 & $0.648$ & 0.20 & $0.838$ \\
+        LN  & H+C vs S+C   & 8274 & 13.934 & 13.689 & 3.44 & $0.001$* & 2.78 & $0.005$* \\
+        LN  & H+C vs S+H+C & 8274 & 13.934 & 14.038 & -0.70 & $0.482$ & -0.56 & $0.576$ \\
+        LN  & P+C vs S+C   & 8298 & 13.908 & 13.684 & 2.90 & $0.004$* & 2.43 & $0.015$ \\
+        LN  & P+C vs S+H+C & 8274 & 13.911 & 14.038 & -0.83 & $0.408$ & -0.60 & $0.546$ \\
+        LN  & S+C vs S+H+C & 8274 & 13.689 & 14.038 & -2.96 & $0.003$* & -2.07 & $0.038$ \\
+        DyT & H+C vs P+C   & 8274 & 14.382 & 13.715 & 5.83 & $<0.001$* & 6.01 & $<0.001$* \\
+        DyT & H+C vs S+C   & 8274 & 14.382 & 14.018 & 2.72 & $0.007$* & 2.47 & $0.013$ \\
+        DyT & H+C vs S+H+C & 8274 & 14.382 & 14.421 & -0.26 & $0.797$ & -0.28 & $0.780$ \\
+        DyT & P+C vs S+C   & 8298 & 13.708 & 14.011 & -2.35 & $0.019$ & -2.22 & $0.027$ \\
+        DyT & P+C vs S+H+C & 8274 & 13.715 & 14.421 & -4.74 & $<0.001$* & -4.12 & $<0.001$* \\
+        DyT & S+C vs S+H+C & 8274 & 14.018 & 14.421 & -3.40 & $0.001$* & -3.24 & $0.001$* \\
         \bottomrule
     \end{tabular}
-    \caption{Test de Diebold-Mariano (varianza Newey-West) entre pares de estrategias para Puerto Montt, sobre errores absolutos horarios alineados por fecha y evaluados contra la serie cruda ($\alpha = 0.05$). El signo de DM favorece a la estrategia listada primero cuando es negativo.}
+    \caption{Test de Diebold-Mariano entre pares de estrategias para Puerto Montt, sobre errores absolutos alineados por fecha y evaluados contra la serie cruda, en sus versiones horaria (varianza Newey-West con 24 rezagos) y diaria (error promedio de cada día, truncamiento de Andrews), Sección \ref{sec:dm_ln_dyt}. El signo de DM favorece a la estrategia listada primero cuando es negativo. * = significativo tras corrección de Holm-Bonferroni para las 12 comparaciones de cada versión ($\alpha=0.05$).}
     \label{tab:pmontt_dm}
 \end{table}
 
-El test confirma que la ausencia de mejora de S+H+C no es casualidad de una sola corrida: \textbf{S+H+C nunca es significativamente mejor que ninguna otra estrategia}, en ninguna arquitectura. S+H+C es \textbf{estadísticamente indistinguible de H+C} tanto en LN como en DyT (agregar la posición solar no produjo una mejora medible sobre H+C solo) y significativamente peor que P+C en ambas arquitecturas. Frente a S+C, S+H+C también resulta significativamente peor en ambas arquitecturas: aunque en LN la diferencia de MAE con S+C es de solo $\approx$0.35\,USD/MWh, Diebold-Mariano la detecta como sistemática al corregir por la autocorrelación serial del error horario (DM$=-3.67$), reforzando que S+H+C no aporta sobre S+C en ninguna de las dos arquitecturas. H+C tampoco es distinguible de P+C en LN, y es claramente peor que P+C y S+C en DyT; en DyT, a diferencia de LN, P+C también resulta significativamente mejor que S+C (DM$=-2.59$), aunque la diferencia de MAE es pequeña (13.71 vs.\ 14.01).
+El test confirma que la ausencia de mejora de S+H+C no es casualidad de una sola corrida: \textbf{S+H+C nunca es significativamente mejor que ninguna otra estrategia}, en ninguna arquitectura. S+H+C es \textbf{estadísticamente indistinguible de H+C} tanto en LN como en DyT (agregar la posición solar no produjo una mejora medible sobre H+C solo) y significativamente peor que P+C en DyT (en LN no se distingue de P+C). Frente a S+C, S+H+C resulta significativamente peor en ambas arquitecturas, también tras la corrección de Holm-Bonferroni: aunque en LN la diferencia de MAE con S+C es de solo $\approx$0.35\,USD/MWh, Diebold-Mariano la detecta incluso al descontar la autocorrelación diaria del error horario (DM$=-2.96$), reforzando que S+H+C no aporta sobre S+C en ninguna de las dos arquitecturas. H+C tampoco es distinguible de P+C en LN, y es claramente peor que P+C y S+C en DyT. En DyT, a diferencia de LN, P+C resulta mejor que S+C (DM$=-2.35$, $p=0.019$), pero la diferencia es pequeña (13.71 vs.\ 14.01) y no sobrevive a la corrección de Holm-Bonferroni.
 
 \textbf{Esto descarta la hipótesis inicial.} La sospecha de que a H+C le faltaba una señal cíclica explícita para competir con P+C y S+C no se sostiene: al agregarla en S+H+C, el resultado no mejora, si acaso, es marginalmente peor. Esto sugiere que el problema no es la ausencia de una covariable específica, sino algo más estructural: la combinación de variables hídricas (\texttt{cota\_chapo}, \texttt{agua\_caida\_hora}) con el resto de las features no logra capturar mejor la dinámica de Puerto Montt que las estrategias de propósito general ya usadas en el resto del sistema.
 
@@ -1257,24 +1259,24 @@ La segunda variante deja de lado la estrategia de variables y revisa el preproce
         \toprule
         Barra & MAE actual & MAE piloto & $\Delta$ MAE & $p$ (DM) & $\Delta$ MAE p95 & $p$ (\textit{boot.}) \\
         \midrule
-        Atacama       & 6.70  & 6.59  & $-1.7\%$ & 0.329    & $-11.1\%$ & 0.058 \\
-        Cardones      & 6.63  & 6.64  & $+0.2\%$ & 0.885    & $-5.7\%$  & 0.668 \\
-        Charrúa       & 7.98  & 7.99  & $+0.1\%$ & 0.912    & $-11.6\%$ & 0.263 \\
-        Crucero       & 6.74  & 6.59  & $-2.3\%$ & 0.151    & $-4.2\%$  & 0.718 \\
+        Atacama       & 6.70  & 6.59  & $-1.7\%$ & 0.398    & $-11.1\%$ & 0.058 \\
+        Cardones      & 6.63  & 6.64  & $+0.2\%$ & 0.900    & $-5.7\%$  & 0.668 \\
+        Charrúa       & 7.98  & 7.99  & $+0.1\%$ & 0.950    & $-11.6\%$ & 0.263 \\
+        Crucero       & 6.74  & 6.59  & $-2.3\%$ & 0.194    & $-4.2\%$  & 0.718 \\
         Pan de Azúcar & 6.93  & 6.59  & $-4.9\%$ & $<0.001$ & $-8.0\%$  & 0.032 \\
-        Puerto Montt  & 13.68 & 13.79 & $+0.8\%$ & 0.190    & $+1.9\%$  & 0.463 \\
-        Quillota      & 8.26  & 7.93  & $-4.0\%$ & $<0.001$ & $-15.6\%$ & 0.034 \\
-        Tarapacá      & 7.11  & 7.12  & $+0.1\%$ & 0.952    & $-10.8\%$ & 0.062 \\
+        Puerto Montt  & 13.68 & 13.79 & $+0.8\%$ & 0.226    & $+1.9\%$  & 0.463 \\
+        Quillota      & 8.26  & 7.93  & $-4.0\%$ & 0.030    & $-15.6\%$ & 0.034 \\
+        Tarapacá      & 7.11  & 7.12  & $+0.1\%$ & 0.958    & $-10.8\%$ & 0.062 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{MAE de prueba general y condicional al régimen de precio alto (percentil 95 o superior), $h=1$, USD/MWh, sobre la serie cruda. $\Delta$ = variación porcentual del piloto respecto al modelo actual (negativo = mejora). $p$ (DM) = valor $p$ de la prueba de Diebold-Mariano sobre el error absoluto; $p$ (\textit{boot.}) = valor $p$ del \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto.}
+    \caption{MAE de prueba general y condicional al régimen de precio alto (percentil 95 o superior), $h=1$, USD/MWh, sobre la serie cruda. $\Delta$ = variación porcentual del piloto respecto al modelo actual (negativo = mejora). $p$ (DM) = valor $p$ de la prueba de Diebold-Mariano sobre el error absoluto, con varianza Newey-West de 24 rezagos; $p$ (\textit{boot.}) = valor $p$ del \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto.}
     \label{tab:piloto_outliers_h1}
 \end{table}
 
-A $h=1$ y sobre las ocho barras, el MAE general queda prácticamente empatado: el piloto mejora en cuatro barras y empeora en las otras cuatro por menos de un 1\%. La prueba de Diebold-Mariano detecta una mejora significativa solo en Pan de Azúcar y Quillota (ambas con $p<0.001$, que sobreviven a una corrección de Holm-Bonferroni para las ocho comparaciones de esta familia) y no detecta ninguna diferencia significativa a favor del modelo actual; es decir, entrenar sin el recorte automático de outliers no perjudica el desempeño general. Con pérdida cuadrática el piloto reduce el RMSE en siete de las ocho barras, pero la diferencia solo es significativa en Quillota ($p<0.001$); Puerto Montt empeora de forma nominalmente significativa ($p=0.022$) pero no sobrevive la misma corrección de Holm-Bonferroni para las ocho comparaciones, por lo que se reporta como evidencia débil, no concluyente.
+A $h=1$ y sobre las ocho barras, el MAE general queda prácticamente empatado: el piloto mejora en cuatro barras y empeora en las otras cuatro por menos de un 1\%. La prueba de Diebold-Mariano detecta una mejora significativa solo en Pan de Azúcar ($p<0.001$) y Quillota ($p=0.030$); solo la de Pan de Azúcar sobrevive a una corrección de Holm-Bonferroni para las ocho comparaciones de esta familia. No detecta ninguna diferencia significativa a favor del modelo actual; es decir, entrenar sin el recorte automático de outliers no perjudica el desempeño general. Con pérdida cuadrática el piloto reduce el RMSE en siete de las ocho barras, pero ninguna de esas mejoras es significativa; Puerto Montt empeora de forma nominalmente significativa ($p=0.039$) pero no sobrevive la misma corrección de Holm-Bonferroni, por lo que se reporta como evidencia débil, no concluyente.
 
-El MAE en régimen de precio alto mejora en siete de las ocho barras, entre 4.2\% y 15.6\%, y empeora un 1.9\% en Puerto Montt. Sin embargo, según el \textit{bootstrap} por bloques de días, solo Pan de Azúcar y Quillota son significativas al 5\% sin corregir (Atacama y Tarapacá quedan en el límite, con $p\approx0.06$); bajo una corrección de Holm-Bonferroni para esta misma familia de ocho comparaciones, ninguna de las dos sobrevive ($p_\text{Holm}$ mínimo requerido $0.00625$ para la más pequeña, frente a $p\approx0.032$--$0.034$ observado). La consistencia entre barras (siete de ocho) arroja una prueba de signos con $p=0.07$, evidencia que además está sobreestimada, porque las ocho barras comparten sistema y período y no son observaciones independientes. La lectura prudente es que la mejora en régimen de precio alto es consistente en su dirección y de magnitud apreciable, pero no individualmente significativa en ninguna barra una vez que se corrige por comparaciones múltiples; la evidencia más sólida de esta sección sigue siendo la del MAE general (Pan de Azúcar y Quillota, que sí sobreviven la corrección, Tabla \ref{tab:piloto_outliers_h1}).
+El MAE en régimen de precio alto mejora en siete de las ocho barras, entre 4.2\% y 15.6\%, y empeora un 1.9\% en Puerto Montt. Sin embargo, según el \textit{bootstrap} por bloques de días, solo Pan de Azúcar y Quillota son significativas al 5\% sin corregir (Atacama y Tarapacá quedan en el límite, con $p\approx0.06$); bajo una corrección de Holm-Bonferroni para esta misma familia de ocho comparaciones, ninguna de las dos sobrevive ($p_\text{Holm}$ mínimo requerido $0.00625$ para la más pequeña, frente a $p\approx0.032$--$0.034$ observado). La consistencia entre barras (siete de ocho) arroja una prueba de signos con $p=0.07$, evidencia que además está sobreestimada, porque las ocho barras comparten sistema y período y no son observaciones independientes. La lectura prudente es que la mejora en régimen de precio alto es consistente en su dirección y de magnitud apreciable, pero no individualmente significativa en ninguna barra una vez que se corrige por comparaciones múltiples; la evidencia más sólida de esta sección sigue siendo la del MAE general en Pan de Azúcar, la única que sobrevive la corrección (Tabla \ref{tab:piloto_outliers_h1}).
 
 La mejora es más nítida en los errores más grandes. La Tabla \ref{tab:piloto_extremos} muestra que el MAE en el percentil 99 o superior baja en siete de las ocho barras (por ejemplo, de 63.4 a 43.7\,USD/MWh en Atacama), el promedio de los 20 mayores errores baja en siete y el error máximo baja en las ocho, con reducciones de entre 32\% y 37\% en las barras del norte de picos más marcados (Atacama, Cardones, Crucero y Tarapacá). Puerto Montt es la única barra donde el MAE en el percentil 99 y el promedio de los 20 mayores errores no mejoran. Este patrón es coherente con la hipótesis de la Sección \ref{sec:piloto_outliers_meta}: sin el recorte a cuatro desviaciones estándar en entrenamiento, el modelo subestima menos los picos de precio.
 
@@ -1344,9 +1346,9 @@ Establecido el efecto del recorte de outliers en los modelos por barra, la sigui
     \label{tab:matriz_outliers_granularidad}
 \end{table}
 
-\paragraph{Efecto del recorte.} Quitar el recorte de outliers en entrenamiento mejora los errores extremos en ambas granularidades: el MAE en el percentil 99 baja un 26\% en el modelo por barra (de 51.1 a 37.7) y un 20\% en el global (de 51.6 a 41.4), y el error máximo promedio baja alrededor de un 25\% en ambos (de 324 a 239 y a 244). Que el efecto aparezca en dos familias de modelos entrenadas de forma independiente le da más peso a la hipótesis de la Sección \ref{sec:piloto_outliers_meta} que el resultado de una sola corrida. En el modelo global, sin embargo, la diferencia no es significativa barra por barra: la prueba de Diebold-Mariano no detecta ninguna barra donde el global sin recorte gane al global con recorte, y en Puerto Montt empeora de forma significativa ($\mathrm{DM}=3.81$, $p=0.0001$); el \textit{bootstrap} por bloques de días tampoco detecta cambios significativos en el MAE de régimen alto en ninguna barra. El efecto se observa en el agregado, no de forma individual.
+\paragraph{Efecto del recorte.} Quitar el recorte de outliers en entrenamiento mejora los errores extremos en ambas granularidades: el MAE en el percentil 99 baja un 26\% en el modelo por barra (de 51.1 a 37.7) y un 20\% en el global (de 51.6 a 41.4), y el error máximo promedio baja alrededor de un 25\% en ambos (de 324 a 239 y a 244). Que el efecto aparezca en dos familias de modelos entrenadas de forma independiente le da más peso a la hipótesis de la Sección \ref{sec:piloto_outliers_meta} que el resultado de una sola corrida. En el modelo global, sin embargo, la diferencia no es significativa barra por barra: la prueba de Diebold-Mariano no detecta ninguna barra donde el global sin recorte gane al global con recorte, y en Puerto Montt empeora de forma significativa ($\mathrm{DM}=3.99$, $p<0.001$); el \textit{bootstrap} por bloques de días tampoco detecta cambios significativos en el MAE de régimen alto en ninguna barra. El efecto se observa en el agregado, no de forma individual.
 
-\paragraph{Efecto de la granularidad.} El modelo global no supera al modelo por barra. La Tabla \ref{tab:global_vs_barra_sin} compara ambos sin recorte, barra por barra: el modelo por barra gana de forma significativa en cuatro barras (Charrúa, Crucero, Pan de Azúcar y Quillota) y el global solo en Puerto Montt, las cinco sobreviven una corrección de Holm-Bonferroni para esta familia de ocho comparaciones. Frente al modelo principal de este trabajo (por barra, con recorte), el global sin recorte empata en siete barras y pierde nominalmente en Charrúa ($\mathrm{DM}=2.18$, $p=0.029$), sin ganar en ninguna; sin embargo, esa diferencia en Charrúa no sobrevive la misma corrección para esta segunda familia de ocho comparaciones ($p$ mínimo requerido $0.00625$), por lo que, en rigor, el global sin recorte empata con el modelo principal en las ocho barras.
+\paragraph{Efecto de la granularidad.} El modelo global no supera al modelo por barra. La Tabla \ref{tab:global_vs_barra_sin} compara ambos sin recorte, barra por barra: el modelo por barra gana de forma significativa en cuatro barras (Charrúa, Crucero, Pan de Azúcar y Quillota) y el global solo en Puerto Montt, las cinco sobreviven una corrección de Holm-Bonferroni para esta familia de ocho comparaciones. Frente al modelo principal de este trabajo (por barra, con recorte), el global sin recorte no muestra diferencias significativas en ninguna de las ocho barras.
 
 \begin{table}[htbp]
     \centering
@@ -1354,18 +1356,18 @@ Establecido el efecto del recorte de outliers en los modelos por barra, la sigui
         \toprule
         Barra & MAE global & MAE por barra & DM & $p$ \\
         \midrule
-        Atacama       & 6.58  & 6.59  & $-0.17$ & 0.868    \\
-        Cardones      & 6.68  & 6.64  & $0.67$  & 0.501    \\
-        Charrúa       & 8.19  & 7.99  & $2.86$  & 0.004    \\
-        Crucero       & 6.80  & 6.59  & $3.20$  & 0.001    \\
-        Pan de Azúcar & 6.81  & 6.59  & $3.14$  & 0.002    \\
-        Puerto Montt  & 13.52 & 13.79 & $-2.66$ & 0.008    \\
-        Quillota      & 8.23  & 7.93  & $4.42$  & $<0.001$ \\
-        Tarapacá      & 7.06  & 7.12  & $-0.85$ & 0.396    \\
+        Atacama       & 6.58  & 6.59  & $-0.16$ & 0.875    \\
+        Cardones      & 6.68  & 6.64  & $0.61$  & 0.542    \\
+        Charrúa       & 8.19  & 7.99  & $2.80$  & 0.005    \\
+        Crucero       & 6.80  & 6.59  & $2.81$  & 0.005    \\
+        Pan de Azúcar & 6.81  & 6.59  & $3.12$  & 0.002    \\
+        Puerto Montt  & 13.52 & 13.79 & $-2.64$ & 0.008    \\
+        Quillota      & 8.23  & 7.93  & $4.32$  & $<0.001$ \\
+        Tarapacá      & 7.06  & 7.12  & $-0.75$ & 0.452    \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Modelo global contra modelo por barra, ambos sin recorte de outliers en entrenamiento, MAE de prueba a $h=1$ (USD/MWh) sobre la serie cruda. DM = estadístico de Diebold-Mariano sobre el error absoluto con varianza de Newey-West, con el modelo global como primer argumento (negativo favorece al global, positivo al modelo por barra).}
+    \caption{Modelo global contra modelo por barra, ambos sin recorte de outliers en entrenamiento, MAE de prueba a $h=1$ (USD/MWh) sobre la serie cruda. DM = estadístico de Diebold-Mariano sobre el error absoluto con varianza de Newey-West de 24 rezagos, con el modelo global como primer argumento (negativo favorece al global, positivo al modelo por barra).}
     \label{tab:global_vs_barra_sin}
 \end{table}
 
