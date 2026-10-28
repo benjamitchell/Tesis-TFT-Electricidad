@@ -120,7 +120,7 @@ Prophet formula el problema de forecasting como la estimación de un modelo adit
 \hat{y}_t^{Prophet} = T(t) + S(t) + H(t) + \varepsilon_t
 \end{equation}
 
-donde $T(t)$ es la componente de tendencia, $S(t)$ es la componente de estacionalidad, $H(t)$ captura el efecto de días festivos y eventos especiales, y $\varepsilon_t \sim \mathcal{N}(0, \sigma^2)$ es el término de error. Cada componente se estima de manera independiente, lo que otorga al modelo su interpretabilidad característica. La estimación de los parámetros se realiza mediante inferencia bayesiana con el software Stan, lo que permite incorporar incertidumbre en las predicciones de manera natural.
+donde $T(t)$ es la componente de tendencia, $S(t)$ es la componente de estacionalidad, $H(t)$ captura el efecto de días festivos y eventos especiales, y $\varepsilon_t \sim \mathcal{N}(0, \sigma^2)$ es el término de error. Las componentes se estiman en conjunto, en un único ajuste del modelo, pero como su contribución es aditiva, la predicción puede descomponerse en el aporte de cada una, lo que otorga al modelo su interpretabilidad característica.
 
 \subsection{Componente de tendencia}
 
