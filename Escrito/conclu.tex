@@ -20,6 +20,29 @@ Un piloto de entrenamiento sin el recorte automático de outliers mostró un res
 
 Finalmente, la comparación con literatura reciente (León et al., 2026), que evalúa modelos de \textit{machine learning} clásico sobre barras compartidas del SEN, mostró que el TFT S+C obtiene un MAE 34\% menor en Crucero (5.11 vs.\ 7.71\,USD/MWh) y un 20\% menor en Puerto Montt (13.64 vs.\ 17.11\,USD/MWh) respecto a los mejores modelos reportados, pese a entrenar con menos de un año de datos en ambos casos y sin el ajuste específico por barra que caracteriza al pipeline principal de este trabajo. Esta comparación es aproximada: este trabajo evalúa con una división cronológica sobre noviembre y diciembre de 2024, mientras que León et al.\ evalúan sobre enero y julio con el resto del año repartido al azar entre entrenamiento y validación. Ninguna de las métricas es inmune a esa diferencia de ventanas: el R² depende directamente de la varianza del período evaluado, lo que explica que en Puerto Montt resulte más bajo que el de León et al.\ (0.56 vs.\ 0.76), y el MAE y el RMSE tienden a crecer con la volatilidad, de modo que la ventana más tranquila de este trabajo en esa barra podría explicar parte de la reducción observada.
 
+La Tabla \ref{tab:objetivos} resume, para cada objetivo específico planteado en la Sección 1.4, dónde se aborda en este trabajo y el resultado principal obtenido.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{p{4.2cm}p{2.6cm}p{7.2cm}}
+        \toprule
+        Objetivo específico & Secciones & Resultado principal \\
+        \midrule
+        1. Caracterizar el costo marginal del SEN & 3.1, \ref{sec:verificacion_heterocedasticidad} & Ciclo diario marcado por la generación solar, heterocedasticidad horaria y colas pesadas del error \\
+        2. Diseñar las estrategias P+C y S+C & 3.4.1 & Ambas implementadas y evaluadas en las ocho barras \\
+        3. Comparar LayerNorm y DyT & \ref{sec:ln_vs_dyt} & Sin preferencia: la diferencia es del orden de la variabilidad entre semillas \\
+        4. Stacking Optimization en P+C & 3.5, \ref{sec:stacking_resultados} & Supera a Prophet en las ocho barras, pero no a S+C \\
+        5. Comparar P+C y S+C & \ref{sec:pc_vs_sc}, \ref{sec:h24_conclusiones} & S+C es más preciso en 14 de 16 combinaciones a una hora (9 significativas tras Holm-Bonferroni); a 24 horas P+C es algo más preciso \\
+        6. Conformal Prediction y LW-ACP & \ref{sec:lwacp_comparativa}, \ref{sec:lwacp_robusto} & LW-ACP obtiene el menor Winkler al 90\%; su variante robusta supera a ACI en las ocho barras \\
+        7. Variables hídricas en Puerto Montt & \ref{sec:pmontt_desempeno} & No mejoran el desempeño respecto de P+C y S+C \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Objetivos específicos del trabajo, secciones donde se abordan y resultado principal de cada uno.}
+    \label{tab:objetivos}
+\end{table}
+
 \section{Contribuciones}
 
 Las contribuciones principales de este trabajo son:

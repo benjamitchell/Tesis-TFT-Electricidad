@@ -66,14 +66,16 @@ Todos los experimentos principales pronostican el costo marginal de la hora sigu
 
 El modelo es evaluado sobre datos históricos del SEN, con el objetivo de determinar qué estrategia de construcción de \textit{features}, arquitectura de normalización y esquema de cuantificación de incertidumbre ofrece el mejor equilibrio entre desempeño predictivo, validez estadística y eficiencia de los intervalos resultantes. Las principales contribuciones de este trabajo son:
 \begin{itemize}
-    \item[(i)] La comparación empírica entre una estrategia híbrida basada en Prophet con ensamblaje formal (P+C) y una estrategia más simple basada en variables de posición solar (S+C) para el mercado eléctrico chileno, encontrándose que esta última es consistentemente superior en la mayoría de las barras del sistema,
+    \item[(i)] La comparación empírica entre una estrategia híbrida basada en Prophet con ensamblaje formal (P+C) y una estrategia más simple basada en variables de posición solar (S+C) para el mercado eléctrico chileno, encontrándose que esta última es más precisa en la mayoría de las barras a una hora de anticipación, mientras que a 24 horas P+C es algo más preciso,
 
     \item[(ii)] la comparación empírica de LayerNorm y Dynamic Tanh en un contexto de \textit{forecasting} energético,
 
-    \item[(iii)] la incorporación de Conformal Prediction como mecanismo de incertidumbre con garantías de cobertura en el SEN, incluyendo LW-ACP, una variante que combina ponderación local por hora del día con adaptación \textit{online} del nivel de cobertura, y
+    \item[(iii)] la incorporación de Conformal Prediction como mecanismo de cuantificación de incertidumbre en el SEN, incluyendo LW-ACP, una variante que combina ponderación local por hora del día con adaptación \textit{online} del nivel de cobertura, y
 
     \item[(iv)] un análisis diferenciado de Puerto Montt, la barra de mayor volatilidad del sistema, evaluando si variables hídricas específicas de la zona mejoran su predicción respecto de las estrategias generales.
 \end{itemize}
+
+Además, se caracterizan los errores extremos del modelo, se compara su pronóstico con el costo marginal programado que publica el CEN y se evalúa su sensibilidad a una función de pérdida asimétrica.
  
 \section{Objetivos}
 
@@ -84,7 +86,7 @@ El objetivo general del proyecto es desarrollar y comparar dos estrategias híbr
 \subsection{Objetivos Específicos}
 
 \begin{enumerate}
-    \item Caracterizar el comportamiento histórico del costo marginal en el Sistema Eléctrico Nacional, identificando sus patrones de estacionalidad, tendencia y volatilidad estructural asociados a la penetración de energías renovables no convencionales.
+    \item Caracterizar el comportamiento histórico del costo marginal en el Sistema Eléctrico Nacional, identificando sus patrones de estacionalidad, tendencia y volatilidad estructural.
 
     \item Diseñar e implementar dos estrategias de construcción de \textit{features} para el TFT, P+C (basada en la descomposición de Prophet) y S+C (basada en variables de posición solar), como modelos de captura de dependencias no lineales.
 
