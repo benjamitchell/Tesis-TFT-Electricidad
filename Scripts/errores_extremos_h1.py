@@ -18,6 +18,7 @@ Genera:
     docs/errores_extremos_top20_por_barra.csv
     Escrito/imagenes/fig_error_dist_atacama.pdf
     Escrito/imagenes/fig_errores_extremos_casos.pdf
+    Escrito/imagenes/fig_errores_extremos_casos_en.pdf (version en ingles para el paper IEEE)
 
 Uso:
     python Scripts/errores_extremos_h1.py
@@ -54,6 +55,7 @@ CASOS = [("CARDONES", "2025-03-25 20:00", "Desfase de fase, Cardones"),
          ("ATACAMA", "2024-09-01 22:00", "Desfase de fase, Atacama"),
          ("ATACAMA", "2025-02-26 09:00", "Evento estructural, Atacama"),
          ("CARDONES", "2024-08-09 08:00", "Evento estructural, Cardones")]
+TITULOS_EN = ["Phase shift, Cardones", "Phase shift, Atacama", "Structural event, Atacama", "Structural event, Cardones"]
 
 plt.rcParams.update({"font.size": 10, "axes.grid": True, "grid.alpha": 0.3})
 
@@ -93,14 +95,15 @@ def fig_distribucion(e, ruta):
     plt.close(fig)
 
 
-def fig_casos(series, preds, ruta):
+def fig_casos(series, preds, ruta, en=False):
     fig, axes = plt.subplots(2, 2, figsize=(10, 6.5))
-    for ax, (barra, instante, titulo) in zip(axes.flat, CASOS):
+    for i, (ax, (barra, instante, titulo)) in enumerate(zip(axes.flat, CASOS)):
+        titulo = TITULOS_EN[i] if en else titulo
         t = pd.Timestamp(instante)
         sl = slice(t - pd.Timedelta(hours=36), t + pd.Timedelta(hours=36))
         y, p = series[barra][sl], preds[barra].sort_index().asfreq("h")[sl]
         ax.plot(y.index, y.values, color="tab:blue", label="Real")
-        ax.plot(p.index, p.values, color="tab:red", linestyle="--", label="Predicción")
+        ax.plot(p.index, p.values, color="tab:red", linestyle="--", label="Predicted" if en else "Predicción")
         ax.axvline(t, color="darkorange", linestyle=":", linewidth=1.5)
         err = abs(p.get(t, np.nan) - y.get(t, np.nan))
         ax.set_title(f"{titulo}\n{t:%Y-%m-%d %H:%M}, error = {err:.1f} USD/MWh", fontsize=9)
@@ -157,6 +160,7 @@ def main():
 
     pd.DataFrame(detalle).to_csv("docs/errores_extremos_top20_por_barra.csv", index=False)
     fig_casos(series, preds, os.path.join(CARPETA_FIG, "fig_errores_extremos_casos.pdf"))
+    fig_casos(series, preds, os.path.join(CARPETA_FIG, "fig_errores_extremos_casos_en.pdf"), en=True)
     res = pd.DataFrame(resumen)
     pd.set_option("display.width", 200)
     print(res.round(2).to_string(index=False))
