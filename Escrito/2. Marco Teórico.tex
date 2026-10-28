@@ -273,13 +273,13 @@ Esta combinación de LSTM y Transformer permite al TFT capturar tanto dependenci
 
 \subsubsection{Enriquecimiento estático}
 
-Las covariables estáticas, como el identificador de barra en este trabajo, no solo actúan como contexto para la selección de variables: el TFT les dedica una capa explícita de \textit{enriquecimiento estático} que inyecta información estática directamente en las representaciones temporales antes de que estas entren al bloque de auto-atención. Formalmente, para cada posición $n$ de la secuencia, la capa aplica una GRN condicionada por el vector de contexto estático $\mathbf{c}_e$:
+Las covariables estáticas, como el identificador de barra en un modelo entrenado sobre varias barras, no solo actúan como contexto para la selección de variables: el TFT les dedica una capa explícita de \textit{enriquecimiento estático} que inyecta información estática directamente en las representaciones temporales antes de que estas entren al bloque de auto-atención. Formalmente, para cada posición $n$ de la secuencia, la capa aplica una GRN condicionada por el vector de contexto estático $\mathbf{c}_e$:
  
 \begin{equation}
 \theta(t, n) = \text{GRN}_\theta\!\left(\tilde{\phi}(t, n),\; \mathbf{c}_e\right)
 \end{equation}
  
-donde $\tilde{\phi}(t, n)$ es la representación local producida por la capa LSTM con su conexión residual y los pesos de la GRN son compartidos a lo largo de toda la secuencia. El efecto es que cada representación temporal queda condicionada por la identidad de la entidad, en este caso la barra eléctrica, permitiendo al modelo aprender dinámicas temporales distintas para cada nodo del sistema sin necesidad de entrenar instancias separadas \cite{TFT}.
+donde $\tilde{\phi}(t, n)$ es la representación local producida por la capa LSTM con su conexión residual y los pesos de la GRN son compartidos a lo largo de toda la secuencia. El efecto es que cada representación temporal queda condicionada por la identidad de la entidad, en este caso la barra eléctrica, permitiendo al modelo aprender dinámicas temporales distintas para cada nodo del sistema sin necesidad de entrenar instancias separadas \cite{TFT}. En este trabajo, que entrena un modelo por barra, esa capacidad solo se aprovecha en el modelo global de la Sección \ref{sec:modelo_global_meta}.
 
 \subsubsection{Atención temporal interpretable}
 
