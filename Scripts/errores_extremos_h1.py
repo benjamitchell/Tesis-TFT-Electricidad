@@ -102,10 +102,6 @@ def fig_casos(series, preds, ruta):
         ax.plot(y.index, y.values, color="tab:blue", label="Real")
         ax.plot(p.index, p.values, color="tab:red", linestyle="--", label="Predicción")
         ax.axvline(t, color="darkorange", linestyle=":", linewidth=1.5)
-        ini, fin = VENTANA_PRECIO_FALLA
-        if ini <= sl.stop and fin >= sl.start:
-            ax.axvspan(ini, fin, color="gray", alpha=0.2, label="Precio de falla (excluido)")
-            ax.legend(fontsize=8, loc="center left")
         err = abs(p.get(t, np.nan) - y.get(t, np.nan))
         ax.set_title(f"{titulo}\n{t:%Y-%m-%d %H:%M}, error = {err:.1f} USD/MWh", fontsize=9)
         ax.set_ylabel("USD/MWh")
@@ -127,12 +123,13 @@ def main():
     resumen, detalle, series, preds = [], [], {}, {}
     for barra, d in crudas.items():
         serie = df.loc[df["Barra"] == barra].groupby("Fecha")["Valor"].mean().asfreq("h")
+        # la figura muestra la serie y la prediccion completas, incluida la ventana de precio de falla
+        series[barra], preds[barra] = serie.copy(), pd.Series(d["val"][1], index=d["val"][0])
         serie.loc[(serie.index >= ini) & (serie.index <= fin)] = np.nan
         fechas, pred = d["val"]
         y = serie.reindex(fechas).values
         ok = ~np.isnan(y)
         fechas, pred, y = fechas[ok], pred[ok], y[ok]
-        series[barra], preds[barra] = serie, pd.Series(pred, index=fechas)
 
         top, e = clasificar(fechas, pred, y)
         y24 = serie.reindex(fechas - pd.Timedelta(hours=24)).values
