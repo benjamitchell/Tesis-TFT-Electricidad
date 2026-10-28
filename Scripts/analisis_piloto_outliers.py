@@ -13,6 +13,10 @@ Referencia unica para ambos modelos: la serie cruda Datos/h/2020-2026.csv (misma
 recalcular_metricas_serie_cruda), excluyendo VENTANA_PRECIO_FALLA. Las predicciones se
 cachean en Resultados/preds_piloto_vs_actual.pkl (la inferencia en CPU es lo lento).
 
+El modelo actual se evalua con entradas crudas en val/test (inferencia_entradas_crudas.py),
+igual que el piloto: sus dataloaders originales recortan esas entradas a 3 sigma, y la
+comparacion mezclaria ese recorte con el del entrenamiento.
+
 Uso:
     python Scripts/analisis_piloto_outliers.py
 """
@@ -38,6 +42,7 @@ from Modulos.Conformal_Prediction_Wrapper import (split_cp_from_calibration,
 from evaluar_piloto_outliers import EXPERIMENTO_PRECIOS, BARRAS, ORIGEN_ACTUAL, ORIGEN_PILOTO
 from Modulos.TFT_Model import cargar_modelo_entrenado
 from cp_metricas_completas import winkler
+from inferencia_entradas_crudas import RUTA_BARRA as RUTA_ACTUAL_CRUDAS
 
 RUTA_SERIE_CRUDA = "Datos/h/2020-2026.csv"
 CARPETA_SALIDA = os.path.join(ORIGEN_PILOTO, "Resultados")
@@ -118,6 +123,8 @@ def main():
             cache = pickle.load(f)
     else:
         cache = generar_predicciones()
+    with open(RUTA_ACTUAL_CRUDAS, "rb") as f:
+        cache["actual"] = pickle.load(f)
 
     df_crudo = pd.read_csv(RUTA_SERIE_CRUDA, sep=";")
     df_crudo["Fecha"] = pd.to_datetime(df_crudo["Fecha"])

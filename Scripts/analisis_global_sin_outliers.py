@@ -12,8 +12,13 @@ Por modelo: MAE/RMSE, errores extremos (p95, p99, top-20, maximo) y CP (Split CP
 LW-ACP gamma=0.05, alpha=0.10, calibrando en val). Por pares (global_sin contra cada uno de los otros
 tres): Diebold-Mariano (MAE y MSE) y bootstrap por dias del delta de MAE en regimen p95.
 
+Los dos modelos con recorte se evaluan con entradas crudas en val/test, igual que los dos sin
+recorte (Scripts/inferencia_entradas_crudas.py, con y sin --global), para que la matriz solo
+difiera en el entrenamiento.
+
 Requiere haber corrido antes Scripts/analisis_piloto_outliers.py (cache de predicciones
-por barra) y Scripts/evaluar_modelo_global.py sobre ambas carpetas globales.
+por barra), Scripts/inferencia_entradas_crudas.py y Scripts/evaluar_modelo_global.py sobre
+la carpeta global sin recorte.
 
 Uso:
     python Scripts/analisis_global_sin_outliers.py
@@ -39,9 +44,9 @@ from Modulos.Conformal_Prediction_Wrapper import (split_cp_from_calibration,
                                                   lw_acp_online_from_calibration)
 from analisis_piloto_outliers import bootstrap_delta_regimen, metricas_cp, RUTA_CACHE, ALPHA, GAMMA
 from evaluar_piloto_outliers import BARRAS
+from inferencia_entradas_crudas import RUTA_BARRA, RUTA_GLOBAL
 
 RUTA_SERIE_CRUDA = "Datos/h/2020-2026.csv"
-RUTA_GLOBAL_CON = "Multi-Modelos_TFT/h/LN/pred_sol_clima_global/Resultados/eval_TFT_GLOBAL.pkl"
 CARPETA_GLOBAL_SIN = "Multi-Modelos_TFT/h/LN/pred_sol_clima_global_sin_outliers"
 RUTA_GLOBAL_SIN = os.path.join(CARPETA_GLOBAL_SIN, "Resultados", "eval_TFT_GLOBAL.pkl")
 CARPETA_SALIDA = os.path.join(CARPETA_GLOBAL_SIN, "Resultados")
@@ -53,16 +58,19 @@ PARES = [("global_sin", "global_con"), ("global_sin", "barra_sin"), ("global_sin
 def cargar_predicciones():
     with open(RUTA_CACHE, "rb") as f:
         cache = pickle.load(f)
-    preds = {"barra_con": cache["actual"], "barra_sin": cache["piloto"]}
-    for nombre, ruta in (("global_con", RUTA_GLOBAL_CON), ("global_sin", RUTA_GLOBAL_SIN)):
+    preds = {"barra_sin": cache["piloto"]}
+    # los modelos con recorte, con entradas crudas en val/test (inferencia_entradas_crudas.py)
+    for nombre, ruta in (("barra_con", RUTA_BARRA), ("global_con", RUTA_GLOBAL)):
         with open(ruta, "rb") as f:
-            datos, _ = pickle.load(f)
-        preds[nombre] = {}
-        for barra in BARRAS:
-            preds[nombre][barra] = {
-                k: (pd.to_datetime(datos[barra][k]["Precios"]["datos"]["fechas"]),
-                    np.asarray(datos[barra][k]["Precios"]["datos"]["y_pred"]))
-                for k in ("val", "test")}
+            preds[nombre] = pickle.load(f)
+    with open(RUTA_GLOBAL_SIN, "rb") as f:
+        datos, _ = pickle.load(f)
+    preds["global_sin"] = {}
+    for barra in BARRAS:
+        preds["global_sin"][barra] = {
+            k: (pd.to_datetime(datos[barra][k]["Precios"]["datos"]["fechas"]),
+                np.asarray(datos[barra][k]["Precios"]["datos"]["y_pred"]))
+            for k in ("val", "test")}
     return preds
 
 

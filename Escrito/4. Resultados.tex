@@ -1251,7 +1251,7 @@ El test confirma que la ausencia de mejora de S+H+C no es casualidad de una sola
 \subsection{Piloto: entrenamiento sin recorte de outliers}
 \label{sec:piloto_outliers}
 
-La segunda variante deja de lado la estrategia de variables y revisa el preprocesamiento: si el recorte de outliers en entrenamiento (Sección 3.2.1) afectó al modelo propuesto. La Tabla \ref{tab:piloto_outliers_h1} presenta, a horizonte $h=1$, el MAE general y el MAE condicional al régimen de precio alto (percentil 95 o superior de la serie cruda de prueba) del modelo entrenado sin recorte de outliers (Sección \ref{sec:piloto_outliers_meta} de la Metodología), comparado contra el modelo principal, para las ocho barras del SEN (las cuatro barras originales del piloto y las cuatro restantes, en las que se extendió el procedimiento). Además de las variaciones porcentuales, se reporta el valor $p$ de la prueba de Diebold-Mariano sobre el error absoluto (Sección \ref{sec:dm_ln_dyt}) y el valor $p$ de un \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto. Ambos modelos se evalúan contra la serie cruda, sobre las mismas fechas de prueba.
+La segunda variante deja de lado la estrategia de variables y revisa el preprocesamiento: si el recorte de outliers en entrenamiento (Sección 3.2.1) afectó al modelo propuesto. La Tabla \ref{tab:piloto_outliers_h1} presenta, a horizonte $h=1$, el MAE general y el MAE condicional al régimen de precio alto (percentil 95 o superior de la serie cruda de prueba) del modelo entrenado sin recorte de outliers (Sección \ref{sec:piloto_outliers_meta} de la Metodología), comparado contra el modelo principal, para las ocho barras del SEN (las cuatro barras originales del piloto y las cuatro restantes, en las que se extendió el procedimiento). Además de las variaciones porcentuales, se reporta el valor $p$ de la prueba de Diebold-Mariano sobre el error absoluto (Sección \ref{sec:dm_ln_dyt}) y el valor $p$ de un \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto. Ambos modelos se evalúan contra la serie cruda, sobre las mismas fechas de prueba. Para que la comparación aísle el efecto del recorte en entrenamiento, el modelo actual se evalúa aquí con entradas crudas en validación y prueba, igual que el piloto: sus entradas originales están recortadas a 3 desviaciones estándar (Sección \ref{sec:limpieza_outliers}), lo que mezclaría ambos recortes. Se usan los mismos \textit{checkpoints}, sin reentrenar; con entradas crudas su MAE promedio de prueba es de 7.921\,USD/MWh, frente a 8.005 con las entradas recortadas del resto del capítulo, sin diferencias significativas según Diebold-Mariano en ninguna barra.
 
 \begin{table}[htbp]
     \centering
@@ -1259,26 +1259,26 @@ La segunda variante deja de lado la estrategia de variables y revisa el preproce
         \toprule
         Barra & MAE actual & MAE piloto & $\Delta$ MAE & $p$ (DM) & $\Delta$ MAE p95 & $p$ (\textit{boot.}) \\
         \midrule
-        Atacama       & 6.70  & 6.59  & $-1.7\%$ & 0.398    & $-11.1\%$ & 0.058 \\
-        Cardones      & 6.63  & 6.64  & $+0.2\%$ & 0.900    & $-5.7\%$  & 0.668 \\
-        Charrúa       & 7.98  & 7.99  & $+0.1\%$ & 0.950    & $-11.6\%$ & 0.263 \\
-        Crucero       & 6.74  & 6.59  & $-2.3\%$ & 0.194    & $-4.2\%$  & 0.718 \\
-        Pan de Azúcar & 6.93  & 6.59  & $-4.9\%$ & $<0.001$ & $-8.0\%$  & 0.032 \\
-        Puerto Montt  & 13.68 & 13.79 & $+0.8\%$ & 0.226    & $+1.9\%$  & 0.463 \\
-        Quillota      & 8.26  & 7.93  & $-4.0\%$ & 0.030    & $-15.6\%$ & 0.034 \\
-        Tarapacá      & 7.11  & 7.12  & $+0.1\%$ & 0.958    & $-10.8\%$ & 0.062 \\
+        Atacama       & 6.61  & 6.59  & $-0.2\%$ & 0.793    & $-4.6\%$ & 0.044 \\
+        Cardones      & 6.53  & 6.64  & $+1.6\%$ & 0.067    & $+0.8\%$ & 0.665 \\
+        Charrúa       & 7.85  & 7.99  & $+1.8\%$ & 0.015    & $-2.4\%$ & 0.494 \\
+        Crucero       & 6.65  & 6.59  & $-1.0\%$ & 0.223    & $+1.8\%$ & 0.403 \\
+        Pan de Azúcar & 6.90  & 6.59  & $-4.5\%$ & $<0.001$ & $-6.4\%$ & 0.002 \\
+        Puerto Montt  & 13.68 & 13.79 & $+0.8\%$ & 0.226    & $+1.9\%$ & 0.463 \\
+        Quillota      & 8.11  & 7.93  & $-2.2\%$ & 0.002    & $-5.8\%$ & 0.026 \\
+        Tarapacá      & 7.03  & 7.12  & $+1.3\%$ & 0.257    & $-5.4\%$ & 0.116 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{MAE de prueba general y condicional al régimen de precio alto (percentil 95 o superior), $h=1$, USD/MWh, sobre la serie cruda. $\Delta$ = variación porcentual del piloto respecto al modelo actual (negativo = mejora). $p$ (DM) = valor $p$ de la prueba de Diebold-Mariano sobre el error absoluto, con varianza Newey-West de 24 rezagos; $p$ (\textit{boot.}) = valor $p$ del \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto.}
+    \caption{MAE de prueba general y condicional al régimen de precio alto (percentil 95 o superior), $h=1$, USD/MWh, sobre la serie cruda. $\Delta$ = variación porcentual del piloto respecto al modelo actual, evaluado con entradas crudas (negativo = mejora). $p$ (DM) = valor $p$ de la prueba de Diebold-Mariano sobre el error absoluto, con varianza Newey-West de 24 rezagos; $p$ (\textit{boot.}) = valor $p$ del \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto.}
     \label{tab:piloto_outliers_h1}
 \end{table}
 
-A $h=1$ y sobre las ocho barras, el MAE general queda prácticamente empatado: el piloto mejora en cuatro barras y empeora en las otras cuatro por menos de un 1\%. La prueba de Diebold-Mariano detecta una mejora significativa solo en Pan de Azúcar ($p<0.001$) y Quillota ($p=0.030$); solo la de Pan de Azúcar sobrevive a una corrección de Holm-Bonferroni para las ocho comparaciones de esta familia. No detecta ninguna diferencia significativa a favor del modelo actual; es decir, entrenar sin el recorte automático de outliers no perjudica el desempeño general. Con pérdida cuadrática el piloto reduce el RMSE en siete de las ocho barras, pero ninguna de esas mejoras es significativa; Puerto Montt empeora de forma nominalmente significativa ($p=0.039$) pero no sobrevive la misma corrección de Holm-Bonferroni, por lo que se reporta como evidencia débil, no concluyente.
+A $h=1$ y sobre las ocho barras, el MAE general queda prácticamente empatado: el piloto mejora en cuatro barras y empeora en las otras cuatro, con variaciones de a lo más un 2.2\% salvo en Pan de Azúcar, donde mejora un 4.5\%. La prueba de Diebold-Mariano detecta una mejora significativa en Pan de Azúcar ($p<0.001$) y Quillota ($p=0.002$), y ambas sobreviven a una corrección de Holm-Bonferroni para las ocho comparaciones de esta familia. En sentido contrario, el modelo actual es mejor en Charrúa con significancia nominal ($p=0.015$), que no sobrevive a la corrección; es decir, entrenar sin el recorte automático de outliers no perjudica el desempeño general. Con pérdida cuadrática el piloto reduce el RMSE en seis de las ocho barras, pero solo la mejora de Quillota sobrevive a la corrección ($p=0.004$); Puerto Montt empeora de forma nominalmente significativa ($p=0.039$) sin sobrevivir a ella, por lo que se reporta como evidencia débil, no concluyente.
 
-El MAE en régimen de precio alto mejora en siete de las ocho barras, entre 4.2\% y 15.6\%, y empeora un 1.9\% en Puerto Montt. Sin embargo, según el \textit{bootstrap} por bloques de días, solo Pan de Azúcar y Quillota son significativas al 5\% sin corregir (Atacama y Tarapacá quedan en el límite, con $p\approx0.06$); bajo una corrección de Holm-Bonferroni para esta misma familia de ocho comparaciones, ninguna de las dos sobrevive ($p_\text{Holm}$ mínimo requerido $0.00625$ para la más pequeña, frente a $p\approx0.032$--$0.034$ observado). La consistencia entre barras (siete de ocho) arroja una prueba de signos con $p=0.07$, evidencia que además está sobreestimada, porque las ocho barras comparten sistema y período y no son observaciones independientes. La lectura prudente es que la mejora en régimen de precio alto es consistente en su dirección y de magnitud apreciable, pero no individualmente significativa en ninguna barra una vez que se corrige por comparaciones múltiples; la evidencia más sólida de esta sección sigue siendo la del MAE general en Pan de Azúcar, la única que sobrevive la corrección (Tabla \ref{tab:piloto_outliers_h1}).
+El MAE en régimen de precio alto mejora en cinco de las ocho barras, entre 2.4\% y 6.4\%, y empeora entre 0.8\% y 1.9\% en Cardones, Crucero y Puerto Montt. Según el \textit{bootstrap} por bloques de días, la mejora es significativa al 5\% sin corregir en Atacama, Pan de Azúcar y Quillota, y bajo una corrección de Holm-Bonferroni para esta misma familia de ocho comparaciones solo sobrevive Pan de Azúcar ($p=0.002$). La lectura prudente es que la mejora en régimen de precio alto es pequeña y se concentra en pocas barras; la evidencia más sólida de esta sección es la de Pan de Azúcar, la única barra que mejora de forma significativa tras la corrección tanto en el MAE general como en el de régimen alto, seguida de Quillota en el MAE general (Tabla \ref{tab:piloto_outliers_h1}).
 
-Los errores más grandes requieren una precaución. El modelo actual recibe en validación y prueba entradas recortadas a 3 desviaciones estándar (Sección \ref{sec:limpieza_outliers}), mientras que el piloto las recibe crudas, de modo que la comparación mezcla dos efectos: el recorte en entrenamiento y el recorte de las entradas. Con esa diferencia, la Tabla \ref{tab:piloto_extremos} muestra que el MAE en el percentil 99 o superior baja en siete de las ocho barras y el error máximo en las ocho, con reducciones de entre 32\% y 37\% en las barras del norte de picos más marcados (Atacama, Cardones, Crucero y Tarapacá). Para separar ambos efectos, el modelo actual se evaluó de nuevo con los mismos \textit{checkpoints} y entradas crudas: su propio error máximo en esas cuatro barras baja a entre 261 y 310\,USD/MWh, prácticamente el mismo que el del piloto, y su MAE en el percentil 99, promediado sobre las ocho barras, baja de 51.1 a 41.1\,USD/MWh. Frente a esa versión, el piloto reduce el MAE en el percentil 99 en cinco de las ocho barras (un 8\% en promedio, de 41.1 a 37.7\,USD/MWh), y el error máximo cambia menos de 5\,USD/MWh en siete de ellas. La mayor parte de la mejora en los errores extremos de la Tabla \ref{tab:piloto_extremos} se debe, entonces, a que el piloto observa los precios recientes reales, y no a su entrenamiento. En esta misma comparación, el MAE general del piloto es significativamente mejor tras la corrección de Holm-Bonferroni en Pan de Azúcar ($p<0.001$) y en Quillota ($p=0.002$), sin diferencias significativas tras la corrección en las seis barras restantes.
+En los errores más grandes el efecto es del mismo orden. La Tabla \ref{tab:piloto_extremos} muestra que el piloto reduce el MAE en el percentil 99 o superior en cinco de las ocho barras (Atacama, Charrúa, Pan de Azúcar, Quillota y Tarapacá), un 8\% en promedio (de 41.1 a 37.7\,USD/MWh), y el promedio de los 20 mayores errores también en cinco. El error máximo, en cambio, prácticamente no cambia: la diferencia es menor a 5\,USD/MWh en siete de las ocho barras, y solo en Puerto Montt baja 12\,USD/MWh. Sin el recorte en entrenamiento el modelo subestima algo menos los picos de precio, pero el efecto es pequeño frente al de recortar las entradas al predecir: con las entradas recortadas, el MAE en el percentil 99 del modelo actual sube a 51.1\,USD/MWh y su error máximo llega a entre 416 y 490\,USD/MWh en las barras del norte (Atacama, Cardones, Crucero y Tarapacá).
 
 \begin{table}[htbp]
     \centering
@@ -1287,22 +1287,22 @@ Los errores más grandes requieren una precaución. El modelo actual recibe en v
         & \multicolumn{2}{c}{MAE $\geq$ p99} & \multicolumn{2}{c}{Promedio top-20} & \multicolumn{2}{c}{Error máximo} \\
         Barra & Actual & Piloto & Actual & Piloto & Actual & Piloto \\
         \midrule
-        Atacama       & 63.4 & 43.7 & 189.8 & 129.8 & 447.7 & 304.0 \\
-        Cardones      & 50.9 & 41.8 & 159.4 & 112.7 & 415.6 & 261.9 \\
-        Charrúa       & 41.6 & 21.9 & 100.5 & 97.7  & 127.9 & 125.5 \\
-        Crucero       & 63.9 & 53.8 & 192.5 & 142.3 & 457.5 & 302.6 \\
-        Pan de Azúcar & 47.6 & 37.3 & 141.3 & 112.1 & 257.1 & 245.1 \\
+        Atacama       & 51.2 & 43.7 & 143.5 & 129.8 & 305.3 & 304.0 \\
+        Cardones      & 40.8 & 41.8 & 122.0 & 112.7 & 260.7 & 261.9 \\
+        Charrúa       & 26.2 & 21.9 & 97.0  & 97.7  & 127.9 & 125.5 \\
+        Crucero       & 53.0 & 53.8 & 150.7 & 142.3 & 301.8 & 302.6 \\
+        Pan de Azúcar & 45.0 & 37.3 & 127.6 & 112.1 & 249.1 & 245.1 \\
         Puerto Montt  & 27.9 & 30.7 & 164.5 & 166.3 & 238.7 & 226.9 \\
-        Quillota      & 43.9 & 20.1 & 107.1 & 101.0 & 160.3 & 133.3 \\
-        Tarapacá      & 69.4 & 52.3 & 205.0 & 146.8 & 489.5 & 309.6 \\
+        Quillota      & 26.7 & 20.1 & 100.8 & 101.0 & 131.8 & 133.3 \\
+        Tarapacá      & 57.9 & 52.3 & 162.8 & 146.8 & 309.8 & 309.6 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Errores extremos de prueba, $h=1$, USD/MWh, sobre la serie cruda: MAE en las horas de precio en el percentil 99 o superior, promedio de los 20 mayores errores absolutos y error máximo, para el modelo actual (con recorte de outliers en entrenamiento) y el piloto (sin recorte).}
+    \caption{Errores extremos de prueba, $h=1$, USD/MWh, sobre la serie cruda: MAE en las horas de precio en el percentil 99 o superior, promedio de los 20 mayores errores absolutos y error máximo, para el modelo actual (con recorte de outliers en entrenamiento, evaluado con entradas crudas) y el piloto (sin recorte).}
     \label{tab:piloto_extremos}
 \end{table}
 
-En cuanto a la Conformal Prediction, la Tabla \ref{tab:piloto_cp} muestra que quitar el recorte no modifica de forma apreciable la cobertura ni el ancho de los intervalos, pero sí reduce el puntaje de Winkler en torno a un 3\% (de 71.9 a 69.7 en LW-ACP y de 76.6 a 74.4 en Split CP), en las ocho barras con LW-ACP y en siete con Split CP (la excepción es Puerto Montt). Frente al modelo actual evaluado con entradas crudas, la reducción del Winkler de LW-ACP es de solo un 1.3\% (de 70.6 a 69.7). La cobertura en las horas de precio alto mejora apenas (de 0.754 a 0.759 en LW-ACP y de 0.562 a 0.581 en Split CP) y permanece en ambos modelos muy por debajo del nivel nominal de 0.90: el tratamiento de outliers reduce las excedencias más grandes, pero no corrige el déficit de cobertura condicional en el régimen alto, una limitación de la cobertura marginal y no del recorte.
+En cuanto a la Conformal Prediction, la Tabla \ref{tab:piloto_cp} muestra que quitar el recorte no modifica de forma apreciable la cobertura ni el ancho de los intervalos, y reduce el puntaje de Winkler apenas un 1.3\% en LW-ACP (de 70.6 a 69.7, menor en cinco de las ocho barras) y un 0.7\% en Split CP (de 75.0 a 74.4, menor en seis). La cobertura en las horas de precio alto mejora apenas (de 0.752 a 0.759 en LW-ACP y de 0.568 a 0.581 en Split CP) y permanece en ambos modelos muy por debajo del nivel nominal de 0.90: el tratamiento de outliers no corrige el déficit de cobertura condicional en el régimen alto, una limitación de la cobertura marginal y no del recorte.
 
 \begin{table}[htbp]
     \centering
@@ -1310,14 +1310,14 @@ En cuanto a la Conformal Prediction, la Tabla \ref{tab:piloto_cp} muestra que qu
         \toprule
         Método & Modelo & Cobertura & Ancho & Winkler & Cobertura p95 \\
         \midrule
-        Split CP & Actual & 0.911 & 40.9 & 76.6 & 0.562 \\
+        Split CP & Actual & 0.912 & 41.0 & 75.0 & 0.568 \\
         Split CP & Piloto & 0.913 & 41.2 & 74.4 & 0.581 \\
-        LW-ACP   & Actual & 0.898 & 42.0 & 71.9 & 0.754 \\
+        LW-ACP   & Actual & 0.898 & 41.9 & 70.6 & 0.752 \\
         LW-ACP   & Piloto & 0.898 & 41.5 & 69.7 & 0.759 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Conformal Prediction ($\alpha=0.10$, $\gamma=0.05$ en LW-ACP, calibración en validación, evaluación sobre la serie cruda), promedio de las ocho barras. Ancho y puntaje de Winkler en USD/MWh. Cobertura p95 = cobertura en las horas de precio en el percentil 95 o superior.}
+    \caption{Conformal Prediction ($\alpha=0.10$, $\gamma=0.05$ en LW-ACP, calibración en validación, evaluación sobre la serie cruda; modelo actual con entradas crudas), promedio de las ocho barras. Ancho y puntaje de Winkler en USD/MWh. Cobertura p95 = cobertura en las horas de precio en el percentil 95 o superior.}
     \label{tab:piloto_cp}
 \end{table}
 
@@ -1326,7 +1326,7 @@ La matriz completa, que cruza este tratamiento con un modelo global entrenado so
 \subsection{Modelo global}
 \label{sec:matriz_outliers}
 
-Establecido el efecto del recorte de outliers en los modelos por barra, la siguiente variante pregunta si un único modelo para las ocho barras rinde mejor que ocho modelos especializados. Esta subsección cruza el piloto de entrenamiento sin recorte de outliers con una segunda dimensión: la granularidad del modelo. Se comparan cuatro modelos S+C-LN a $h=1$: el modelo por barra con recorte de outliers en entrenamiento (el modelo principal de este trabajo), el modelo por barra sin recorte (el piloto extendido a las ocho barras), y dos modelos globales, es decir, un único TFT entrenado sobre las ocho barras a la vez con la barra como covariable estática categórica, uno con y otro sin recorte de outliers en entrenamiento (Sección \ref{sec:piloto_outliers_meta}). Los cuatro comparten arquitectura, hiperparámetros, \textit{features} y fechas de corte, y se evalúan sobre las mismas fechas de prueba contra la serie cruda, excluyendo la ventana de precio administrativo. La Tabla \ref{tab:matriz_outliers_granularidad} resume el promedio de las ocho barras.
+Establecido el efecto del recorte de outliers en los modelos por barra, la siguiente variante pregunta si un único modelo para las ocho barras rinde mejor que ocho modelos especializados. Esta subsección cruza el piloto de entrenamiento sin recorte de outliers con una segunda dimensión: la granularidad del modelo. Se comparan cuatro modelos S+C-LN a $h=1$: el modelo por barra con recorte de outliers en entrenamiento (el modelo principal de este trabajo), el modelo por barra sin recorte (el piloto extendido a las ocho barras), y dos modelos globales, es decir, un único TFT entrenado sobre las ocho barras a la vez con la barra como covariable estática categórica, uno con y otro sin recorte de outliers en entrenamiento (Sección \ref{sec:piloto_outliers_meta}). Los cuatro comparten arquitectura, hiperparámetros, \textit{features} y fechas de corte, y se evalúan sobre las mismas fechas de prueba contra la serie cruda, excluyendo la ventana de precio administrativo; los dos modelos con recorte se evalúan con entradas crudas en validación y prueba, como en la Sección \ref{sec:piloto_outliers}, de modo que los cuatro solo difieren en el entrenamiento. La Tabla \ref{tab:matriz_outliers_granularidad} resume el promedio de las ocho barras.
 
 \begin{table}[htbp]
     \centering
@@ -1335,20 +1335,20 @@ Establecido el efecto del recorte de outliers en los modelos por barra, la sigui
         \toprule
         Modelo & MAE & MAE p95 & MAE p99 & Top-20 & Máximo & Winkler \\
         \midrule
-        Por barra, con recorte & 8.005 & 30.1 & 51.1 & 157.5 & 324.3 & 71.9 \\
+        Por barra, con recorte & 7.921 & 28.3 & 41.1 & 133.6 & 240.6 & 70.6 \\
         Por barra, sin recorte & 7.905 & 27.6 & 37.7 & 126.1 & 238.6 & 69.7 \\
-        Global, con recorte    & 7.967 & 30.7 & 51.6 & 163.2 & 324.7 & 71.6 \\
+        Global, con recorte    & 7.886 & 28.9 & 41.3 & 137.6 & 237.7 & 70.3 \\
         Global, sin recorte    & 7.984 & 29.2 & 41.4 & 130.9 & 244.0 & 70.5 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Matriz de cuatro modelos S+C-LN a $h=1$ (recorte de outliers en entrenamiento $\times$ granularidad), promedio de las ocho barras, USD/MWh, sobre la serie cruda. MAE p95 y p99 = MAE en las horas de precio en el percentil 95 o superior y 99 o superior; Top-20 = promedio de los 20 mayores errores absolutos; Máximo = error absoluto máximo; Winkler = puntaje de Winkler de LW-ACP ($\alpha=0.10$, $\gamma=0.05$). Los dos modelos con recorte reciben entradas de prueba recortadas y los dos sin recorte, entradas crudas (ver texto).}
+    \caption{Matriz de cuatro modelos S+C-LN a $h=1$ (recorte de outliers en entrenamiento $\times$ granularidad), promedio de las ocho barras, USD/MWh, sobre la serie cruda. MAE p95 y p99 = MAE en las horas de precio en el percentil 95 o superior y 99 o superior; Top-20 = promedio de los 20 mayores errores absolutos; Máximo = error absoluto máximo; Winkler = puntaje de Winkler de LW-ACP ($\alpha=0.10$, $\gamma=0.05$). Los cuatro modelos se evalúan con entradas crudas.}
     \label{tab:matriz_outliers_granularidad}
 \end{table}
 
-\paragraph{Efecto del recorte.} En la Tabla \ref{tab:matriz_outliers_granularidad}, quitar el recorte parece mejorar los errores extremos en ambas granularidades: el MAE en el percentil 99 baja de 51.1 a 37.7 en el modelo por barra y de 51.6 a 41.4 en el global, y el error máximo promedio, de 324 a 239 y a 244. Pero, como en la Sección \ref{sec:piloto_outliers}, los dos modelos con recorte reciben entradas de prueba recortadas y los dos sin recorte, entradas crudas. Evaluados con los mismos \textit{checkpoints} y entradas crudas, los modelos con recorte obtienen un MAE de 7.921 (por barra) y 7.886 (global), un MAE en el percentil 99 de 41.1 y 41.3, un error máximo promedio de 240.6 y 237.7, y un Winkler de 70.6 y 70.3. Con esa comparación, quitar el recorte reduce el MAE en el percentil 99 un 8\% en el modelo por barra y no lo cambia en el global, donde además el MAE y el Winkler empeoran levemente y la prueba de Diebold-Mariano favorece al global con recorte en Charrúa y Puerto Montt tras la corrección de Holm-Bonferroni. El efecto del recorte en entrenamiento es, por lo tanto, pequeño y no se replica en el modelo global; la mayor parte de la diferencia en errores extremos de la tabla proviene del recorte de las entradas.
+\paragraph{Efecto del recorte.} Quitar el recorte de outliers en entrenamiento mejora levemente los errores extremos del modelo por barra (el MAE en el percentil 99 baja un 8\%, de 41.1 a 37.7, y el Winkler un 1.3\%), pero no los del global: su MAE en el percentil 99 no cambia (41.3 frente a 41.4), su error máximo promedio sube de 237.7 a 244.0 y su MAE general empeora de 7.886 a 7.984. Barra por barra, la prueba de Diebold-Mariano no detecta ninguna barra donde el global sin recorte gane al global con recorte, y detecta tres donde empeora (Charrúa, Puerto Montt y Quillota), de las cuales Charrúa y Puerto Montt sobreviven a la corrección de Holm-Bonferroni. El efecto del recorte en entrenamiento es, por lo tanto, pequeño y no se replica al agrupar las ocho barras.
 
-\paragraph{Efecto de la granularidad.} El modelo global no supera al modelo por barra. La Tabla \ref{tab:global_vs_barra_sin} compara ambos sin recorte, barra por barra: el modelo por barra gana de forma significativa en cuatro barras (Charrúa, Crucero, Pan de Azúcar y Quillota) y el global solo en Puerto Montt, las cinco sobreviven una corrección de Holm-Bonferroni para esta familia de ocho comparaciones. Frente al modelo principal de este trabajo (por barra, con recorte), el global sin recorte no muestra diferencias significativas en ninguna de las ocho barras.
+\paragraph{Efecto de la granularidad.} El modelo global no supera al modelo por barra. La Tabla \ref{tab:global_vs_barra_sin} compara ambos sin recorte, barra por barra: el modelo por barra gana de forma significativa en cuatro barras (Charrúa, Crucero, Pan de Azúcar y Quillota) y el global solo en Puerto Montt, las cinco sobreviven una corrección de Holm-Bonferroni para esta familia de ocho comparaciones. Con recorte, en cambio, el global obtiene un MAE promedio algo menor que el modelo por barra (7.886 frente a 7.921), por su ventaja en Puerto Montt (13.21 frente a 13.68). Frente al modelo principal de este trabajo (por barra, con recorte), el global sin recorte solo difiere de forma significativa en Charrúa, a favor del modelo por barra ($p<0.001$).
 
 \begin{table}[htbp]
     \centering
@@ -1371,9 +1371,9 @@ Establecido el efecto del recorte de outliers en los modelos por barra, la sigui
     \label{tab:global_vs_barra_sin}
 \end{table}
 
-\paragraph{Conformal Prediction.} Con LW-ACP al 90\% de cobertura nominal, la cobertura es de 0.898 en los cuatro modelos y el ancho medio varía entre 41.0 y 42.0\,USD/MWh; las diferencias se concentran en el puntaje de Winkler, donde los dos modelos sin recorte obtienen el menor valor (por barra, 69.7; global, 70.5) frente a los dos con recorte (global, 71.6; por barra, 71.9), el mismo sentido que el error extremo. La cobertura en las horas de precio en el percentil 95 o superior permanece cerca de 0.75 en los cuatro (entre 0.751 y 0.759), muy por debajo del nominal, por lo que ninguna de las variantes corrige el déficit de cobertura condicional en el régimen alto.
+\paragraph{Conformal Prediction.} Con LW-ACP al 90\% de cobertura nominal, la cobertura es de 0.898 en los cuatro modelos y el ancho medio varía entre 41.0 y 41.9\,USD/MWh; el puntaje de Winkler también varía poco, entre 69.7 (por barra, sin recorte) y 70.6 (por barra, con recorte), con los dos globales en medio (con recorte, 70.3; sin recorte, 70.5). La cobertura en las horas de precio en el percentil 95 o superior permanece cerca de 0.75 en los cuatro (entre 0.751 y 0.759), muy por debajo del nominal, por lo que ninguna de las variantes corrige el déficit de cobertura condicional en el régimen alto.
 
-\paragraph{Síntesis.} El tratamiento de outliers en entrenamiento pesa más que la granularidad del modelo. La mejor combinación es el modelo por barra sin recorte, aunque el MAE general mejora solo un 1.3\% respecto del modelo principal (de 8.005 a 7.905); su beneficio principal está en los errores más grandes. Como cautela, cada configuración corresponde a una única corrida de entrenamiento y las ocho barras comparten sistema y período, por lo que las comparaciones agregadas sobreestiman la evidencia independiente.
+\paragraph{Síntesis.} Ni el recorte de outliers en entrenamiento ni la granularidad del modelo cambian de forma importante el desempeño: los cuatro modelos tienen un MAE promedio de entre 7.886 y 7.984\,USD/MWh. El modelo por barra sin recorte obtiene los menores errores extremos y el menor Winkler, con un MAE general prácticamente igual al del modelo por barra con recorte (7.905 frente a 7.921), y el global con recorte, el menor MAE promedio, por Puerto Montt. Lo que sí empeora los errores extremos es recortar las entradas al predecir, como hace el modelo principal (Sección \ref{sec:piloto_outliers}). Como cautela, cada configuración corresponde a una única corrida de entrenamiento y las ocho barras comparten sistema y período, por lo que las comparaciones agregadas sobreestiman la evidencia independiente.
 
 \subsection{Evaluación a horizonte \textit{day-ahead} ($h=24$)}
 \label{sec:h24_dayahead}
@@ -1459,7 +1459,7 @@ La Tabla \ref{tab:piloto_outliers_h24} repite la misma comparación a horizonte 
     \label{tab:piloto_outliers_h24}
 \end{table}
 
-A $h=24$ el resultado se invierte en tres de las cuatro barras: solo Atacama mejora (14.5\%), mientras que Charrúa, Pan de Azúcar y Tarapacá empeoran entre 3.7\% y 8.0\%. El efecto del recorte de outliers depende, entonces, del horizonte de predicción: la variabilidad adicional que el conjunto de entrenamiento sin recortar introduce ayuda al modelo a capturar el régimen de precios altos cuando predice un solo paso hacia adelante, pero esa misma variabilidad dificulta la generalización cuando el modelo debe predecir 24 pasos simultáneos, un régimen ya de por sí más exigente (Sección \ref{sec:h24_dayahead}). Este resultado mixto es la razón por la que la evaluación a $h=24$ no se extiende a las ocho barras: el piloto se extendió únicamente a $h=1$, donde el efecto es consistente, y a $h=24$ queda como evidencia exploratoria de cuatro barras.
+A $h=24$ el resultado se invierte en tres de las cuatro barras: solo Atacama mejora (14.5\%), mientras que Charrúa, Pan de Azúcar y Tarapacá empeoran entre 3.7\% y 8.0\%. El efecto del recorte de outliers depende, entonces, del horizonte de predicción: la variabilidad adicional que el conjunto de entrenamiento sin recortar introduce ayuda al modelo a capturar el régimen de precios altos cuando predice un solo paso hacia adelante, pero esa misma variabilidad dificulta la generalización cuando el modelo debe predecir 24 pasos simultáneos, un régimen ya de por sí más exigente (Sección \ref{sec:h24_dayahead}). Este resultado mixto es la razón por la que la evaluación a $h=24$ no se extiende a las ocho barras: el piloto se extendió únicamente a $h=1$, donde no perjudica el desempeño, y a $h=24$ queda como evidencia exploratoria de cuatro barras.
 
 \subsubsection{Conformal Prediction a horizonte day-ahead}
 \label{sec:h24_cp}
