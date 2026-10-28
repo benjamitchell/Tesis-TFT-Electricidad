@@ -608,6 +608,39 @@ En 12 de las 16 combinaciones la diferencia es estadísticamente significativa (
 
 Si la diferencia a favor de LN observada en estos modelos reflejara una diferencia real entre arquitecturas, lo que el estudio de semillas de la Sección \ref{sec:seeds_ln_dyt} no permite afirmar, una explicación posible sería la diferencia estructural entre ambos mecanismos de normalización descrita en la Sección 2.4.4: LayerNorm recalcula la escala de activación de forma local, para cada paso temporal, mientras que DyT aplica un único escalar $\alpha$ global aprendido durante el entrenamiento. En una serie con heterocedasticidad horaria pronunciada como el costo marginal, la misma que motiva a LW-ACP en la Sección 2.6.5, esa adaptación local podría dar a LN una ventaja pequeña en la mayoría de las horas. Esta hipótesis es consistente con que la diferencia no alcanza significancia precisamente en Puerto Montt bajo P+C, una de las barras con dinámicas de precio menos regidas por el ciclo solar diario, y con que en esa misma barra DyT obtenga el menor MAE medio en el estudio de semillas.
 
+\subsubsection{Errores en horas de \textit{spike}}
+\label{sec:ln_dyt_spikes}
+
+La motivación para evaluar DyT (Sección 2.4.5) planteaba como hipótesis (H1) que la compresión de $\tanh$ le permitiría predecir mejor que LayerNorm en las horas de \textit{spike}. Para contrastarla, se comparan S+C-LN y S+C-DyT en dos regímenes del conjunto de prueba: las horas de precio alto, en que la serie cruda supera su percentil 95, y las horas de salto brusco, el 5\% con mayor cambio absoluto respecto a la hora anterior. La Tabla \ref{tab:ln_dyt_spikes} presenta el MAE de ambas arquitecturas en cada régimen, con el mismo test de Diebold-Mariano de la Sección \ref{sec:dm_ln_dyt} y corrección de Holm-Bonferroni sobre las ocho barras de cada régimen.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lrrrrrr}
+        \toprule
+        & \multicolumn{3}{c}{Precio alto ($\geq$ p95)} & \multicolumn{3}{c}{Salto brusco} \\
+        \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+        Barra & LN & DyT & DM & LN & DyT & DM \\
+        \midrule
+        Atacama       & 32.04 & 32.37 & $-0.73$  & 30.59 & 30.72 & $-0.16$ \\
+        Cardones      & 30.85 & 31.14 & $-0.53$  & 32.14 & 30.01 & $3.55^*$ \\
+        Charrúa       & 28.10 & 28.95 & $-2.01$  & 35.27 & 34.91 & $0.49$ \\
+        Crucero       & 32.81 & 31.95 & $1.76$   & 30.91 & 31.02 & $-0.13$ \\
+        Pan de Azúcar & 30.17 & 29.98 & $0.29$   & 30.97 & 30.10 & $1.16$ \\
+        Puerto Montt  & 22.04 & 27.84 & $-3.90^*$ & 82.93 & 76.70 & $6.52^*$ \\
+        Quillota      & 29.58 & 31.12 & $-2.76^*$ & 35.22 & 33.69 & $2.18$ \\
+        Tarapacá      & 35.23 & 35.97 & $-1.22$  & 31.46 & 28.68 & $3.16^*$ \\
+        \midrule
+        Promedio      & 30.10 & 31.16 &          & 38.68 & 36.98 & \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{MAE de prueba de S+C-LN y S+C-DyT en las horas de precio alto (serie cruda en o sobre su percentil 95) y de salto brusco (el 5\% de las horas con mayor cambio absoluto respecto a la hora anterior), 415 horas por barra y régimen, en USD/MWh. DM: test de Diebold-Mariano horario (varianza Newey-West con 24 rezagos); DM negativo favorece a LN. * = significativo tras corrección de Holm-Bonferroni para las 8 barras de cada régimen ($\alpha=0.05$).}
+    \label{tab:ln_dyt_spikes}
+\end{table}
+
+El resultado respalda H1 solo en parte. En las horas de precio alto, DyT no predice mejor: su MAE promedio es algo mayor (31.16 frente a 30.10\,USD/MWh), y las únicas diferencias significativas tras la corrección favorecen a LN (Puerto Montt y Quillota). En las horas de salto brusco, en cambio, DyT tiene un MAE promedio menor (36.98 frente a 38.68\,USD/MWh) y es significativamente mejor en Cardones, Puerto Montt y Tarapacá, sin ninguna barra en que LN lo sea; la versión diaria del test coincide en esas tres barras y agrega Quillota. DyT no maneja mejor los niveles altos del costo marginal, pero sí sigue algo mejor sus cambios abruptos, que es donde la compresión de las activaciones extremas debería importar más. Al igual que el resto de esta sección, el contraste compara dos modelos entrenados con una sola semilla cada uno, por lo que no permite atribuir la diferencia a la arquitectura (Sección \ref{sec:seeds_ln_dyt}).
+
 \subsubsection{Comparativa tras el Stacking Optimization}
 
 La Tabla \ref{tab:comparativa_stacking} presenta la comparación al nivel relevante para el modelo híbrido final: el MAE de la mejor estrategia de Stacking de P+C obtenida para cada arquitectura (Tablas \ref{tab:mejores_estrategias} y \ref{tab:stacking_dyt_mejores}), seleccionada en validación y evaluada en prueba contra la serie cruda.
