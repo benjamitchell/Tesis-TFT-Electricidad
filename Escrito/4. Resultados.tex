@@ -1679,26 +1679,31 @@ Las diferencias entre horizontes plantean en qué información se apoya cada mod
 \subsubsection{Ablación de features}
 \label{sec:ablacion}
 
-El pipeline principal S+C usa como \texttt{known\_reals} la posición solar y como \texttt{unknown\_reals} el precio más cinco variables climáticas horarias. Para aislar cuánto aporta esa información exógena por sobre la autocorrelación de la propia serie, se entrena un TFT ``solo precios'' (sin ningún \texttt{known\_real}, sin variables climáticas) para cuatro barras, usando el mismo período histórico y las mismas fechas de corte que el pipeline principal (Sección \ref{sec:ablacion_meta}). La Tabla \ref{tab:ablacion} presenta la comparación.
+El pipeline principal S+C usa como \texttt{known\_reals} la posición solar y como \texttt{unknown\_reals} el precio más cinco variables climáticas horarias. Para aislar cuánto aporta esa información exógena por sobre la autocorrelación de la propia serie, se entrena un TFT ``solo precios'' (sin ningún \texttt{known\_real}, sin variables climáticas) para cuatro barras, usando el mismo período histórico y las mismas fechas de corte que el pipeline principal (Sección \ref{sec:ablacion_meta}). La Tabla \ref{tab:ablacion} lo compara con el TFT de precios de P+C y con S+C. Como ambas ramas comparten las variables climáticas, la diferencia de cada una con el modelo sin features mide el aporte de su conjunto completo de variables exógenas, y la diferencia entre ellas aísla el de la posición solar frente a los componentes de Prophet.
 
 \begin{table}[htbp]
     \centering
+    \small
     \begin{tabular}{lrrrrrrr}
         \toprule
-        & \multicolumn{3}{c}{Sin features} & \multicolumn{3}{c}{S+C} & \\
-        Barra & MAE & RMSE & R² & MAE & RMSE & R² & Mejora MAE \\
+        & \multicolumn{3}{c}{MAE} & \multicolumn{3}{c}{RMSE} & \\
+        \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+        Barra & Sin features & P+C & S+C & Sin features & P+C & S+C & DM \\
         \midrule
-        Atacama  & 7.69  & 17.39 & 0.826 & 6.70  & 16.52 & 0.843 & 12.9\% \\
-        Crucero  & 7.58  & 17.11 & 0.835 & 6.74  & 16.64 & 0.844 & 11.1\% \\
-        Puerto Montt  & 14.09 & 26.50 & 0.814 & 13.68 & 25.80 & 0.823 & 2.9\%  \\
-        Tarapacá & 7.58  & 17.45 & 0.850 & 7.11  & 17.77 & 0.845 & 6.2\%  \\
+        Atacama      & 7.69  & 6.95  & 6.71  & 17.39 & 16.93 & 16.52 & $4.06^*$ \\
+        Crucero      & 7.58  & 7.06  & 6.74  & 17.11 & 16.92 & 16.64 & $5.36^*$ \\
+        Puerto Montt & 14.09 & 13.94 & 13.68 & 26.50 & 25.98 & 25.80 & $3.34^*$ \\
+        Tarapacá     & 7.58  & 7.14  & 7.12  & 17.45 & 17.90 & 17.77 & $0.48$ \\
         \bottomrule
     \end{tabular}
-    \caption{Comparación entre el TFT ``solo precios'' (sin features exógenas) y S+C, conjunto de prueba, arquitectura LN, evaluado contra la serie cruda sin recorte de outliers. Mejora MAE = reducción porcentual del MAE al agregar las features de S+C.}
+    \vspace{0.2cm}
+    \caption{Ablación de features: TFT de precios sin features exógenas, con las de P+C (componentes de Prophet y clima) y con las de S+C (posición solar y clima), conjunto de prueba, arquitectura LN, evaluado contra la serie cruda. MAE y RMSE en USD/MWh. DM: test de Diebold-Mariano horario (varianza Newey-West con 24 rezagos) de S+C frente a P+C; positivo favorece a S+C. * = $p<0.05$. Ambos modelos con features son significativamente mejores que el modelo sin features en MAE en las cuatro barras ($p \leq 0.004$).}
     \label{tab:ablacion}
 \end{table}
 
-Las features exógenas reducen el MAE de prueba en las cuatro barras, pero con una magnitud muy distinta: la mejora es sustancial en Atacama (12.9\%) y Crucero (11.1\%), moderada en Tarapacá (6.2\%), y marginal en Puerto Montt (2.9\%). El patrón es consistente con lo observado en la Sección 4.7.1: el costo marginal de Puerto Montt está dominado por la dinámica hidrológica de la zona centro-sur, no por el ciclo solar diario que domina en las barras del norte, por lo que la posición solar y el clima horario aportan relativamente poca información nueva por sobre la autocorrelación de la propia serie. En las barras del norte, en cambio, donde la generación fotovoltaica explica gran parte de la variabilidad diaria del precio, conocer la posición solar futura (\texttt{known\_real}) le da al modelo una ventaja real por sobre simplemente extrapolar el pasado reciente de la serie.
+Las features exógenas de ambas ramas reducen el MAE de prueba en las cuatro barras, con diferencias significativas frente al modelo sin features en todos los casos, pero con una magnitud muy distinta: con las de S+C la mejora es sustancial en Atacama (12.8\%) y Crucero (11.1\%), moderada en Tarapacá (6.1\%) y marginal en Puerto Montt (2.9\%), y con las de P+C es menor en las cuatro barras (9.7\%, 6.8\%, 5.8\% y 1.0\%, respectivamente). El patrón es consistente con lo observado en la Sección 4.7.1: el costo marginal de Puerto Montt está dominado por la dinámica hidrológica de la zona centro-sur, no por el ciclo solar diario que domina en las barras del norte, por lo que las variables exógenas aportan relativamente poca información nueva por sobre la autocorrelación de la propia serie. En Tarapacá, además, las features mejoran el MAE pero no el RMSE, que empeora levemente con ambas ramas (17.90 y 17.77 frente a 17.45): ayudan en las horas típicas, pero no en los errores más grandes.
+
+La comparación entre ramas es la que aísla el aporte de la posición solar, porque el clima es el mismo en ambas. S+C es significativamente más preciso que P+C en Atacama, Crucero y Puerto Montt, y empata en Tarapacá. En las barras del norte, donde la generación fotovoltaica explica gran parte de la variabilidad diaria del precio, conocer la posición solar futura le da al modelo una ventaja por sobre los componentes de Prophet, y no solo por sobre extrapolar el pasado reciente de la serie. Lo que la ablación no permite separar es cuánto de la mejora frente al modelo sin features proviene de la posición solar y cuánto del clima, ya que ambos se agregan juntos.
 
 \subsubsection{Información compartida entre P+C y S+C}
 \label{sec:informacion_pc_sc}
