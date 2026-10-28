@@ -17,6 +17,10 @@ Las predicciones son las ya guardadas por el pipeline (sin reentrenar). Para P+C
 seleccion de stacking_validacion_tablas.py (pesos en la primera mitad de validacion, estrategia
 elegida en la segunda). Los errores se calculan contra la serie cruda, excluyendo VENTANA_PRECIO_FALLA.
 
+P+C contra S+C se repite ademas en la segunda mitad de la validacion (tabla PC_vs_SC_val), para
+verificar que la eleccion de S+C no depende de haber mirado la prueba. Esa comparacion favorece a
+P+C, cuya estrategia se elige en esas mismas horas.
+
 Uso:
     python Scripts/dm_sensibilidad_rezagos.py
 """
@@ -76,7 +80,8 @@ def holm(p, alfa=0.05):
 
 
 def cargar():
-    """Errores absolutos de prueba alineados por fecha, por arquitectura y barra."""
+    """Errores absolutos de prueba (y de la segunda mitad de validacion para P+C y S+C) alineados
+    por fecha, por arquitectura y barra."""
     crudo = pd.read_csv(RUTA_CRUDA, sep=";")
     crudo["Fecha"] = pd.to_datetime(crudo["Fecha"])
     ini, fin = VENTANA_PRECIO_FALLA
@@ -107,8 +112,15 @@ def cargar():
             pv = predicciones(P["val"], T["val"], R["val"], w)
             pt = predicciones(P["test"], T["test"], R["test"], w)
             mejor = min(ESTRATEGIAS, key=lambda e: mae(yv[mitad:], pv[e][mitad:]))
+            fv = pd.to_datetime(split["fechas_val"])[mitad:]
+            yv2 = serie.reindex(fv).values
+            yv2[(fv >= ini) & (fv <= fin)] = np.nan
+            dv = sc[barra]["val"]["Precios"]["datos"]
+            s_scv = pd.Series(np.asarray(dv["y_pred"]), index=pd.to_datetime(dv["fechas"]))
+            s_scv = s_scv[~s_scv.index.duplicated()].reindex(fv).values
             err[(arq, barra)] = {"fechas": fechas, "SC": np.abs(yt - s_sc), "PC": np.abs(yt - pt[mejor]),
-                                 "TFT_PC": np.abs(yt - T["test"])}
+                                 "TFT_PC": np.abs(yt - T["test"]),
+                                 "val": {"fechas": fv, "SC": np.abs(yv2 - s_scv), "PC": np.abs(yv2 - pv[mejor][mitad:])}}
     return err
 
 
@@ -128,6 +140,9 @@ def main():
             e = err[(arq, barra)]
             r = evaluar(e["PC"], e["SC"], e["fechas"])
             filas.append({"Tabla": "PC_vs_SC", "Barra": NOMBRES[barra], "Grupo": arq, **r})
+            v = e["val"]
+            r = evaluar(v["PC"], v["SC"], v["fechas"])
+            filas.append({"Tabla": "PC_vs_SC_val", "Barra": NOMBRES[barra], "Grupo": arq, **r})
     df = pd.DataFrame(filas)
     cols_p = ["p_2", f"p_{LAG_HORARIO}", "p_diario"]
     for tabla in df["Tabla"].unique():
@@ -137,7 +152,8 @@ def main():
     df.to_csv("Scripts/resultado_dm_sensibilidad_rezagos.csv", index=False)
 
     pd.set_option("display.width", 250)
-    for tabla, signo in (("LN_vs_DyT", "DM < 0 favorece a LN"), ("PC_vs_SC", "DM > 0 favorece a S+C")):
+    for tabla, signo in (("LN_vs_DyT", "DM < 0 favorece a LN"), ("PC_vs_SC", "DM > 0 favorece a S+C"),
+                         ("PC_vs_SC_val", "DM > 0 favorece a S+C")):
         t = df[df["Tabla"] == tabla]
         print(f"\n=== {tabla} ({signo}) ===")
         print(t[["Barra", "Grupo", "MAE_a", "MAE_b", "DM_2", "p_2", f"DM_{LAG_HORARIO}", f"p_{LAG_HORARIO}",
