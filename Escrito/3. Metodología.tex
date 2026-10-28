@@ -45,31 +45,34 @@ La Tabla \ref{tab:estadisticas} resume las estadísticas descriptivas de cada ba
     \label{tab:estadisticas}
 \end{table}
 
-\subsection{Análisis de estacionariedad}
+\subsection{Análisis de estacionariedad y heterocedasticidad}
 
 Para caracterizar formalmente las propiedades estadísticas de cada serie se aplican conjuntamente las pruebas ADF y KPSS descritas en la Sección 2.1.1. Los resultados se presentan en la Tabla \ref{tab:estacionariedad}.
 
 \begin{table}[htbp]
     \centering
-    \begin{tabular}{lcccc}
+    \small
+    \begin{tabular}{lcccccc}
         \toprule
-        Barra & Est. ADF & $p$-valor ADF & Est. KPSS & $p$-valor KPSS \\
+        Barra & Est. ADF & $p$-valor ADF & Est. KPSS & $p$-valor KPSS & Levene & ARCH-LM \\
         \midrule
-        Atacama       & $-$13.2000 & $<0.001$ & 8.1252 & $<0.01$ \\
-        Cardones      & $-$12.4464 & $<0.001$ & 8.1567 & $<0.01$ \\
-        Charrúa       & $-$12.7728 & $<0.001$ & 8.4554 & $<0.01$ \\
-        Crucero       & $-$12.6482 & $<0.001$ & 4.5352 & $<0.01$ \\
-        Pan de Azúcar & $-$12.6063 & $<0.001$ & 7.2476 & $<0.01$ \\
-        Puerto Montt  & $-$11.6217 & $<0.001$ & 4.8858 & $<0.01$ \\
-        Quillota      & $-$12.7277 & $<0.001$ & 4.5890 & $<0.01$ \\
-        Tarapacá      & $-$12.8396 & $<0.001$ & 8.2951 & $<0.01$ \\
+        Atacama       & $-$13.2000 & $<0.001$ & 8.1252 & $<0.01$ & 151.6 & 42\,959 \\
+        Cardones      & $-$12.4464 & $<0.001$ & 8.1567 & $<0.01$ & 151.9 & 42\,405 \\
+        Charrúa       & $-$12.7728 & $<0.001$ & 8.4554 & $<0.01$ &  45.1 & 45\,300 \\
+        Crucero       & $-$12.6482 & $<0.001$ & 4.5352 & $<0.01$ & 185.1 & 42\,814 \\
+        Pan de Azúcar & $-$12.6063 & $<0.001$ & 7.2476 & $<0.01$ & 116.3 & 30\,650 \\
+        Puerto Montt  & $-$11.6217 & $<0.001$ & 4.8858 & $<0.01$ &  93.8 & 48\,262 \\
+        Quillota      & $-$12.7277 & $<0.001$ & 4.5890 & $<0.01$ &  63.3 & 44\,778 \\
+        Tarapacá      & $-$12.8396 & $<0.001$ & 8.2951 & $<0.01$ & 204.4 & 42\,360 \\
         \bottomrule
     \end{tabular}
-    \caption{Resultados de las pruebas de estacionariedad ADF y KPSS para las ocho barras.}
+    \caption{Resultados de las pruebas de estacionariedad ADF y KPSS y de heterocedasticidad de Levene (estadístico $F$, igualdad de varianza entre las 24 horas del día) y ARCH-LM (estadístico LM con 24 rezagos) para las ocho barras. Las pruebas de heterocedasticidad usan la serie cruda 2020--2026 sin la ventana de precio de falla, y en las ocho barras tienen $p < 0.001$.}
     \label{tab:estacionariedad}
 \end{table}
 
 El patrón es consistente en todas las barras: la prueba ADF rechaza la hipótesis nula de raíz unitaria con $p < 0.001$, evidencia de que las series no son paseos aleatorios puros y exhiben reversión a la media en el largo plazo. La prueba KPSS, en cambio, rechaza su hipótesis nula de estacionariedad en sentido débil con $p < 0.01$ (reportado en su valor límite inferior, dado que los estadísticos superan ampliamente los umbrales críticos de la librería). Esta combinación (rechazo simultáneo de ambas hipótesis nulas) no es contradictoria, sino un patrón conocido en presencia de quiebres estructurales: el estadístico KPSS asume una serie que fluctúa en torno a un nivel (o tendencia) determinístico fijo, y tiende a rechazar la estacionariedad incluso cuando no existe una raíz unitaria genuina si ese nivel se desplaza gradualmente en el tiempo, como es esperable dada la incorporación continua de capacidad renovable al SEN durante el período de datos (Sección 3.1). En conjunto, ambas pruebas son consistentes con series que revierten a la media en el largo plazo (sin raíz unitaria, según ADF) pero cuyo nivel base no es fijo sino que se desplaza gradualmente (lo que basta para que KPSS rechace la estacionariedad, sin que esto implique nada directamente sobre la varianza de la serie). Esta caracterización, centrada en el nivel de la serie más que en su varianza, justifica específicamente el uso de Prophet con detección automática de puntos de quiebre, que modela explícitamente esos desplazamientos graduales de nivel. La heterocedasticidad asociada a los \textit{spikes} de alta magnitud, visible en las estadísticas descriptivas de la Tabla \ref{tab:estadisticas}, es una propiedad adicional de la serie (no algo que ADF o KPSS, ambas centradas en la dinámica del nivel, permitan concluir por sí solas) y es la que motiva, de forma independiente, la estandarización z-score como transformación de preprocesamiento.
+
+Además de la estacionariedad, se verifica si la varianza del costo marginal cambia según la hora del día y si se agrupa en el tiempo, con el test de Levene centrado en la mediana \cite{Levene1960, BrownForsythe1974} y el test ARCH-LM de Engle con 24 rezagos \cite{Engle1982}. Este último se aplica a la desviación de cada observación respecto a la media de su hora del día, para que el ciclo diario de la media no se confunda con el de la varianza. Ambos rechazan la homocedasticidad con $p < 0.001$ en las ocho barras (Tabla \ref{tab:estacionariedad}): la desviación estándar del costo marginal en la hora más volátil es entre 1.6 (Puerto Montt) y 2.8 veces (Tarapacá) la de la hora más estable, y la volatilidad se agrupa en rachas que se extienden más allá de una hora. La serie es, por lo tanto, heterocedástica; la Sección \ref{sec:verificacion_heterocedasticidad} verifica que esta propiedad se traslada a los residuos del modelo, que es la que motiva la ponderación horaria de Conformal Prediction.
 
 \section{Preprocesamiento}
 
