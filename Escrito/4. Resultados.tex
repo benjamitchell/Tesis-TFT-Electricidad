@@ -28,7 +28,7 @@ Antes de presentar los modelos propuestos, se establecen líneas base ingenuas s
     \label{tab:baselines_naive}
 \end{table}
 
-La persistencia de un paso es, en las ocho barras, la línea base más difícil de superar: a resolución horaria, el precio de la hora inmediatamente anterior es más informativo que el mismo momento del día anterior o de la semana anterior, y también más informativo que los modelos AR-24h y AR-168h ajustados por OLS, que resultan sistemáticamente peores que el naive del que parten. Esto se explica porque el ajuste por mínimos cuadrados minimiza el error cuadrático, lo que produce coeficientes menores a uno y un intercepto positivo que suaviza la predicción hacia la media (óptimo para el error cuadrático, pero no para el error absoluto sobre una serie con una masa puntual considerable en cero y una cola derecha pesada). Por este motivo, se adopta la persistencia de un paso como referencia para el \textit{skill score} y el MASE (\textit{Mean Absolute Scaled Error}, Hyndman y Koehler, 2006 \cite{HyndmanKoehler2006}) reportados junto al modelo de referencia S+C-LN en la Tabla \ref{tab:tft_sc_ln_resultados}: $\text{MASE} = \text{MAE}_{\text{modelo}} / \text{MAE}_{\text{persistencia}}$, y $\text{skill score} = 1 - \text{MASE}$.
+La persistencia de un paso es, en las ocho barras, la línea base más difícil de superar: a resolución horaria, el precio de la hora inmediatamente anterior es más informativo que el mismo momento del día anterior o de la semana anterior, y también más informativo que los modelos AR-24h y AR-168h ajustados por OLS, que resultan sistemáticamente peores que el naive del que parten. Esto se explica porque el ajuste por mínimos cuadrados minimiza el error cuadrático, lo que produce coeficientes menores a uno y un intercepto positivo que suaviza la predicción hacia la media, óptimo para el error cuadrático, pero no para el error absoluto sobre una serie con una masa puntual considerable en cero y una cola derecha pesada. Por este motivo, se adopta la persistencia de un paso como referencia para el \textit{skill score} y el MASE (\textit{Mean Absolute Scaled Error}, Hyndman y Koehler, 2006 \cite{HyndmanKoehler2006}) reportados junto al modelo de referencia S+C-LN en la Tabla \ref{tab:tft_sc_ln_resultados}: $\text{MASE} = \text{MAE}_{\text{modelo}} / \text{MAE}_{\text{persistencia}}$, y $\text{skill score} = 1 - \text{MASE}$.
 
 \section{Modelo Prophet}
 \label{sec:prophet_truncamiento_pipeline}
@@ -52,53 +52,53 @@ La Tabla \ref{tab:prophet_resultados} presenta los resultados numéricos de eval
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{llrrrr}
+    \begin{tabular}{llrrrrr}
         \toprule
-        Barra & Conjunto & MAE & RMSE & MSE & R$^2$ \\
+        Barra & Conjunto & MAE & RMSE & MSE & R$^2$ & Skill \\
         \midrule
         \multirow{3}{*}{Atacama}
-            & Train & 30.40 & 41.05 & 1684.75 &  0.5228 \\
-            & Val   & 21.34 & 42.29 & 1788.58 &  0.4023 \\
-            & Test  & 16.39 & 28.69 &  823.05 &  0.5264 \\
+            & Train & 30.40 & 41.05 & 1684.75 &  0.5228 & \\
+            & Val   & 21.34 & 42.29 & 1788.58 &  0.4023 & \\
+            & Test  & 16.39 & 28.69 &  823.05 &  0.5264 & $-$0.584 \\
         \midrule
         \multirow{3}{*}{Cardones}
-            & Train & 30.32 & 40.92 & 1674.47 &  0.5314 \\
-            & Val   & 21.60 & 37.21 & 1384.42 &  0.4491 \\
-            & Test  & 19.95 & 30.09 &  905.28 &  0.4710 \\
+            & Train & 30.32 & 40.92 & 1674.47 &  0.5314 & \\
+            & Val   & 21.60 & 37.21 & 1384.42 &  0.4491 & \\
+            & Test  & 19.95 & 30.09 &  905.28 &  0.4710 & $-$0.930 \\
         \midrule
         \multirow{3}{*}{Charrúa}
-            & Train & 31.58 & 43.61 & 1901.89 &  0.4688 \\
-            & Val   & 24.34 & 37.59 & 1412.72 &  0.3225 \\
-            & Test  & 24.51 & 37.02 & 1370.68 &  0.3013 \\
+            & Train & 31.58 & 43.61 & 1901.89 &  0.4688 & \\
+            & Val   & 24.34 & 37.59 & 1412.72 &  0.3225 & \\
+            & Test  & 24.51 & 37.02 & 1370.68 &  0.3013 & $-$1.384 \\
         \midrule
         \multirow{3}{*}{Crucero}
-            & Train & 30.46 & 41.23 & 1699.97 &  0.5502 \\
-            & Val   & 22.83 & 42.13 & 1774.64 &  0.4167 \\
-            & Test  & 22.10 & 31.94 & 1019.93 &  0.4238 \\
+            & Train & 30.46 & 41.23 & 1699.97 &  0.5502 & \\
+            & Val   & 22.83 & 42.13 & 1774.64 &  0.4167 & \\
+            & Test  & 22.10 & 31.94 & 1019.93 &  0.4238 & $-$1.120 \\
         \midrule
         \multirow{3}{*}{Pan de Azúcar}
-            & Train & 30.83 & 41.98 & 1762.61 &  0.5137 \\
-            & Val   & 22.73 & 37.21 & 1384.72 &  0.4161 \\
-            & Test  & 22.44 & 31.79 & 1010.37 &  0.4137 \\
+            & Train & 30.83 & 41.98 & 1762.61 &  0.5137 & \\
+            & Val   & 22.73 & 37.21 & 1384.72 &  0.4161 & \\
+            & Test  & 22.44 & 31.79 & 1010.37 &  0.4137 & $-$1.162 \\
         \midrule
         \multirow{3}{*}{Puerto Montt}
-            & Train & 50.44 & 67.62 & 4572.02 &  0.5516 \\
-            & Val   & 46.00 & 62.88 & 3953.91 &  0.2221 \\
-            & Test  & 47.89 & 61.71 & 3808.69 & $-$0.0106 \\
+            & Train & 50.44 & 67.62 & 4572.02 &  0.5516 & \\
+            & Val   & 46.00 & 62.88 & 3953.91 &  0.2221 & \\
+            & Test  & 47.89 & 61.71 & 3808.69 & $-$0.0106 & $-$2.374 \\
         \midrule
         \multirow{3}{*}{Quillota}
-            & Train & 31.24 & 42.88 & 1838.39 &  0.4827 \\
-            & Val   & 23.87 & 37.64 & 1416.80 &  0.3401 \\
-            & Test  & 23.22 & 36.82 & 1355.75 &  0.3297 \\
+            & Train & 31.24 & 42.88 & 1838.39 &  0.4827 & \\
+            & Val   & 23.87 & 37.64 & 1416.80 &  0.3401 & \\
+            & Test  & 23.22 & 36.82 & 1355.75 &  0.3297 & $-$1.232 \\
         \midrule
         \multirow{3}{*}{Tarapacá}
-            & Train & 31.18 & 42.20 & 1780.62 &  0.5568 \\
-            & Val   & 23.61 & 43.97 & 1933.03 &  0.4355 \\
-            & Test  & 21.86 & 32.88 & 1080.87 &  0.4692 \\
+            & Train & 31.18 & 42.20 & 1780.62 &  0.5568 & \\
+            & Val   & 23.61 & 43.97 & 1933.03 &  0.4355 & \\
+            & Test  & 21.86 & 32.88 & 1080.87 &  0.4692 & $-$0.977 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Resultados de evaluación de Prophet por barra y conjunto, con las predicciones truncadas en 0 USD/MWh y validación/prueba evaluadas contra la serie cruda. MAE y RMSE en USD/MWh, MSE en (USD/MWh)$^2$.}
+    \caption{Resultados de evaluación de Prophet por barra y conjunto, con las predicciones truncadas en 0 USD/MWh y validación/prueba evaluadas contra la serie cruda. MAE y RMSE en USD/MWh, MSE en (USD/MWh)$^2$. Skill score respecto a la persistencia de un paso (Tabla \ref{tab:baselines_naive}), reportado solo para Test.}
     \label{tab:prophet_resultados}
 \end{table}
 
@@ -117,53 +117,53 @@ Las Tablas \ref{tab:tft_precios_resultados} y \ref{tab:tft_residuos_resultados} 
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{llrrr}
+    \begin{tabular}{llrrrr}
         \toprule
-        Barra & Conjunto & MAE & RMSE & R$^2$ \\
+        Barra & Conjunto & MAE & RMSE & R$^2$ & Skill \\
         \midrule
         \multirow{3}{*}{Atacama}
-            & Train & 7.81 & 16.30 & 0.925 \\
-            & Val   & 8.95 & 29.32 & 0.713 \\
-            & Test  & 6.95 & 16.93 & 0.835 \\
+            & Train & 7.81 & 16.30 & 0.925 & \\
+            & Val   & 8.95 & 29.32 & 0.713 & \\
+            & Test  & 6.95 & 16.93 & 0.835 & 0.329 \\
         \midrule
         \multirow{3}{*}{Cardones}
-            & Train & 7.70 & 16.24 & 0.926 \\
-            & Val   & 8.15 & 24.08 & 0.769 \\
-            & Test  & 7.02 & 16.11 & 0.848 \\
+            & Train & 7.70 & 16.24 & 0.926 & \\
+            & Val   & 8.15 & 24.08 & 0.769 & \\
+            & Test  & 7.02 & 16.11 & 0.848 & 0.321 \\
         \midrule
         \multirow{3}{*}{Charrúa}
-            & Train & 8.12 & 16.77 & 0.922 \\
-            & Val   & 8.83 & 23.61 & 0.733 \\
-            & Test  & 8.52 & 16.12 & 0.868 \\
+            & Train & 8.12 & 16.77 & 0.922 & \\
+            & Val   & 8.83 & 23.61 & 0.733 & \\
+            & Test  & 8.52 & 16.12 & 0.868 & 0.171 \\
         \midrule
         \multirow{3}{*}{Crucero}
-            & Train & 7.80 & 16.34 & 0.930 \\
-            & Val   & 8.80 & 28.50 & 0.733 \\
-            & Test  & 7.06 & 16.92 & 0.838 \\
+            & Train & 7.80 & 16.34 & 0.930 & \\
+            & Val   & 8.80 & 28.50 & 0.733 & \\
+            & Test  & 7.06 & 16.92 & 0.838 & 0.323 \\
         \midrule
         \multirow{3}{*}{Pan de Azúcar}
-            & Train & 7.57 & 15.80 & 0.931 \\
-            & Val   & 8.36 & 23.26 & 0.772 \\
-            & Test  & 7.17 & 15.33 & 0.864 \\
+            & Train & 7.57 & 15.80 & 0.931 & \\
+            & Val   & 8.36 & 23.26 & 0.772 & \\
+            & Test  & 7.17 & 15.33 & 0.864 & 0.309 \\
         \midrule
         \multirow{3}{*}{Puerto Montt}
-            & Train & 13.01 & 29.70 & 0.914 \\
-            & Val   & 15.80 & 33.19 & 0.783 \\
-            & Test  & 13.94 & 25.98 & 0.821 \\
+            & Train & 13.01 & 29.70 & 0.914 & \\
+            & Val   & 15.80 & 33.19 & 0.783 & \\
+            & Test  & 13.94 & 25.98 & 0.821 & 0.018 \\
         \midrule
         \multirow{3}{*}{Quillota}
-            & Train & 8.10 & 16.66 & 0.922 \\
-            & Val   & 8.99 & 23.82 & 0.736 \\
-            & Test  & 8.70 & 16.54 & 0.865 \\
+            & Train & 8.10 & 16.66 & 0.922 & \\
+            & Val   & 8.99 & 23.82 & 0.736 & \\
+            & Test  & 8.70 & 16.54 & 0.865 & 0.164 \\
         \midrule
         \multirow{3}{*}{Tarapacá}
-            & Train & 7.91 & 16.63 & 0.931 \\
-            & Val   & 9.17 & 31.08 & 0.718 \\
-            & Test  & 7.14 & 17.90 & 0.843 \\
+            & Train & 7.91 & 16.63 & 0.931 & \\
+            & Val   & 9.17 & 31.08 & 0.718 & \\
+            & Test  & 7.14 & 17.90 & 0.843 & 0.354 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Resultados de evaluación del $\text{TFT}_\text{LN}$, modelo de precios (rama P+C), por barra y conjunto, evaluado contra la serie cruda (validación y prueba; el entrenamiento usa la serie con outliers recortados, Sección \ref{sec:limpieza_outliers}). MAE y RMSE en USD/MWh.}
+    \caption{Resultados de evaluación del $\text{TFT}_\text{LN}$, modelo de precios (rama P+C), por barra y conjunto, evaluado contra la serie cruda (validación y prueba; el entrenamiento usa la serie con outliers recortados, Sección \ref{sec:limpieza_outliers}). MAE y RMSE en USD/MWh. Skill score respecto a la persistencia de un paso (Tabla \ref{tab:baselines_naive}), reportado solo para Test.}
     \label{tab:tft_precios_resultados}
 \end{table}
  
@@ -279,7 +279,7 @@ La rama S+C, descrita en la Sección 3.4.1, reemplaza las componentes de Prophet
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Resultados de evaluación del $\text{TFT}_\text{LN}$, rama S+C (única instancia, sin residuos), por barra y conjunto, evaluados contra la serie cruda sin recorte de outliers (validación y prueba; el entrenamiento usa la serie con outliers recortados, Sección \ref{sec:limpieza_outliers}). MAE y RMSE en USD/MWh. MASE y Skill score respecto a la persistencia de un paso (Tabla \ref{tab:baselines_naive}), reportados solo para Test.}
+    \caption{Resultados de evaluación del $\text{TFT}_\text{LN}$ (rama S+C), por barra y conjunto, evaluados contra la serie cruda sin recorte de outliers (validación y prueba; el entrenamiento usa la serie con outliers recortados, Sección \ref{sec:limpieza_outliers}). MAE y RMSE en USD/MWh. MASE y Skill score respecto a la persistencia de un paso (Tabla \ref{tab:baselines_naive}), reportados solo para Test.}
     \label{tab:tft_sc_ln_resultados}
 \end{table}
 
@@ -290,7 +290,7 @@ Comparando directamente contra el $\text{TFT}_\text{LN}$ de precios de la rama P
 
 \subsection{Selección del mejor método de optimización}
 
-Se compararon ocho métodos numéricos (\textit{Grid Search} con 21, 41 y 101 puntos, \textit{Differential Evolution}, L-BFGS-B, Nelder-Mead, \textit{Random Search} con 1\,000 muestras, y SLSQP) para el mismo problema de un grado de libertad ($w_1$, con $w_2=1-w_1$) sobre la función objetivo MAE, más Ridge como comparación aparte: Ridge no optimiza ese mismo objetivo, sino que resuelve en forma cerrada un problema distinto (mínimos cuadrados con penalización $\ell_2$), por lo que se incluyó para verificar que un estimador de uso común no se aleja del resultado de los ocho anteriores, no como un noveno optimizador del mismo problema. Todos se ajustan sobre la primera mitad del conjunto de validación (Sección 3.5). Al ser el MAE convexo en una variable, era esperable que los ocho métodos numéricos convergieran al mismo mínimo, y así ocurre en la combinación que resulta elegida en las ocho barras, (Prophet $+$ residuos) $+$ TFT precios: las diferencias de MAE entre métodos son inferiores al 0.01\%. En las otras dos combinaciones las diferencias llegan a 0.4\% (Prophet $+$ TFT precios) y 0.8\% (Prophet $+$ residuos optimizada), combinaciones cuyo óptimo queda en el borde del intervalo ($w_1=0$), donde el resultado depende más de cómo cada método maneja la restricción. Ridge se aparta entre 0.01\% y 1.4\% en la combinación elegida, pero hasta 9.3\% y 63\% en las otras dos: minimizar el error cuadrático no equivale a minimizar el MAE cuando uno de los componentes es mucho peor que el otro. El tiempo de cómputo es irrelevante a esta escala (\textit{Random Search} el más lento, 0.04--0.08\,s; SLSQP y Ridge bajo 0.02\,s). Dado que la elección de método no afecta a la combinación elegida, los resultados del resto de esta sección emplean \textit{Grid Search} con 41 puntos.
+Se compararon ocho métodos numéricos (\textit{Grid Search} con 21, 41 y 101 puntos, \textit{Differential Evolution}, L-BFGS-B, Nelder-Mead, \textit{Random Search} con 1\,000 muestras, y SLSQP) para el mismo problema de un grado de libertad ($w_1$, con $w_2=1-w_1$) sobre la función objetivo MAE, más Ridge como comparación aparte: Ridge no optimiza ese mismo objetivo, sino que resuelve en forma cerrada un problema distinto (mínimos cuadrados con penalización $\ell_2$), por lo que se incluyó para verificar que un estimador de uso común no se aleja del resultado de los ocho anteriores, no como un noveno optimizador del mismo problema. Todos se ajustan sobre la primera mitad del conjunto de validación (Sección 3.5). Al ser el MAE convexo en una variable, era esperable que los ocho métodos numéricos convergieran al mismo mínimo, y así ocurre en la combinación que resulta elegida en las ocho barras, (Prophet $+$ residuos) $+$ TFT precios: las diferencias de MAE entre métodos son inferiores al 0.01\%. En las otras dos combinaciones las diferencias llegan a 0.4\% (Prophet $+$ TFT precios) y 0.8\% (Prophet $+$ residuos optimizada), combinaciones cuyo óptimo queda en el borde del intervalo ($w_1=0$), donde el resultado depende más de cómo cada método maneja la restricción. Ridge se aparta entre 0.01\% y 1.4\% en la combinación elegida, pero hasta 9.3\% y 63\% en las otras dos: minimizar el error cuadrático no equivale a minimizar el MAE cuando uno de los componentes es mucho peor que el otro. Dado que la convergencia al mismo mínimo era esperable, el interés de la comparación estaba en el tiempo de cómputo, pero este también resulta irrelevante a esta escala: ningún método es notablemente mejor que otro y las diferencias son marginales (\textit{Random Search} el más lento, 0.04--0.08\,s; SLSQP y Ridge bajo 0.02\,s). Dado que la elección de método no afecta a la combinación elegida, los resultados del resto de esta sección emplean \textit{Grid Search} con 41 puntos.
 
 \subsection{Selección de la mejor estrategia}
 
@@ -331,53 +331,53 @@ Las Tablas \ref{tab:tft_dyt_precios_resultados} y \ref{tab:tft_dyt_residuos_resu
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{llrrr}
+    \begin{tabular}{llrrrr}
         \toprule
-        Barra & Conjunto & MAE & RMSE & R$^2$ \\
+        Barra & Conjunto & MAE & RMSE & R$^2$ & Skill \\
         \midrule
         \multirow{3}{*}{Atacama}
-            & Train & 7.49 & 14.79 & 0.938 \\
-            & Val   & 9.05 & 28.67 & 0.725 \\
-            & Test  & 7.25 & 17.14 & 0.831 \\
+            & Train & 7.49 & 14.79 & 0.938 & \\
+            & Val   & 9.05 & 28.67 & 0.725 & \\
+            & Test  & 7.25 & 17.14 & 0.831 & 0.300 \\
         \midrule
         \multirow{3}{*}{Cardones}
-            & Train & 7.49 & 14.62 & 0.940 \\
-            & Val   & 8.25 & 23.99 & 0.771 \\
-            & Test  & 7.11 & 16.31 & 0.845 \\
+            & Train & 7.49 & 14.62 & 0.940 & \\
+            & Val   & 8.25 & 23.99 & 0.771 & \\
+            & Test  & 7.11 & 16.31 & 0.845 & 0.313 \\
         \midrule
         \multirow{3}{*}{Charrúa}
-            & Train & 7.91 & 15.09 & 0.936 \\
-            & Val   & 9.14 & 23.72 & 0.730 \\
-            & Test  & 8.73 & 15.97 & 0.870 \\
+            & Train & 7.91 & 15.09 & 0.936 & \\
+            & Val   & 9.14 & 23.72 & 0.730 & \\
+            & Test  & 8.73 & 15.97 & 0.870 & 0.151 \\
         \midrule
         \multirow{3}{*}{Crucero}
-            & Train & 7.96 & 15.82 & 0.934 \\
-            & Val   & 9.00 & 28.47 & 0.734 \\
-            & Test  & 7.21 & 17.09 & 0.835 \\
+            & Train & 7.96 & 15.82 & 0.934 & \\
+            & Val   & 9.00 & 28.47 & 0.734 & \\
+            & Test  & 7.21 & 17.09 & 0.835 & 0.308 \\
         \midrule
         \multirow{3}{*}{Pan de Azúcar}
-            & Train & 8.16 & 15.72 & 0.932 \\
-            & Val   & 8.65 & 23.35 & 0.770 \\
-            & Test  & 7.31 & 15.33 & 0.864 \\
+            & Train & 8.16 & 15.72 & 0.932 & \\
+            & Val   & 8.65 & 23.35 & 0.770 & \\
+            & Test  & 7.31 & 15.33 & 0.864 & 0.296 \\
         \midrule
         \multirow{3}{*}{Puerto Montt}
-            & Train & 10.63 & 24.19 & 0.943 \\
-            & Val   & 15.77 & 32.43 & 0.793 \\
-            & Test  & 13.97 & 25.51 & 0.827 \\
+            & Train & 10.63 & 24.19 & 0.943 & \\
+            & Val   & 15.77 & 32.43 & 0.793 & \\
+            & Test  & 13.97 & 25.51 & 0.827 & 0.016 \\
         \midrule
         \multirow{3}{*}{Quillota}
-            & Train & 7.54 & 14.42 & 0.942 \\
-            & Val   & 9.29 & 24.11 & 0.729 \\
-            & Test  & 9.02 & 16.79 & 0.861 \\
+            & Train & 7.54 & 14.42 & 0.942 & \\
+            & Val   & 9.29 & 24.11 & 0.729 & \\
+            & Test  & 9.02 & 16.79 & 0.861 & 0.133 \\
         \midrule
         \multirow{3}{*}{Tarapacá}
-            & Train & 7.63 & 15.03 & 0.944 \\
-            & Val   & 9.52 & 31.20 & 0.716 \\
-            & Test  & 7.50 & 18.39 & 0.834 \\
+            & Train & 7.63 & 15.03 & 0.944 & \\
+            & Val   & 9.52 & 31.20 & 0.716 & \\
+            & Test  & 7.50 & 18.39 & 0.834 & 0.322 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Resultados de evaluación del $\text{TFT}_\text{DyT}$, modelo de precios (rama P+C), por barra y conjunto, evaluado contra la serie cruda (validación y prueba; el entrenamiento usa la serie con outliers recortados, Sección \ref{sec:limpieza_outliers}). MAE y RMSE en USD/MWh.}
+    \caption{Resultados de evaluación del $\text{TFT}_\text{DyT}$, modelo de precios (rama P+C), por barra y conjunto, evaluado contra la serie cruda (validación y prueba; el entrenamiento usa la serie con outliers recortados, Sección \ref{sec:limpieza_outliers}). MAE y RMSE en USD/MWh. Skill score respecto a la persistencia de un paso (Tabla \ref{tab:baselines_naive}), reportado solo para Test.}
     \label{tab:tft_dyt_precios_resultados}
 \end{table}
 
@@ -447,53 +447,53 @@ La Tabla \ref{tab:tft_sc_dyt_resultados} presenta los resultados de la rama S+C 
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{llrrr}
+    \begin{tabular}{llrrrr}
         \toprule
-        Barra & Conjunto & MAE & RMSE & R$^2$ \\
+        Barra & Conjunto & MAE & RMSE & R$^2$ & Skill \\
         \midrule
         \multirow{3}{*}{Atacama}
-            & Train & 8.12 & 16.28 & 0.925 \\
-            & Val   & 8.51 & 27.96 & 0.739 \\
-            & Test  & 6.68 & 16.48 & 0.844 \\
+            & Train & 8.12 & 16.28 & 0.925 & \\
+            & Val   & 8.51 & 27.96 & 0.739 & \\
+            & Test  & 6.68 & 16.48 & 0.844 & 0.354 \\
         \midrule
         \multirow{3}{*}{Cardones}
-            & Train & 7.73 & 15.47 & 0.933 \\
-            & Val   & 7.94 & 23.50 & 0.780 \\
-            & Test  & 6.78 & 15.81 & 0.854 \\
+            & Train & 7.73 & 15.47 & 0.933 & \\
+            & Val   & 7.94 & 23.50 & 0.780 & \\
+            & Test  & 6.78 & 15.81 & 0.854 & 0.344 \\
         \midrule
         \multirow{3}{*}{Charrúa}
-            & Train & 7.88 & 15.50 & 0.933 \\
-            & Val   & 8.70 & 23.41 & 0.737 \\
-            & Test  & 8.28 & 15.56 & 0.877 \\
+            & Train & 7.88 & 15.50 & 0.933 & \\
+            & Val   & 8.70 & 23.41 & 0.737 & \\
+            & Test  & 8.28 & 15.56 & 0.877 & 0.195 \\
         \midrule
         \multirow{3}{*}{Crucero}
-            & Train & 8.10 & 16.25 & 0.930 \\
-            & Val   & 8.36 & 27.59 & 0.750 \\
-            & Test  & 6.87 & 16.76 & 0.841 \\
+            & Train & 8.10 & 16.25 & 0.930 & \\
+            & Val   & 8.36 & 27.59 & 0.750 & \\
+            & Test  & 6.87 & 16.76 & 0.841 & 0.341 \\
         \midrule
         \multirow{3}{*}{Pan de Azúcar}
-            & Train & 7.54 & 15.08 & 0.937 \\
-            & Val   & 8.14 & 22.87 & 0.779 \\
-            & Test  & 6.83 & 14.95 & 0.870 \\
+            & Train & 7.54 & 15.08 & 0.937 & \\
+            & Val   & 8.14 & 22.87 & 0.779 & \\
+            & Test  & 6.83 & 14.95 & 0.870 & 0.342 \\
         \midrule
         \multirow{3}{*}{Puerto Montt}
-            & Train & 10.66 & 24.13 & 0.943 \\
-            & Val   & 15.58 & 32.58 & 0.791 \\
-            & Test  & 14.01 & 26.04 & 0.820 \\
+            & Train & 10.66 & 24.13 & 0.943 & \\
+            & Val   & 15.58 & 32.58 & 0.791 & \\
+            & Test  & 14.01 & 26.04 & 0.820 & 0.013 \\
         \midrule
         \multirow{3}{*}{Quillota}
-            & Train & 7.61 & 14.82 & 0.938 \\
-            & Val   & 8.76 & 23.30 & 0.747 \\
-            & Test  & 8.58 & 15.96 & 0.874 \\
+            & Train & 7.61 & 14.82 & 0.938 & \\
+            & Val   & 8.76 & 23.30 & 0.747 & \\
+            & Test  & 8.58 & 15.96 & 0.874 & 0.176 \\
         \midrule
         \multirow{3}{*}{Tarapacá}
-            & Train & 8.16 & 16.35 & 0.934 \\
-            & Val   & 9.01 & 30.43 & 0.730 \\
-            & Test  & 6.95 & 17.61 & 0.848 \\
+            & Train & 8.16 & 16.35 & 0.934 & \\
+            & Val   & 9.01 & 30.43 & 0.730 & \\
+            & Test  & 6.95 & 17.61 & 0.848 & 0.371 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Resultados de evaluación del $\text{TFT}_\text{DyT}$, rama S+C, por barra y conjunto, evaluados contra la serie cruda sin recorte de outliers (validación y prueba; el entrenamiento usa la serie con outliers recortados, Sección \ref{sec:limpieza_outliers}). MAE y RMSE en USD/MWh.}
+    \caption{Resultados de evaluación del $\text{TFT}_\text{DyT}$ (rama S+C), por barra y conjunto, evaluados contra la serie cruda sin recorte de outliers (validación y prueba; el entrenamiento usa la serie con outliers recortados, Sección \ref{sec:limpieza_outliers}). MAE y RMSE en USD/MWh. Skill score respecto a la persistencia de un paso (Tabla \ref{tab:baselines_naive}), reportado solo para Test.}
     \label{tab:tft_sc_dyt_resultados}
 \end{table}
 
@@ -536,7 +536,7 @@ Respecto a los métodos de optimización, el patrón es idéntico al observado c
 \subsection{Comparativa $\text{TFT}_\text{LN}$ vs.\ $\text{TFT}_\text{DyT}$}
 \label{sec:ln_vs_dyt}
 
-Esta subsección compara ambas arquitecturas de normalización en tres niveles: el desempeño puntual del TFT de precios en ambas ramas (P+C y S+C), la significancia estadística de las diferencias mediante una prueba de Diebold-Mariano pareada por hora, y el desempeño tras el Stacking Optimization, que es la comparación relevante para la elección final de arquitectura.
+Esta subsección compara ambas arquitecturas de normalización en tres niveles: el desempeño puntual del TFT de precios en ambas ramas (P+C y S+C), la significancia estadística de las diferencias mediante un test de Diebold-Mariano pareado por hora, y el desempeño tras el Stacking Optimization, que es la comparación relevante para la elección final de arquitectura.
 
 \subsubsection{Desempeño puntual}
 
@@ -568,7 +568,7 @@ La Tabla \ref{tab:ln_vs_dyt_test} presenta el MAE del TFT de precios para ambas 
 
 Las diferencias absolutas de MAE entre LN y DyT son pequeñas en todos los casos (inferiores a 0.5\,USD/MWh en la mayoría de las combinaciones), lo que en una primera lectura sugeriría equivalencia entre arquitecturas, en línea con lo reportado por Zhu et al.\ (2025) para otros dominios. Sin embargo, esta lectura basada en el promedio agregado (MAE) puede ser engañosa cuando la distribución de errores es asimétrica, como se muestra a continuación.
 
-\subsubsection{Prueba de Diebold-Mariano pareada por hora}
+\subsubsection{Test de Diebold-Mariano pareado por hora}
 \label{sec:dm_ln_dyt}
 
 Para determinar si las diferencias observadas son sistemáticas u obedecen al azar, se compara la exactitud predictiva de LN y DyT mediante el test de Diebold-Mariano (1995) sobre los errores absolutos horarios del conjunto de prueba (evaluados contra la serie cruda, Sección \ref{sec:baselines}), para las 16 combinaciones de barra y rama (P+C y S+C). Diebold-Mariano estima la varianza de la diferencia de pérdidas mediante Newey-West \cite{NeweyWest1987}, con ponderación de Bartlett. Para un pronóstico óptimo a $h$ pasos, Diebold y Mariano \cite{DieboldMariano1995} sugieren truncar en $h-1$ rezagos, porque en ese caso el error solo está correlacionado con los $h-1$ anteriores. En los datos de este trabajo, sin embargo, la diferencia de pérdidas entre dos modelos casi no está autocorrelacionada en los rezagos de 1 a 3 horas (a lo más 0.08), pero sí en el de 24 horas (entre 0.03 y 0.21 según la combinación): cuando un modelo le gana al otro a cierta hora del día, tiende a ganarle también a la misma hora del día siguiente. Por eso la varianza se trunca en 24 rezagos. Como prueba de robustez se aplica además la versión diaria del test que recomiendan Lago et al. (2021) \cite{Lago2021Review} para precios horarios, basada en la versión multivariada de Ziel y Weron (2018) \cite{ZielWeron2018}: la pérdida se promedia sobre las horas de cada día y el test se aplica a la serie diaria resultante (347 días), lo que absorbe por construcción la correlación dentro del día. En la serie diaria la autocorrelación decae en dos o tres días, sin picos estacionales, de modo que el truncamiento puede elegirse de forma automática con el criterio de Andrews (1991) \cite{Andrews1991}, que resulta de entre 0 y 7 rezagos según la combinación. El signo del estadístico DM indica directamente la dirección del efecto: negativo favorece a LN. La Tabla \ref{tab:dm_ln_dyt} presenta los resultados.
@@ -679,9 +679,11 @@ La comparación anterior se realiza bajo una única semilla de inicialización p
 
 \begin{table}[htbp]
     \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
     \begin{tabular}{lrrrrr}
         \toprule
-        Barra & MAE$_\text{LN}$ (media $\pm$ sd) & MAE$_\text{DyT}$ (media $\pm$ sd) & LN $-$ DyT & $t$ & $p$ \\
+        Barra & MAE$_\text{LN}$ (media $\pm$ sd) & MAE$_\text{DyT}$ (media $\pm$ sd) & Dif. & $t$ & $p$ \\
         \midrule
         Atacama      & 6.631 $\pm$ 0.146  & 6.842 $\pm$ 0.113  & $-0.211$ & $-2.55$ & 0.036 \\
         Charrúa      & 8.081 $\pm$ 0.098  & 8.208 $\pm$ 0.061  & $-0.127$ & $-2.47$ & 0.045 \\
@@ -689,7 +691,7 @@ La comparación anterior se realiza bajo una única semilla de inicialización p
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{MAE de prueba (S+C, USD/MWh) sobre 5 semillas de inicialización, media $\pm$ desviación estándar muestral. $t$ y $p$: test $t$ de Welch entre los 5 MAE de cada arquitectura; ninguna diferencia es significativa tras la corrección de Holm-Bonferroni sobre las tres barras ($\alpha=0.05$). Una diferencia negativa favorece a LN.}
+    \caption{MAE de prueba (S+C, USD/MWh) sobre 5 semillas de inicialización, media $\pm$ desviación estándar muestral. Dif.: LN $-$ DyT. $t$ y $p$: test $t$ de Welch entre los 5 MAE de cada arquitectura; ninguna diferencia es significativa tras la corrección de Holm-Bonferroni sobre las tres barras ($\alpha=0.05$). Una diferencia negativa favorece a LN.}
     \label{tab:5seeds}
 \end{table}
 
@@ -703,6 +705,7 @@ Las secciones anteriores presentaron P+C (Prophet+Clima, con Stacking Optimizati
 \begin{table}[htbp]
     \centering
     \small
+    \setlength{\tabcolsep}{4pt}
     \begin{tabular}{llrrlrrrr}
         \toprule
         & & & & & \multicolumn{2}{c}{Horario (24 rezagos)} & \multicolumn{2}{c}{Diario} \\
@@ -754,14 +757,15 @@ Los anchos reportados en esta sección (del orden de 30 a 130\,USD/MWh según el
 \begin{table}[htbp]
     \centering
     \small
+    \setlength{\tabcolsep}{4pt}
     \begin{tabular}{lrrrrr}
         \toprule
-        Serie & Media & SD & CV (SD/media) & Máximo & Ancho CP 90\% \\
+        Serie & Media & SD & CV & Máximo & Ancho CP 90\% \\
         \midrule
-        Nord Pool day-ahead \cite{KathZiel2021} & 36.38 & 8.64  & 0.24 & 138.76  & 6.2 (QRA) \\
-        EPEX intraday \cite{KathZiel2021}       & 31.81 & 14.52 & 0.46 & 155.52  & 17.5 (QRA) \\
-        GEFCom \cite{KathZiel2021}               & 44.83 & 15.26 & 0.34 & 85.53   & 30.4 (QRA) \\
-        SEN, promedio 8 barras (este trabajo)    & 68.69 & 64.73 & 0.94 & 576.82--1588.95 & 40.90 (Split CP) \\
+        Nord Pool day-ahead \cite{KathZiel2021} & 36.38 & 8.64  & 0.24 & 138.76  & 6.2 \\
+        EPEX intraday \cite{KathZiel2021}       & 31.81 & 14.52 & 0.46 & 155.52  & 17.5 \\
+        GEFCom \cite{KathZiel2021}               & 44.83 & 15.26 & 0.34 & 85.53   & 30.4 \\
+        SEN, promedio 8 barras (este trabajo)    & 68.69 & 64.73 & 0.94 & 576.82--1588.95 & 40.90 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
@@ -769,7 +773,7 @@ Los anchos reportados en esta sección (del orden de 30 a 130\,USD/MWh según el
     \label{tab:comparacion_volatilidad}
 \end{table}
 
-El coeficiente de variación del SEN (0.94) duplica al de la serie más volátil de las tres analizadas por Kath y Ziel (GEFCom, 0.34), y su máximo histórico supera en un orden de magnitud al máximo de cualquiera de ellas. Que el ancho de intervalo del SEN sea entre 1.3 y 6.6 veces mayor que el de esos mercados es, bajo esa diferencia de escala, el resultado esperable de una calibración correcta, no evidencia de una implementación deficiente: un intervalo que ignorara esa volatilidad y reportara anchos comparables a los de Nord Pool fallaría sistemáticamente en cubrir el costo marginal chileno.
+El coeficiente de variación del SEN (0.94) duplica al de la serie más volátil de las tres analizadas por Kath y Ziel (EPEX intraday, 0.46), y su máximo histórico supera en un orden de magnitud al máximo de cualquiera de ellas. Que el ancho de intervalo del SEN sea entre 1.3 y 6.6 veces mayor que el de esos mercados es, bajo esa diferencia de escala, el resultado esperable de una calibración correcta, no evidencia de una implementación deficiente: un intervalo que ignorara esa volatilidad y reportara anchos comparables a los de Nord Pool fallaría sistemáticamente en cubrir el costo marginal chileno.
 
 \subsection{Split CP clásico}
 \label{sec:split_cp_clasico}
@@ -1167,6 +1171,7 @@ La Tabla \ref{tab:importancia_sc_decoder} presenta la importancia completa en el
 \begin{table}[htbp]
     \centering
     \small
+    \setlength{\tabcolsep}{4pt}
     \begin{tabular}{lrrrr}
         \toprule
         Barra & \texttt{elevacion\_solar} & \texttt{relative\_time\_idx} & \texttt{cos\_elevacion} & \texttt{es\_horario\_verano} \\
@@ -1283,7 +1288,7 @@ El test confirma que la ausencia de mejora de S+H+C no es casualidad de una sola
 \subsection{Piloto: entrenamiento sin recorte de outliers}
 \label{sec:piloto_outliers}
 
-La segunda variante deja de lado la estrategia de variables y revisa el preprocesamiento: si el recorte de outliers en entrenamiento (Sección 3.2.1) afectó al modelo propuesto. La Tabla \ref{tab:piloto_outliers_h1} presenta, a horizonte $h=1$, el MAE general y el MAE condicional al régimen de precio alto (percentil 95 o superior de la serie cruda de prueba) del modelo entrenado sin recorte de outliers (Sección \ref{sec:piloto_outliers_meta} de la Metodología), comparado contra el modelo principal, para las ocho barras del SEN (las cuatro barras originales del piloto y las cuatro restantes, en las que se extendió el procedimiento). Además de las variaciones porcentuales, se reporta el valor $p$ de la prueba de Diebold-Mariano sobre el error absoluto (Sección \ref{sec:dm_ln_dyt}) y el valor $p$ de un \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto. Ambos modelos se evalúan contra la serie cruda, sobre las mismas fechas de prueba. Para que la comparación aísle el efecto del recorte en entrenamiento, el modelo actual se evalúa aquí con entradas crudas en validación y prueba, igual que el piloto: sus entradas originales están recortadas a 3 desviaciones estándar (Sección \ref{sec:limpieza_outliers}), lo que mezclaría ambos recortes. Se usan los mismos \textit{checkpoints}, sin reentrenar; con entradas crudas su MAE promedio de prueba es de 7.921\,USD/MWh, frente a 8.005 con las entradas recortadas del resto del capítulo, sin diferencias significativas según Diebold-Mariano en ninguna barra.
+La segunda variante deja de lado la estrategia de variables y revisa el preprocesamiento: si el recorte de outliers en entrenamiento (Sección 3.2.1) afectó al modelo propuesto. La Tabla \ref{tab:piloto_outliers_h1} presenta, a horizonte $h=1$, el MAE general y el MAE condicional al régimen de precio alto (percentil 95 o superior de la serie cruda de prueba) del modelo entrenado sin recorte de outliers (Sección \ref{sec:piloto_outliers_meta} de la Metodología), comparado contra el modelo principal, para las ocho barras del SEN (las cuatro barras originales del piloto y las cuatro restantes, en las que se extendió el procedimiento). Además de las variaciones porcentuales, se reporta el valor $p$ del test de Diebold-Mariano sobre el error absoluto (Sección \ref{sec:dm_ln_dyt}) y el valor $p$ de un \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto. Ambos modelos se evalúan contra la serie cruda, sobre las mismas fechas de prueba. Para que la comparación aísle el efecto del recorte en entrenamiento, el modelo actual se evalúa aquí con entradas crudas en validación y prueba, igual que el piloto: sus entradas originales están recortadas a 3 desviaciones estándar (Sección \ref{sec:limpieza_outliers}), lo que mezclaría ambos recortes. Se usan los mismos \textit{checkpoints}, sin reentrenar; con entradas crudas su MAE promedio de prueba es de 7.921\,USD/MWh, frente a 8.005 con las entradas recortadas del resto del capítulo, sin diferencias significativas según Diebold-Mariano en ninguna barra.
 
 \begin{table}[htbp]
     \centering
@@ -1302,11 +1307,11 @@ La segunda variante deja de lado la estrategia de variables y revisa el preproce
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{MAE de prueba general y condicional al régimen de precio alto (percentil 95 o superior), $h=1$, USD/MWh, sobre la serie cruda. $\Delta$ = variación porcentual del piloto respecto al modelo actual, evaluado con entradas crudas (negativo = mejora). $p$ (DM) = valor $p$ de la prueba de Diebold-Mariano sobre el error absoluto, con varianza Newey-West de 24 rezagos; $p$ (\textit{boot.}) = valor $p$ del \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto.}
+    \caption{MAE de prueba general y condicional al régimen de precio alto (percentil 95 o superior), $h=1$, USD/MWh, sobre la serie cruda. $\Delta$ = variación porcentual del piloto respecto al modelo actual, evaluado con entradas crudas (negativo = mejora). $p$ (DM) = valor $p$ del test de Diebold-Mariano sobre el error absoluto, con varianza Newey-West de 24 rezagos; $p$ (\textit{boot.}) = valor $p$ del \textit{bootstrap} por bloques de días para el cambio en el MAE de régimen alto.}
     \label{tab:piloto_outliers_h1}
 \end{table}
 
-A $h=1$ y sobre las ocho barras, el MAE general queda prácticamente empatado: el piloto mejora en cuatro barras y empeora en las otras cuatro, con variaciones de a lo más un 2.2\% salvo en Pan de Azúcar, donde mejora un 4.5\%. La prueba de Diebold-Mariano detecta una mejora significativa en Pan de Azúcar ($p<0.001$) y Quillota ($p=0.002$), y ambas sobreviven a una corrección de Holm-Bonferroni para las ocho comparaciones de esta familia. En sentido contrario, el modelo actual es mejor en Charrúa con significancia nominal ($p=0.015$), que no sobrevive a la corrección; es decir, entrenar sin el recorte automático de outliers no perjudica el desempeño general. Con pérdida cuadrática el piloto reduce el RMSE en seis de las ocho barras, pero solo la mejora de Quillota sobrevive a la corrección ($p=0.004$); Puerto Montt empeora de forma nominalmente significativa ($p=0.039$) sin sobrevivir a ella, por lo que se reporta como evidencia débil, no concluyente.
+A $h=1$ y sobre las ocho barras, el MAE general queda prácticamente empatado: el piloto mejora en cuatro barras y empeora en las otras cuatro, con variaciones de a lo más un 2.2\% salvo en Pan de Azúcar, donde mejora un 4.5\%. El test de Diebold-Mariano detecta una mejora significativa en Pan de Azúcar ($p<0.001$) y Quillota ($p=0.002$), y ambas sobreviven a una corrección de Holm-Bonferroni para las ocho comparaciones de esta familia. En sentido contrario, el modelo actual es mejor en Charrúa con significancia nominal ($p=0.015$), que no sobrevive a la corrección; es decir, entrenar sin el recorte automático de outliers no perjudica el desempeño general. Con pérdida cuadrática el piloto reduce el RMSE en seis de las ocho barras, pero solo la mejora de Quillota sobrevive a la corrección ($p=0.004$); Puerto Montt empeora de forma nominalmente significativa ($p=0.039$) sin sobrevivir a ella, por lo que se reporta como evidencia débil, no concluyente.
 
 El MAE en régimen de precio alto mejora en cinco de las ocho barras, entre 2.4\% y 6.4\%, y empeora entre 0.8\% y 1.9\% en Cardones, Crucero y Puerto Montt. Según el \textit{bootstrap} por bloques de días, la mejora es significativa al 5\% sin corregir en Atacama, Pan de Azúcar y Quillota, y bajo una corrección de Holm-Bonferroni para esta misma familia de ocho comparaciones solo sobrevive Pan de Azúcar ($p=0.002$). La lectura prudente es que la mejora en régimen de precio alto es pequeña y se concentra en pocas barras; la evidencia más sólida de esta sección es la de Pan de Azúcar, la única barra que mejora de forma significativa tras la corrección tanto en el MAE general como en el de régimen alto, seguida de Quillota en el MAE general (Tabla \ref{tab:piloto_outliers_h1}).
 
@@ -1378,7 +1383,7 @@ Establecido el efecto del recorte de outliers en los modelos por barra, la sigui
     \label{tab:matriz_outliers_granularidad}
 \end{table}
 
-\paragraph{Efecto del recorte.} Quitar el recorte de outliers en entrenamiento mejora levemente los errores extremos del modelo por barra (el MAE en el percentil 99 baja un 8\%, de 41.1 a 37.7, y el Winkler un 1.3\%), pero no los del global: su MAE en el percentil 99 no cambia (41.3 frente a 41.4), su error máximo promedio sube de 237.7 a 244.0 y su MAE general empeora de 7.886 a 7.984. Barra por barra, la prueba de Diebold-Mariano no detecta ninguna barra donde el global sin recorte gane al global con recorte, y detecta tres donde empeora (Charrúa, Puerto Montt y Quillota), de las cuales Charrúa y Puerto Montt sobreviven a la corrección de Holm-Bonferroni. El efecto del recorte en entrenamiento es, por lo tanto, pequeño y no se replica al agrupar las ocho barras.
+\paragraph{Efecto del recorte.} Quitar el recorte de outliers en entrenamiento mejora levemente los errores extremos del modelo por barra (el MAE en el percentil 99 baja un 8\%, de 41.1 a 37.7, y el Winkler un 1.3\%), pero no los del global: su MAE en el percentil 99 no cambia (41.3 frente a 41.4), su error máximo promedio sube de 237.7 a 244.0 y su MAE general empeora de 7.886 a 7.984. Barra por barra, el test de Diebold-Mariano no detecta ninguna barra donde el global sin recorte gane al global con recorte, y detecta tres donde empeora (Charrúa, Puerto Montt y Quillota), de las cuales Charrúa y Puerto Montt sobreviven a la corrección de Holm-Bonferroni. El efecto del recorte en entrenamiento es, por lo tanto, pequeño y no se replica al agrupar las ocho barras.
 
 \paragraph{Efecto de la granularidad.} El modelo global no supera al modelo por barra. La Tabla \ref{tab:global_vs_barra_sin} compara ambos sin recorte, barra por barra: el modelo por barra gana de forma significativa en cuatro barras (Charrúa, Crucero, Pan de Azúcar y Quillota) y el global solo en Puerto Montt, las cinco sobreviven una corrección de Holm-Bonferroni para esta familia de ocho comparaciones. Con recorte, en cambio, el global obtiene un MAE promedio algo menor que el modelo por barra (7.886 frente a 7.921), por su ventaja en Puerto Montt (13.21 frente a 13.68). Frente al modelo principal de este trabajo (por barra, con recorte), el global sin recorte solo difiere de forma significativa en Charrúa, a favor del modelo por barra ($p<0.001$).
 

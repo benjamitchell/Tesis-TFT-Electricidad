@@ -418,7 +418,7 @@ La inicialización de $\alpha$ es relevante para la estabilidad del entrenamient
  
 \subsection{LayerNorm vs DyT}
  
-La diferencia estructural más importante entre LayerNorm y DyT es la ausencia de cálculo de estadísticas en DyT. En LayerNorm, cada pasada hacia adelante requiere calcular $\mu$ y $\sigma^2$ sobre las $C$ dimensiones de cada token, lo que implica una operación de reducción (\textit{reduction}) que introduce dependencias entre elementos del tensor. DyT, al ser completamente elemento a elemento, elimina esta dependencia.
+La diferencia estructural más importante entre LayerNorm y DyT es la ausencia de cálculo de estadísticas en DyT. En LayerNorm, cada pasada hacia adelante requiere calcular $\mu$ y $\sigma^2$ sobre las $C$ dimensiones de cada token, lo que implica una operación de reducción que introduce dependencias entre elementos del tensor. DyT, al ser completamente elemento a elemento, elimina esta dependencia.
  
 Las diferencias funcionales más sustanciales son las siguientes. LayerNorm normaliza \textit{por token}: cada token es escalado por su propia desviación estándar, lo que hace que la transformación sea adaptativa a las estadísticas locales de cada posición temporal. DyT, en cambio, aplica un único escalar global $\alpha$ a todas las posiciones, lo que equivale a una normalización colectiva del tensor completo. Esta distinción es relevante para series temporales con alta variabilidad entre pasos: LayerNorm se adapta localmente a cada paso, mientras que DyT aprende un comportamiento promedio. La segunda diferencia relevante es que LayerNorm centra las activaciones (resta la media), mientras que DyT no lo hace explícitamente. La función $\tanh$ es impar y centrada en cero, lo que introduce un sesgo implícito hacia el centrado, pero sin la garantía de media exactamente cero que provee LayerNorm.
 
@@ -725,3 +725,26 @@ Una métrica adicional, estándar en la literatura de CP aplicado a mercados el�
 \end{equation}
 
 En la literatura, la suma de ambas pérdidas es equivalente al Winkler score escalado por $\alpha/2$ \cite{Bracher2021}, de modo que su promedio no aporta información distinta de la del Winkler. Por eso, en este trabajo la pérdida pinball no se reporta promediada, sino por extremo: $PB_{\text{inf}}$ y $PB_{\text{sup}}$ indican cuánto se paga en cada cola del intervalo, lo que permite detectar si sus fallas son asimétricas, por ejemplo, si los \textit{spikes} al alza producen fallas mayores que las caídas del precio, algo que el Winkler score, al sumar ambos extremos, no distingue.
+
+\section{Tests de comparación de modelos}
+\label{sec:tests_comparacion}
+
+Que un modelo obtenga un MAE menor que otro en el conjunto de prueba no basta para afirmar que es mejor, ya que la diferencia podría deberse a las horas particulares que contiene ese período. Por ello, las comparaciones de este trabajo se complementan con tests de hipótesis, que permiten evaluar si la diferencia observada es mayor de lo que se esperaría por azar.
+
+\paragraph{Test de Diebold-Mariano.} El test de Diebold-Mariano \cite{DieboldMariano1995} compara la precisión de dos pronósticos sobre un mismo período. Dados los errores $e_{A,t}$ y $e_{B,t}$ de los modelos $A$ y $B$, y una función de pérdida $L$ (en este trabajo, principalmente el error absoluto), se define la diferencia de pérdidas
+\begin{equation}
+    d_t = L(e_{A,t}) - L(e_{B,t}).
+    \label{eq:dm_diferencia}
+\end{equation}
+La hipótesis nula es que ambos modelos tienen la misma precisión esperada, $H_0: \mathbb{E}[d_t] = 0$. El estadístico es
+\begin{equation}
+    DM = \frac{\bar{d}}{\sqrt{\hat{\sigma}^2_{\bar{d}}}},
+    \label{eq:dm_estadistico}
+\end{equation}
+donde $\bar{d}$ es el promedio muestral de $d_t$ y $\hat{\sigma}^2_{\bar{d}}$ es una estimación de su varianza. Bajo $H_0$, $DM$ sigue asintóticamente una distribución normal estándar. Un valor negativo favorece al modelo $A$ y uno positivo al modelo $B$. Como el test se aplica sobre errores pareados, cada hora se compara consigo misma, lo que elimina la variabilidad común a ambos modelos.
+
+Dado que las diferencias de pérdida de una serie de tiempo suelen estar autocorrelacionadas, la varianza no puede estimarse como si las observaciones fueran independientes. Por ello, se estima con el método de Newey-West \cite{NeweyWest1987}, que incorpora las autocovarianzas hasta un cierto rezago. El test no exige que los errores sean normales ni insesgados, y compara pronósticos ya obtenidos, no la capacidad de los modelos en general.
+
+\paragraph{Corrección de Holm-Bonferroni.} Al realizar varios tests a la vez, aumenta la probabilidad de obtener algún resultado significativo solo por azar: con 16 comparaciones a un nivel de 5\%, se esperaría en promedio 0.8 falsos positivos si ninguna diferencia fuera real. El procedimiento de Holm \cite{Holm1979} controla la probabilidad de cometer al menos un falso positivo en el conjunto de tests. Para ello, ordena los $m$ valores $p$ de menor a mayor y compara cada $p_{(i)}$ con $\alpha/(m-i+1)$. Las hipótesis se rechazan en ese orden hasta encontrar la primera que no cumple $p_{(i)} \leq \alpha/(m-i+1)$; ni esa ni las siguientes se rechazan. Es menos conservador que la corrección de Bonferroni, que compara todos los valores $p$ con $\alpha/m$, y entrega la misma garantía.
+
+\paragraph{Test $t$ de Welch.} El test $t$ de Welch \cite{Welch1947} contrasta si dos grupos independientes tienen la misma media sin suponer que sus varianzas son iguales. En este trabajo se usa para comparar los MAE de LayerNorm y DyT obtenidos con distintas semillas de inicialización, donde cada entrenamiento es una observación. A diferencia de Diebold-Mariano, que considera el azar del período evaluado con modelos ya entrenados, este test considera el azar de la inicialización.
