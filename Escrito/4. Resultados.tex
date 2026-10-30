@@ -28,7 +28,7 @@ Antes de presentar los modelos propuestos, se establecen líneas base ingenuas s
     \label{tab:baselines_naive}
 \end{table}
 
-La persistencia de un paso es, en las ocho barras, la línea base más difícil de superar: a resolución horaria, el precio de la hora inmediatamente anterior es más informativo que el mismo momento del día anterior o de la semana anterior, y también más informativo que los modelos AR-24h y AR-168h ajustados por OLS, que resultan sistemáticamente peores que el naive del que parten. Esto se explica porque el ajuste por mínimos cuadrados minimiza el error cuadrático, lo que produce coeficientes menores a uno y un intercepto positivo que suaviza la predicción hacia la media, óptimo para el error cuadrático, pero no para el error absoluto sobre una serie con una masa puntual considerable en cero y una cola derecha pesada. Por este motivo, se adopta la persistencia de un paso como referencia para el \textit{skill score} y el MASE (\textit{Mean Absolute Scaled Error}, Hyndman y Koehler, 2006 \cite{HyndmanKoehler2006}) reportados junto al modelo de referencia S+C-LN en la Tabla \ref{tab:tft_sc_ln_resultados}: $\text{MASE} = \text{MAE}_{\text{modelo}} / \text{MAE}_{\text{persistencia}}$, y $\text{skill score} = 1 - \text{MASE}$.
+La persistencia de un paso es, en las ocho barras, la línea base más difícil de superar: a resolución horaria, el precio de la hora inmediatamente anterior es más informativo que el mismo momento del día anterior o de la semana anterior, y también más informativo que los modelos AR-24h y AR-168h ajustados por OLS, que resultan sistemáticamente peores que el naive del que parten. Esto se explica porque el ajuste por mínimos cuadrados minimiza el error cuadrático, lo que produce coeficientes menores a uno y un intercepto positivo que suaviza la predicción hacia la media, óptimo para el error cuadrático, pero no para el error absoluto sobre una serie con una masa puntual considerable en cero y una cola derecha pesada. Por este motivo, se adopta la persistencia de un paso como referencia para el \textit{skill score} reportado en las tablas de resultados de este capítulo: $\text{skill score} = 1 - \text{MAE}_{\text{modelo}} / \text{MAE}_{\text{persistencia}}$.
 
 \section{Modelo Prophet}
 \label{sec:prophet_truncamiento_pipeline}
@@ -233,53 +233,53 @@ La rama S+C, descrita en la Sección 3.4.1, reemplaza las componentes de Prophet
 \begin{table}[htbp]
     \centering
     \small
-    \begin{tabular}{llrrrrr}
+    \begin{tabular}{llrrrr}
         \toprule
-        Barra & Conjunto & MAE & RMSE & R$^2$ & MASE & Skill \\
+        Barra & Conjunto & MAE & RMSE & R$^2$ & Skill \\
         \midrule
         \multirow{3}{*}{Atacama}
-            & Train & 7.63 & 16.02 & 0.927 & & \\
-            & Val   & 8.32 & 27.65 & 0.745 & & \\
-            & Test  & 6.70 & 16.52 & 0.843 & 0.648 & 0.352 \\
+            & Train & 7.63 & 16.02 & 0.927 & \\
+            & Val   & 8.32 & 27.65 & 0.745 & \\
+            & Test  & 6.70 & 16.52 & 0.843 & 0.352 \\
         \midrule
         \multirow{3}{*}{Cardones}
-            & Train & 7.92 & 16.48 & 0.924 & & \\
-            & Val   & 7.73 & 23.17 & 0.786 & & \\
-            & Test  & 6.63 & 15.61 & 0.858 & 0.641 & 0.359 \\
+            & Train & 7.92 & 16.48 & 0.924 & \\
+            & Val   & 7.73 & 23.17 & 0.786 & \\
+            & Test  & 6.63 & 15.61 & 0.858 & 0.359 \\
         \midrule
         \multirow{3}{*}{Charrúa}
-            & Train & 8.04 & 16.56 & 0.923 & & \\
-            & Val   & 8.43 & 23.17 & 0.743 & & \\
-            & Test  & 7.98 & 15.32 & 0.880 & 0.776 & 0.224 \\
+            & Train & 8.04 & 16.56 & 0.923 & \\
+            & Val   & 8.43 & 23.17 & 0.743 & \\
+            & Test  & 7.98 & 15.32 & 0.880 & 0.224 \\
         \midrule
         \multirow{3}{*}{Crucero}
-            & Train & 7.88 & 16.31 & 0.930 & & \\
-            & Val   & 8.33 & 27.52 & 0.751 & & \\
-            & Test  & 6.74 & 16.64 & 0.844 & 0.647 & 0.353 \\
+            & Train & 7.88 & 16.31 & 0.930 & \\
+            & Val   & 8.33 & 27.52 & 0.751 & \\
+            & Test  & 6.74 & 16.64 & 0.844 & 0.353 \\
         \midrule
         \multirow{3}{*}{Pan de Azúcar}
-            & Train & 7.97 & 16.50 & 0.925 & & \\
-            & Val   & 8.10 & 22.94 & 0.778 & & \\
-            & Test  & 6.93 & 15.09 & 0.868 & 0.667 & 0.333 \\
+            & Train & 7.97 & 16.50 & 0.925 & \\
+            & Val   & 8.10 & 22.94 & 0.778 & \\
+            & Test  & 6.93 & 15.09 & 0.868 & 0.333 \\
         \midrule
         \multirow{3}{*}{Puerto Montt}
-            & Train & 12.43 & 29.06 & 0.917 & & \\
-            & Val   & 15.46 & 32.93 & 0.787 & & \\
-            & Test  & 13.68 & 25.80 & 0.823 & 0.964 & 0.036 \\
+            & Train & 12.43 & 29.06 & 0.917 & \\
+            & Val   & 15.46 & 32.93 & 0.787 & \\
+            & Test  & 13.68 & 25.80 & 0.823 & 0.036 \\
         \midrule
         \multirow{3}{*}{Quillota}
-            & Train & 7.89 & 16.35 & 0.925 & & \\
-            & Val   & 8.63 & 23.48 & 0.743 & & \\
-            & Test  & 8.26 & 15.90 & 0.875 & 0.794 & 0.206 \\
+            & Train & 7.89 & 16.35 & 0.925 & \\
+            & Val   & 8.63 & 23.48 & 0.743 & \\
+            & Test  & 8.26 & 15.90 & 0.875 & 0.206 \\
         \midrule
         \multirow{3}{*}{Tarapacá}
-            & Train & 8.17 & 16.89 & 0.929 & & \\
-            & Val   & 8.94 & 30.14 & 0.735 & & \\
-            & Test  & 7.11 & 17.77 & 0.845 & 0.643 & 0.357 \\
+            & Train & 8.17 & 16.89 & 0.929 & \\
+            & Val   & 8.94 & 30.14 & 0.735 & \\
+            & Test  & 7.11 & 17.77 & 0.845 & 0.357 \\
         \bottomrule
     \end{tabular}
     \vspace{0.2cm}
-    \caption{Resultados de evaluación del $\text{TFT}_\text{LN}$ (rama S+C), por barra y conjunto, evaluados contra la serie cruda sin recorte de outliers (validación y prueba; el entrenamiento usa la serie con outliers recortados, Sección \ref{sec:limpieza_outliers}). MAE y RMSE en USD/MWh. MASE y Skill score respecto a la persistencia de un paso (Tabla \ref{tab:baselines_naive}), reportados solo para Test.}
+    \caption{Resultados de evaluación del $\text{TFT}_\text{LN}$ (rama S+C), por barra y conjunto, evaluados contra la serie cruda sin recorte de outliers (validación y prueba; el entrenamiento usa la serie con outliers recortados, Sección \ref{sec:limpieza_outliers}). MAE y RMSE en USD/MWh. Skill score respecto a la persistencia de un paso (Tabla \ref{tab:baselines_naive}), reportado solo para Test.}
     \label{tab:tft_sc_ln_resultados}
 \end{table}
 
