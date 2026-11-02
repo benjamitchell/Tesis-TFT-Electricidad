@@ -146,6 +146,7 @@ def main():
             "Barra": NOMBRES[barra], "MAE": e.mean(), "P95": np.percentile(e, 95), "Maximo": e.max(),
             "Desfase": int(desfase.sum()),
             "Transicion": int(top["fecha"].dt.hour.isin(HORAS_TRANSICION).sum()),
+            "Transicion_desfase": int(top.loc[desfase, "fecha"].dt.hour.isin(HORAS_TRANSICION).sum()),
             "Naive_t24": int((top24["reduccion"] > UMBRAL).sum()),
             "Desfase_60": int((top["reduccion"] > 0.6).sum()), "Desfase_90": int((top["reduccion"] > 0.9).sum()),
             "Naive_60": int((top24["reduccion"] > 0.6).sum()), "Naive_90": int((top24["reduccion"] > 0.9).sum()),
@@ -167,7 +168,7 @@ def main():
     res = pd.DataFrame(resumen)
     pd.set_option("display.width", 200)
     print(res.round(2).to_string(index=False))
-    print(res[["Desfase", "Desfase_60", "Desfase_90", "Naive_t24", "Naive_60", "Naive_90", "Transicion"]].sum().to_string())
+    print(res[["Desfase", "Desfase_60", "Desfase_90", "Naive_t24", "Naive_60", "Naive_90", "Transicion", "Transicion_desfase"]].sum().to_string())
 
 
 if __name__ == "__main__":
