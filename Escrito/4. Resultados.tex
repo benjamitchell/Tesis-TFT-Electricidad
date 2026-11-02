@@ -1415,9 +1415,26 @@ Establecido el efecto del recorte de outliers en los modelos por barra, la sigui
     \label{tab:global_vs_barra_sin}
 \end{table}
 
-\paragraph{Conformal Prediction.} Con LW-ACP al 90\% de cobertura nominal, la cobertura es de 0.898 en los cuatro modelos y el ancho medio varía entre 41.0 y 41.9\,USD/MWh; el puntaje de Winkler también varía poco, entre 69.7 (por barra, sin recorte) y 70.6 (por barra, con recorte), con los dos globales en medio (con recorte, 70.3; sin recorte, 70.5). La cobertura en las horas de precio en el percentil 95 o superior permanece cerca de 0.75 en los cuatro (entre 0.751 y 0.759), muy por debajo del nominal, por lo que ninguna de las variantes corrige el déficit de cobertura condicional en el régimen alto.
+\paragraph{Conformal Prediction.} La Tabla \ref{tab:matriz_outliers_cp} resume los resultados de LW-ACP en los cuatro modelos. Con LW-ACP al 90\% de cobertura nominal, la cobertura es de 0.898 en los cuatro modelos y el ancho medio varía entre 41.0 y 41.9\,USD/MWh; el puntaje de Winkler también varía poco, entre 69.7 (por barra, sin recorte) y 70.6 (por barra, con recorte), con los dos globales en medio (con recorte, 70.3; sin recorte, 70.5). La cobertura en las horas de precio en el percentil 95 o superior permanece cerca de 0.75 en los cuatro (entre 0.751 y 0.759), muy por debajo del nominal, por lo que ninguna de las variantes corrige el déficit de cobertura condicional en el régimen alto.
 
-\paragraph{Síntesis.} Ni el recorte de outliers en entrenamiento ni la granularidad del modelo cambian de forma importante el desempeño: los cuatro modelos tienen un MAE promedio de entre 7.886 y 7.984\,USD/MWh. El modelo por barra sin recorte obtiene los menores errores extremos y el menor Winkler, con un MAE general prácticamente igual al del modelo por barra con recorte (7.905 frente a 7.921), y el global con recorte, el menor MAE promedio, por Puerto Montt. Lo que sí empeora los errores extremos es recortar las entradas al predecir, como hace el modelo principal (Sección \ref{sec:piloto_outliers}). Como cautela, cada configuración corresponde a una única corrida de entrenamiento y las ocho barras comparten sistema y período, por lo que las comparaciones agregadas sobreestiman la evidencia independiente.
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Modelo & Cobertura & Ancho & Winkler & Cobertura p95 & Ancho p95 \\
+        \midrule
+        Por barra, con recorte & 0.898 & 41.9 & 70.6 & 0.752 & 102.5 \\
+        Por barra, sin recorte & 0.898 & 41.5 & 69.7 & 0.759 & 98.6 \\
+        Global, con recorte    & 0.898 & 41.0 & 70.3 & 0.755 & 102.4 \\
+        Global, sin recorte    & 0.898 & 41.3 & 70.5 & 0.751 & 99.5 \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{LW-ACP en la matriz de cuatro modelos S+C-LN a $h=1$ ($\alpha=0.10$, $\gamma=0.05$), promedio de las ocho barras. Ancho y Winkler en USD/MWh. Cobertura p95 y Ancho p95 = cobertura y ancho medio en las horas de precio en el percentil 95 o superior. Los cuatro modelos se evalúan con entradas crudas.}
+    \label{tab:matriz_outliers_cp}
+\end{table}
+
+Ni el recorte de outliers en entrenamiento ni la granularidad del modelo cambian de forma importante el desempeño: los cuatro modelos tienen un MAE promedio de entre 7.886 y 7.984\,USD/MWh. El modelo por barra sin recorte obtiene los menores errores extremos y el menor Winkler, con un MAE general prácticamente igual al del modelo por barra con recorte (7.905 frente a 7.921), y el global con recorte, el menor MAE promedio, por Puerto Montt. Lo que sí empeora los errores extremos es recortar las entradas al predecir, como hace el modelo principal (Sección \ref{sec:piloto_outliers}). Estos resultados deben leerse con cautela: cada configuración se entrenó una sola vez, por lo que parte de las diferencias puede deberse a la inicialización aleatoria, y las ocho barras comparten sistema y período, por lo que no constituyen ocho evidencias independientes.
 
 \subsection{Evaluación a horizonte \textit{day-ahead} ($h=24$)}
 \label{sec:h24_dayahead}
@@ -1478,32 +1495,6 @@ Como seguimiento acotado a este resultado, la Tabla \ref{tab:h24_bigcap} compara
 \end{table}
 
 Duplicar la capacidad del modelo mejora el MAE promedio en ambas barras (2.5\%--5.1\%) y acerca el \textit{skill score} promedio a cero sin llegar a hacerlo positivo. El patrón por paso es revelador: el modelo de mayor capacidad predice peor el primer paso del horizonte (Atacama: 9.92 $\to$ 11.28\,USD/MWh; Puerto Montt: 22.47 $\to$ 27.55\,USD/MWh) pero mejor el último (Atacama: 14.64 $\to$ 13.61\,USD/MWh; Puerto Montt: 41.73 $\to$ 40.92\,USD/MWh), es decir, deja de sobre-especializarse en el paso más cercano al presente y generaliza de forma más pareja a lo largo de las 24 horas, a costa de algo de precisión en el corto plazo. La capacidad del modelo es, entonces, un factor relevante para la degradación observada en $h=24$, aunque no suficiente por sí solo para revertirla (ningún \textit{skill score} promedio cruza a valores positivos), y una exploración más sistemática de capacidad (o de otros hiperparámetros no ajustados para este horizonte, Sección \ref{sec:h24_dayahead_meta}) queda como línea de trabajo futuro razonable dado el costo computacional medido de este experimento (entre 4 y 5 horas por barra en GPU).
-
-\subsubsection{Entrenamiento sin recorte de outliers a 24 horas}
-\label{sec:h24_outliers}
-
-El modelo entrenado sin recorte de outliers (Sección \ref{sec:piloto_outliers}) se evaluó también a este horizonte, en las cuatro barras originales del piloto.
-
-La Tabla \ref{tab:piloto_outliers_h24} repite la misma comparación a horizonte $h=24$ (Sección \ref{sec:h24_dayahead}), para las cuatro barras originales del piloto, usando el MAE promedio sobre los 24 pasos del horizonte.
-
-\begin{table}[htbp]
-    \centering
-    \begin{tabular}{lrrr}
-        \toprule
-        Barra & MAE actual ($h=24$) & MAE piloto ($h=24$) & $\Delta$ MAE \\
-        \midrule
-        Atacama       & 13.54 & 11.58 & $-14.5\%$ \\
-        Charrúa       & 18.41 & 19.69 & $+7.0\%$  \\
-        Pan de Azúcar & 13.64 & 14.15 & $+3.7\%$  \\
-        Tarapacá      & 12.86 & 13.90 & $+8.0\%$  \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.2cm}
-    \caption{MAE de prueba promediado sobre los 24 pasos del horizonte \textit{day-ahead}, USD/MWh. $\Delta$ = variación porcentual del piloto respecto al modelo actual.}
-    \label{tab:piloto_outliers_h24}
-\end{table}
-
-A $h=24$ el resultado se invierte en tres de las cuatro barras: solo Atacama mejora (14.5\%), mientras que Charrúa, Pan de Azúcar y Tarapacá empeoran entre 3.7\% y 8.0\%. El efecto del recorte de outliers depende, entonces, del horizonte de predicción: la variabilidad adicional que el conjunto de entrenamiento sin recortar introduce ayuda al modelo a capturar el régimen de precios altos cuando predice un solo paso hacia adelante, pero esa misma variabilidad dificulta la generalización cuando el modelo debe predecir 24 pasos simultáneos, un régimen ya de por sí más exigente (Sección \ref{sec:h24_dayahead}). Este resultado mixto es la razón por la que la evaluación a $h=24$ no se extiende a las ocho barras: el piloto se extendió únicamente a $h=1$, donde no perjudica el desempeño, y a $h=24$ queda como evidencia exploratoria de cuatro barras.
 
 \subsubsection{Conformal Prediction a horizonte day-ahead}
 \label{sec:h24_cp}
