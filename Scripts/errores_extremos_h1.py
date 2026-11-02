@@ -52,10 +52,10 @@ NOMBRES = {"ATACAMA": "Atacama", "CARDONES": "Cardones", "CHARRUA": "Charrúa", 
            "P.AZUCAR": "Pan de Azúcar", "P.MONTT": "Puerto Montt", "QUILLOTA": "Quillota", "TARAPACA": "Tarapacá"}
 # (barra, instante del error, titulo) de la figura de casos: dos desfases y dos eventos estructurales
 CASOS = [("CARDONES", "2025-03-25 20:00", "Desfase de fase, Cardones"),
-         ("ATACAMA", "2024-09-01 22:00", "Desfase de fase, Atacama"),
+         ("QUILLOTA", "2024-06-22 18:00", "Desfase de fase, Quillota"),
          ("ATACAMA", "2025-02-26 09:00", "Evento estructural, Atacama"),
          ("CARDONES", "2024-08-09 08:00", "Evento estructural, Cardones")]
-TITULOS_EN = ["Phase shift, Cardones", "Phase shift, Atacama", "Structural event, Atacama", "Structural event, Cardones"]
+TITULOS_EN = ["Phase shift, Cardones", "Phase shift, Quillota", "Structural event, Atacama", "Structural event, Cardones"]
 
 plt.rcParams.update({"font.size": 10, "axes.grid": True, "grid.alpha": 0.3})
 
