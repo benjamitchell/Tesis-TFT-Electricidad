@@ -10,7 +10,7 @@ Seccion de errores extremos): para cada paso h=1..24, se toman los 20 errores ab
 mas grandes del conjunto de VALIDACION de Atacama (misma barra ilustrativa usada en el
 analisis de h=1), se recalcula el error tras desplazar la prediccion entre -3 y +3 horas
 respecto a su posicion original, y se retiene el desplazamiento que minimiza el error. Si
-la reduccion de error alcanzada supera el 60%, el caso se clasifica como "desfase de
+la reduccion de error alcanzada supera el 80%, el caso se clasifica como "desfase de
 fase"; en caso contrario, "evento estructural".
 
 Reusa la misma inferencia eficiente de Scripts/evaluar_h24.py (una sola pasada por
@@ -42,7 +42,7 @@ N_HORIZONTES = 24
 RUTA_CRUDA = "Datos/h/2020-2026.csv"
 TOP_N = 20
 DESPLAZAMIENTOS = range(-3, 4)
-UMBRAL_REDUCCION = 0.60
+UMBRAL_REDUCCION = 0.80
 HORAS_TRANSICION = {7, 8, 19, 20, 21}
 
 

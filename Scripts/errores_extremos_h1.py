@@ -5,10 +5,10 @@ errores_extremos_h1.py - Analisis de errores extremos de S+C-LN a h=1 en validac
 
 Para cada barra se toman los 20 errores absolutos mas grandes del conjunto de validacion, se
 recalcula el error tras desplazar la prediccion entre -3 y +3 horas (pred(t+s) frente a y(t)) y
-se retiene el desplazamiento que minimiza el error. Si la reduccion supera el 60%, el caso es
+se retiene el desplazamiento que minimiza el error. Si la reduccion supera el 80%, el caso es
 "desfase de fase"; si no, "evento estructural". Un desplazamiento positivo indica que el modelo
 predice la transicion con retraso. Como control, el mismo criterio se aplica a la persistencia
-estacional (y(t-24)), y se reporta la sensibilidad al umbral (40% y 80%).
+estacional (y(t-24)), y se reporta la sensibilidad al umbral (60% y 90%).
 
 Se usan las predicciones con entradas crudas (Scripts/inferencia_entradas_crudas.py) y la serie
 cruda, sin la ventana de precio de falla: el recorte de las entradas de validacion reemplaza
@@ -46,7 +46,7 @@ RUTA_CRUDA = "Datos/h/2020-2026.csv"
 CARPETA_FIG = "Escrito/imagenes"
 TOP_N = 20
 DESPLAZAMIENTOS = range(-3, 4)
-UMBRAL = 0.60
+UMBRAL = 0.80
 HORAS_TRANSICION = {7, 8, 19, 20, 21}
 NOMBRES = {"ATACAMA": "Atacama", "CARDONES": "Cardones", "CHARRUA": "Charrúa", "CRUCERO": "Crucero",
            "P.AZUCAR": "Pan de Azúcar", "P.MONTT": "Puerto Montt", "QUILLOTA": "Quillota", "TARAPACA": "Tarapacá"}
@@ -80,16 +80,18 @@ def clasificar(fechas, pred, y):
 
 def fig_distribucion(e, ruta):
     mae, p90, p95, mx = e.mean(), np.percentile(e, 90), np.percentile(e, 95), e.max()
-    fig, ax = plt.subplots(figsize=(8, 4))
-    ax.hist(e, bins=np.arange(0, mx + 5, 5), color="tab:blue", alpha=0.7)
-    ax.set_yscale("log")
-    for v, c, ls, nombre in ((mae, "red", "-", "MAE"), (p90, "#f4a259", "-", "P90"),
-                             (p95, "#d9480f", "-", "P95"), (mx, "#800000", ":", "Máximo")):
-        ax.axvline(v, color=c, linestyle=ls, linewidth=1.5, label=f"{nombre} = {v:.1f}")
-    ax.annotate("", xy=(mx, 3), xytext=(mx - 60, 30), arrowprops=dict(arrowstyle="->", color="#800000"))
-    ax.set_xlabel("Error absoluto (USD/MWh)")
-    ax.set_ylabel("Frecuencia (escala log)")
-    ax.legend(fontsize=8)
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+    for ax, escala, titulo, et_y in ((axes[0], "linear", "Escala normal", "Frecuencia"),
+                                     (axes[1], "log", "Escala logarítmica", "Frecuencia (escala log)")):
+        ax.hist(e, bins=np.arange(0, mx + 5, 5), color="tab:blue", alpha=0.7)
+        ax.set_yscale(escala)
+        for v, c, ls, nombre in ((mae, "red", "-", "MAE"), (p90, "#f4a259", "-", "P90"),
+                                 (p95, "#d9480f", "-", "P95"), (mx, "#800000", ":", "Máximo")):
+            ax.axvline(v, color=c, linestyle=ls, linewidth=1.5, label=f"{nombre} = {v:.1f}")
+        ax.set_xlabel("Error absoluto (USD/MWh)")
+        ax.set_ylabel(et_y)
+        ax.set_title(titulo)
+    axes[0].legend(fontsize=8)
     fig.tight_layout()
     fig.savefig(ruta)
     plt.close(fig)
@@ -145,7 +147,8 @@ def main():
             "Desfase": int(desfase.sum()),
             "Transicion": int(top["fecha"].dt.hour.isin(HORAS_TRANSICION).sum()),
             "Naive_t24": int((top24["reduccion"] > UMBRAL).sum()),
-            "Desfase_40": int((top["reduccion"] > 0.4).sum()), "Desfase_80": int((top["reduccion"] > 0.8).sum()),
+            "Desfase_60": int((top["reduccion"] > 0.6).sum()), "Desfase_90": int((top["reduccion"] > 0.9).sum()),
+            "Naive_60": int((top24["reduccion"] > 0.6).sum()), "Naive_90": int((top24["reduccion"] > 0.9).sum()),
             "Red_mediana_%": 100 * top.loc[desfase, "reduccion"].median(),
             "Desplaz_positivo_%": 100 * (top.loc[desfase, "desplazamiento"] > 0).mean(),
         })
@@ -164,7 +167,7 @@ def main():
     res = pd.DataFrame(resumen)
     pd.set_option("display.width", 200)
     print(res.round(2).to_string(index=False))
-    print(res[["Desfase", "Desfase_40", "Desfase_80", "Naive_t24", "Transicion"]].sum().to_string())
+    print(res[["Desfase", "Desfase_60", "Desfase_90", "Naive_t24", "Naive_60", "Naive_90", "Transicion"]].sum().to_string())
 
 
 if __name__ == "__main__":

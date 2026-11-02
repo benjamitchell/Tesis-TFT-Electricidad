@@ -25,7 +25,7 @@ Cardones,3,2024-09-01,22:00,202.12,2,0.922,Desfase de fase
 Cardones,4,2024-09-01,00:00,201.46,2,0.386,Evento estructural
 Cardones,5,2024-09-01,23:00,177.75,1,0.337,Evento estructural
 Cardones,6,2024-09-01,04:00,176.85,2,0.96,Desfase de fase
-Cardones,7,2024-08-31,23:00,164.48,1,0.787,Desfase de fase
+Cardones,7,2024-08-31,23:00,164.48,1,0.787,Evento estructural
 Cardones,8,2024-08-09,08:00,147.34,1,0.127,Evento estructural
 Cardones,9,2024-11-25,07:00,126.22,1,0.225,Evento estructural
 Cardones,10,2025-02-11,05:00,117.56,1,0.88,Desfase de fase
@@ -33,14 +33,14 @@ Cardones,11,2025-02-11,02:00,117.19,1,0.881,Desfase de fase
 Cardones,12,2025-03-25,07:00,113.85,1,0.906,Desfase de fase
 Cardones,13,2024-10-03,21:00,111.7,1,0.966,Desfase de fase
 Cardones,14,2025-04-10,07:00,111.15,-2,0.953,Desfase de fase
-Cardones,15,2024-09-04,19:00,108.93,1,0.765,Desfase de fase
+Cardones,15,2024-09-04,19:00,108.93,1,0.765,Evento estructural
 Cardones,16,2024-09-04,20:00,105.67,1,0.944,Desfase de fase
 Cardones,17,2025-03-25,20:00,104.93,1,0.986,Desfase de fase
 Cardones,18,2025-02-26,23:00,102.61,-3,0.871,Desfase de fase
 Cardones,19,2025-04-06,07:00,102.11,-2,0.363,Evento estructural
-Cardones,20,2024-10-04,07:00,100.63,-3,0.739,Desfase de fase
+Cardones,20,2024-10-04,07:00,100.63,-3,0.739,Evento estructural
 Charrúa,1,2025-02-25,16:00,390.19,-2,0.082,Evento estructural
-Charrúa,2,2024-08-09,08:00,132.36,1,0.602,Desfase de fase
+Charrúa,2,2024-08-09,08:00,132.36,1,0.602,Evento estructural
 Charrúa,3,2024-08-09,09:00,128.18,2,0.879,Desfase de fase
 Charrúa,4,2025-04-01,20:00,115.24,1,0.969,Desfase de fase
 Charrúa,5,2025-02-28,10:00,114.78,-2,0.971,Desfase de fase
@@ -90,14 +90,14 @@ Pan de Azúcar,8,2025-02-11,05:00,116.0,1,0.878,Desfase de fase
 Pan de Azúcar,9,2025-03-25,07:00,114.06,1,0.899,Desfase de fase
 Pan de Azúcar,10,2025-02-11,02:00,112.29,1,0.804,Desfase de fase
 Pan de Azúcar,11,2024-10-03,21:00,108.08,1,0.879,Desfase de fase
-Pan de Azúcar,12,2024-10-09,04:00,106.83,2,0.767,Desfase de fase
+Pan de Azúcar,12,2024-10-09,04:00,106.83,2,0.767,Evento estructural
 Pan de Azúcar,13,2025-04-01,20:00,102.58,1,0.85,Desfase de fase
 Pan de Azúcar,14,2025-04-19,21:00,101.46,3,0.992,Desfase de fase
 Pan de Azúcar,15,2025-03-25,20:00,98.47,1,0.872,Desfase de fase
 Pan de Azúcar,16,2025-04-08,16:00,97.98,2,0.961,Desfase de fase
 Pan de Azúcar,17,2025-04-06,07:00,95.02,-2,0.336,Evento estructural
-Pan de Azúcar,18,2024-11-08,23:00,94.82,1,0.788,Desfase de fase
-Pan de Azúcar,19,2024-09-27,00:00,93.71,1,0.785,Desfase de fase
+Pan de Azúcar,18,2024-11-08,23:00,94.82,1,0.788,Evento estructural
+Pan de Azúcar,19,2024-09-27,00:00,93.71,1,0.785,Evento estructural
 Pan de Azúcar,20,2025-02-26,04:00,92.38,1,0.578,Evento estructural
 Puerto Montt,1,2025-02-25,16:00,242.3,-1,0.03,Evento estructural
 Puerto Montt,2,2024-08-08,10:00,241.73,2,0.997,Desfase de fase
@@ -126,7 +126,7 @@ Quillota,4,2025-04-10,07:00,134.15,-2,0.93,Desfase de fase
 Quillota,5,2025-04-09,09:00,122.63,1,0.891,Desfase de fase
 Quillota,6,2025-02-28,10:00,115.94,-2,0.953,Desfase de fase
 Quillota,7,2024-11-25,07:00,113.03,1,0.062,Evento estructural
-Quillota,8,2025-03-25,07:00,110.41,1,0.695,Desfase de fase
+Quillota,8,2025-03-25,07:00,110.41,1,0.695,Evento estructural
 Quillota,9,2024-10-03,21:00,105.31,1,0.813,Desfase de fase
 Quillota,10,2025-02-11,05:00,105.15,1,0.992,Desfase de fase
 Quillota,11,2025-04-06,07:00,104.96,1,0.58,Evento estructural
@@ -136,7 +136,7 @@ Quillota,14,2024-06-22,18:00,95.36,1,0.95,Desfase de fase
 Quillota,15,2025-04-09,14:00,93.53,1,0.923,Desfase de fase
 Quillota,16,2024-06-17,23:00,92.82,1,0.384,Evento estructural
 Quillota,17,2025-04-11,08:00,92.05,3,0.949,Desfase de fase
-Quillota,18,2024-11-08,23:00,91.39,1,0.746,Desfase de fase
+Quillota,18,2024-11-08,23:00,91.39,1,0.746,Evento estructural
 Quillota,19,2025-03-25,13:00,91.01,-3,0.906,Desfase de fase
 Quillota,20,2025-03-27,10:00,90.81,2,0.958,Desfase de fase
 Tarapacá,1,2025-02-26,14:00,428.93,3,0.035,Evento estructural
