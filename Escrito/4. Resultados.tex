@@ -775,6 +775,36 @@ Los anchos reportados en esta sección (del orden de 30 a 130\,USD/MWh según el
 
 El coeficiente de variación del SEN (0.94) duplica al de la serie más volátil de las tres analizadas por Kath y Ziel (EPEX intraday, 0.46), y su máximo histórico supera en un orden de magnitud al máximo de cualquiera de ellas. Que el ancho de intervalo del SEN sea entre 1.3 y 6.6 veces mayor que el de esos mercados es, bajo esa diferencia de escala, el resultado esperable de una calibración correcta, no evidencia de una implementación deficiente: un intervalo que ignorara esa volatilidad y reportara anchos comparables a los de Nord Pool fallaría sistemáticamente en cubrir el costo marginal chileno.
 
+\subsection{Verificación empírica de heterocedasticidad}
+\label{sec:verificacion_heterocedasticidad}
+
+Antes de presentar los métodos de CP, se verifica formalmente la premisa que motiva a LW Split CP y LW-ACP (Sección \ref{sec:lwacp} del Marco Teórico): que el error de S+C-LN no es homocedástico. Se aplican dos pruebas complementarias sobre los residuos de validación ($y_t - \hat{y}_t$, serie cruda, excluyendo la ventana de precio de falla administrativo), el mismo conjunto que calibra $\hat{\sigma}_h$ en el pipeline de CP. El test de Levene (centrado en la mediana, robusto a no-normalidad) contrasta la igualdad de varianza entre los 24 grupos de hora del día, verificando directamente la heterocedasticidad horaria que explota la ponderación local. El test ARCH-LM de Engle, aplicado sobre la serie de residuos en orden cronológico ($\text{lag}=24$, un día), contrasta si el cuadrado de los residuos está autocorrelacionado en el tiempo, es decir, si la volatilidad se agrupa temporalmente; es la misma prueba usada en la literatura internacional sobre heterocedasticidad condicional de precios eléctricos, tanto en Alemania \cite{BenhmadPercebois2018, FletenParaschivSchurle2013} como, más cercano al contexto de este trabajo, en el mercado spot colombiano \cite{BelloBeltran2010}, lo que permite comparar directamente el resultado. La Tabla \ref{tab:heterocedasticidad} presenta ambos tests para las ocho barras.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Barra & \multicolumn{2}{c}{Levene (por hora)} & $\hat{\sigma}_h$ rango & \multicolumn{2}{c}{ARCH-LM ($\text{lag}=24$)} \\
+         & $F$ & $p$ & (USD/MWh) & Estad. & $p$ \\
+        \midrule
+        Atacama       & 12.84 & $<0.001$ & [9.7, 29.1]  & 5898.1 & $<0.001$ \\
+        Cardones      & 25.76 & $<0.001$ & [6.7, 26.8]  & 554.5  & $<0.001$ \\
+        Charrúa       & 12.31 & $<0.001$ & [10.4, 24.6] & 137.2  & $<0.001$ \\
+        Crucero       & 14.03 & $<0.001$ & [8.4, 29.3]  & 6204.4 & $<0.001$ \\
+        Pan de Azúcar & 18.84 & $<0.001$ & [7.6, 22.7]  & 255.6  & $<0.001$ \\
+        Puerto Montt  & 18.35 & $<0.001$ & [13.5, 45.6] & 348.6  & $<0.001$ \\
+        Quillota      & 13.34 & $<0.001$ & [10.0, 24.9] & 136.2  & $<0.001$ \\
+        Tarapacá      & 16.24 & $<0.001$ & [9.1, 31.6]  & 5872.5 & $<0.001$ \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Verificación de heterocedasticidad sobre los residuos de validación de S+C-LN (serie cruda). Levene: igualdad de varianza entre las 24 horas del día (centrado en mediana). $\hat{\sigma}_h$ rango: desviación estándar mínima y máxima entre las 24 horas. ARCH-LM: autocorrelación del cuadrado de los residuos en el tiempo, $\text{lag}=24$.}
+    \label{tab:heterocedasticidad}
+\end{table}
+
+Ambas pruebas rechazan homocedasticidad en las ocho barras, con márgenes muy por debajo de $\alpha=0.05$ incluso tras una corrección de Holm-Bonferroni para las ocho comparaciones de cada familia (que, dada la magnitud de los estadísticos, no cambia ningún resultado). La desviación estándar horaria ($\hat{\sigma}_h$) varía hasta en un factor de 3 dentro de una misma barra (Puerto Montt: de 13.5 a 45.6\,USD/MWh), consistente con la motivación original de la ponderación local. El test ARCH-LM confirma además que esta heterocedasticidad no es solo un efecto de calendario (hora del día): el error también se agrupa temporalmente, con rachas de alta o baja volatilidad que se extienden más allá de una hora puntual, la premisa que explota la adaptación \textit{online} de $\alpha_t$ en ACI y LW-ACP. Este resultado es, hasta donde se pudo verificar en la revisión de literatura de este trabajo, la primera prueba formal de heterocedasticidad condicional reportada sobre los residuos de un modelo de pronóstico del costo marginal chileno; los antecedentes nacionales más cercanos identificados durante la revisión de este trabajo, incluyendo León et al. (2026) \cite{LeonSMPChile}, no reportan un test de esta naturaleza sobre el costo marginal.
+
 \subsection{Split CP clásico}
 \label{sec:split_cp_clasico}
 
@@ -836,36 +866,6 @@ ACI se evalúa sobre la misma predicción cruda de S+C-LN que Split CP, LW Split
 \end{table}
 
 Dos patrones emergen de los resultados, y uno de ellos corrige una lectura que se sostenía al 95\% de cobertura. Primero, la cobertura empírica se mantiene mucho más cerca del nominal que en Split CP: el error de cobertura va de 0.12 (Puerto Montt) a 0.40 puntos porcentuales (Quillota), frente a 0.01--1.71 puntos en Split CP (Sección \ref{sec:split_cp_clasico}), confirmando que la adaptación \textit{online} de $\alpha_t$ corrige el sesgo de sobrecobertura estructural del cuantil fijo también a este nivel. Segundo, a diferencia del resultado al 95\% (donde ACI resultaba 8.0\% más angosto que Split CP), al 90\% el ancho de intervalo de ACI es, en promedio, 3.2\% \textbf{más ancho} que el de Split CP (42.2 vs.\ 40.9\,USD/MWh), más ancho en seis de las ocho barras y prácticamente igual en Cardones y Pan de Azúcar. El nivel adaptado promedio ($\bar\alpha_t$) oscila entre 0.1279 (Quillota) y 0.1412 (Pan de Azúcar) (sistemáticamente por encima del $\alpha=0.10$ objetivo), es decir, el mecanismo de adaptación \textit{online} converge a un nivel efectivo más laxo que el nominal para mantener la cobertura marginal correcta, lo que se traduce en un cuantil, y por lo tanto un intervalo, levemente más amplio que el cuantil fijo de Split CP a este nivel. La ventaja de ACI frente a Split CP no es entonces un ancho uniformemente menor en todo nivel de cobertura, sino una calibración consistentemente mejor que, combinada con el ancho, determina cuál método resulta preferible según la métrica agregada que se use (Sección \ref{sec:lwacp_comparativa}).
-
-\subsection{Verificación empírica de heterocedasticidad}
-\label{sec:verificacion_heterocedasticidad}
-
-Antes de presentar LW Split CP y LW-ACP, se verifica formalmente la premisa que los motiva (Sección \ref{sec:lwacp} del Marco Teórico): que el error de S+C-LN no es homocedástico. Se aplican dos pruebas complementarias sobre los residuos de validación ($y_t - \hat{y}_t$, serie cruda, excluyendo la ventana de precio de falla administrativo), el mismo conjunto que calibra $\hat{\sigma}_h$ en el pipeline de CP. El test de Levene (centrado en la mediana, robusto a no-normalidad) contrasta la igualdad de varianza entre los 24 grupos de hora del día, verificando directamente la heterocedasticidad horaria que explota la ponderación local. El test ARCH-LM de Engle, aplicado sobre la serie de residuos en orden cronológico ($\text{lag}=24$, un día), contrasta si el cuadrado de los residuos está autocorrelacionado en el tiempo, es decir, si la volatilidad se agrupa temporalmente; es la misma prueba usada en la literatura internacional sobre heterocedasticidad condicional de precios eléctricos, tanto en Alemania \cite{BenhmadPercebois2018, FletenParaschivSchurle2013} como, más cercano al contexto de este trabajo, en el mercado spot colombiano \cite{BelloBeltran2010}, lo que permite comparar directamente el resultado. La Tabla \ref{tab:heterocedasticidad} presenta ambos tests para las ocho barras.
-
-\begin{table}[htbp]
-    \centering
-    \small
-    \begin{tabular}{lrrrrr}
-        \toprule
-        Barra & \multicolumn{2}{c}{Levene (por hora)} & $\hat{\sigma}_h$ rango & \multicolumn{2}{c}{ARCH-LM ($\text{lag}=24$)} \\
-         & $F$ & $p$ & (USD/MWh) & Estad. & $p$ \\
-        \midrule
-        Atacama       & 12.84 & $<0.001$ & [9.7, 29.1]  & 5898.1 & $<0.001$ \\
-        Cardones      & 25.76 & $<0.001$ & [6.7, 26.8]  & 554.5  & $<0.001$ \\
-        Charrúa       & 12.31 & $<0.001$ & [10.4, 24.6] & 137.2  & $<0.001$ \\
-        Crucero       & 14.03 & $<0.001$ & [8.4, 29.3]  & 6204.4 & $<0.001$ \\
-        Pan de Azúcar & 18.84 & $<0.001$ & [7.6, 22.7]  & 255.6  & $<0.001$ \\
-        Puerto Montt  & 18.35 & $<0.001$ & [13.5, 45.6] & 348.6  & $<0.001$ \\
-        Quillota      & 13.34 & $<0.001$ & [10.0, 24.9] & 136.2  & $<0.001$ \\
-        Tarapacá      & 16.24 & $<0.001$ & [9.1, 31.6]  & 5872.5 & $<0.001$ \\
-        \bottomrule
-    \end{tabular}
-    \vspace{0.2cm}
-    \caption{Verificación de heterocedasticidad sobre los residuos de validación de S+C-LN (serie cruda). Levene: igualdad de varianza entre las 24 horas del día (centrado en mediana). $\hat{\sigma}_h$ rango: desviación estándar mínima y máxima entre las 24 horas. ARCH-LM: autocorrelación del cuadrado de los residuos en el tiempo, $\text{lag}=24$.}
-    \label{tab:heterocedasticidad}
-\end{table}
-
-Ambas pruebas rechazan homocedasticidad en las ocho barras, con márgenes muy por debajo de $\alpha=0.05$ incluso tras una corrección de Holm-Bonferroni para las ocho comparaciones de cada familia (que, dada la magnitud de los estadísticos, no cambia ningún resultado). La desviación estándar horaria ($\hat{\sigma}_h$) varía hasta en un factor de 3 dentro de una misma barra (Puerto Montt: de 13.5 a 45.6\,USD/MWh), consistente con la motivación original de la ponderación local. El test ARCH-LM confirma además que esta heterocedasticidad no es solo un efecto de calendario (hora del día): el error también se agrupa temporalmente, con rachas de alta o baja volatilidad que se extienden más allá de una hora puntual, la premisa que explota la adaptación \textit{online} de $\alpha_t$ en ACI y LW-ACP. Este resultado es, hasta donde se pudo verificar en la revisión de literatura de este trabajo, la primera prueba formal de heterocedasticidad condicional reportada sobre los residuos de un modelo de pronóstico del costo marginal chileno; los antecedentes nacionales más cercanos identificados durante la revisión de este trabajo, incluyendo León et al. (2026) \cite{LeonSMPChile}, no reportan un test de esta naturaleza sobre el costo marginal.
 
 \subsection{LW Split CP}
 \label{sec:lw_split_cp}
@@ -992,7 +992,14 @@ La Figura \ref{fig:cp_cobertura_ancho_hora} presenta la cobertura y el ancho med
     \label{fig:cp_cobertura_ancho_hora}
 \end{figure}
 
-Por mes, LW-ACP es marcadamente más estable que Split CP, incluso más que al 95\% de cobertura: la desviación estándar de la cobertura mensual es 0.0039 para LW-ACP frente a 0.0473 para Split CP, más de doce veces menor. Split CP oscila entre 0.817 (junio) y 0.964 (marzo), mientras que las doce cifras mensuales de LW-ACP caen todas en el rango estrecho $[0.887,\, 0.902]$. Esta es precisamente la ventaja esperada de la adaptación \textit{online} de $\alpha_t$: al reaccionar al historial reciente de cobertura, LW-ACP corrige la deriva estacional que un cuantil fijo como el de Split CP no puede seguir.
+Por mes (Figura \ref{fig:cp_cobertura_ancho_mes}), LW-ACP es marcadamente más estable que Split CP, incluso más que al 95\% de cobertura: la desviación estándar de la cobertura mensual es 0.0039 para LW-ACP frente a 0.0473 para Split CP, más de doce veces menor. Split CP oscila entre 0.817 (junio) y 0.964 (marzo), mientras que las doce cifras mensuales de LW-ACP caen todas en el rango estrecho $[0.887,\, 0.902]$. Esta es precisamente la ventaja esperada de la adaptación \textit{online} de $\alpha_t$: al reaccionar al historial reciente de cobertura, LW-ACP corrige la deriva estacional que un cuantil fijo como el de Split CP no puede seguir.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{imagenes/fig_cp_cobertura_ancho_mes.pdf}
+    \caption{Cobertura empírica (izquierda) y ancho medio del intervalo (derecha) por mes, Split CP vs.\ ACI vs.\ LW-ACP, promediado sobre las ocho barras, al 90\% de cobertura nominal, de mayo de 2025 a abril de 2026. ACI y LW-ACP se mantienen cerca del nominal ensanchando el intervalo en los meses difíciles, mientras que el ancho de Split CP casi no varía.}
+    \label{fig:cp_cobertura_ancho_mes}
+\end{figure}
 
 Por hora del día, sin embargo, el resultado es el opuesto: la desviación estándar de la cobertura horaria es 0.0426 para Split CP frente a 0.0709 para LW-ACP, 1.7 veces mayor. La brecha se concentra exactamente en las horas de transición solar (7, 8, 19, 20 y 21h) que el análisis de errores extremos (Sección \ref{sec:errores_extremos}) ya identifica como el origen del desfase de fase: ahí la cobertura promedio de LW-ACP cae a 0.799, 10.1 puntos porcentuales bajo el nominal y 6.1 puntos por debajo de Split CP (0.861) en esas mismas horas, mientras que en el resto de las horas ambos métodos son similares (0.924 LW-ACP vs.\ 0.925 Split CP). Es decir, la ponderación horaria por sí sola no logra homogeneizar la cobertura entre horas (la motivación original de $\hat\sigma_h$), y en las horas más difíciles del día, las mismas donde se concentra el desfase de fase, LW-ACP cubre peor que el cuantil fijo sin ponderar, no mejor; a este nivel la brecha es incluso algo mayor que al 95\% de cobertura.
 

@@ -2,7 +2,8 @@
 """Recalcula cobertura por hora y por mes (Split CP, ACI, LW-ACP) al 90% de cobertura
 nominal (alpha=0.10, gamma=0.05), y regenera la figura de cobertura y ancho por hora en
 espanol (fig_cp_cobertura_ancho_hora.pdf, tesis y presentacion) y en ingles
-(fig_cp_cobertura_ancho_hora_en.pdf, paper IEEE). La logica es la reconstruccion fiel
+(fig_cp_cobertura_ancho_hora_en.pdf, paper IEEE), ademas de la figura de cobertura y ancho
+por mes (fig_cp_cobertura_ancho_mes.pdf, tesis). La logica es la reconstruccion fiel
 (confirmada por los numeros publicados en la tesis al 95%) del codigo original que genero
 la figura en espanol."""
 import os
@@ -44,7 +45,7 @@ def main():
 
     acumulado_h = {m: {"cov": np.zeros(24), "width": np.zeros(24), "n": np.zeros(24)}
                    for m in ("Split CP", "ACI", "LW-ACP")}
-    acumulado_mes = {m: {} for m in ("Split CP", "LW-ACP")}
+    acumulado_mes = {m: {} for m in ("Split CP", "ACI", "LW-ACP")}
 
     for barra in BARRAS:
         serie = df_crudo.loc[df_crudo["Barra"] == barra].groupby("Fecha")["Valor"].mean()
@@ -72,14 +73,14 @@ def main():
                 acumulado_h[nombre]["width"][h] += (up[mask] - lo[mask]).sum()
                 acumulado_h[nombre]["n"][h] += mask.sum()
 
-            if nombre in acumulado_mes:
-                for mes in range(1, 13):
-                    mask = meses_t == mes
-                    if mask.sum() == 0:
-                        continue
-                    acumulado_mes[nombre].setdefault(mes, {"cov": 0, "n": 0})
-                    acumulado_mes[nombre][mes]["cov"] += dentro[mask].sum()
-                    acumulado_mes[nombre][mes]["n"] += mask.sum()
+            for mes in range(1, 13):
+                mask = meses_t == mes
+                if mask.sum() == 0:
+                    continue
+                acumulado_mes[nombre].setdefault(mes, {"cov": 0, "width": 0, "n": 0})
+                acumulado_mes[nombre][mes]["cov"] += dentro[mask].sum()
+                acumulado_mes[nombre][mes]["width"] += (up[mask] - lo[mask]).sum()
+                acumulado_mes[nombre][mes]["n"] += mask.sum()
         print(f"[{barra}] ok")
 
     # transicion vs resto (7,8,19,20,21h)
@@ -94,7 +95,7 @@ def main():
         print(f"{nombre}: SD_hora={sd_h:.4f}  cov_transicion={cov_trans:.4f}  cov_resto={cov_resto:.4f}")
 
     print()
-    for nombre in ("Split CP", "LW-ACP"):
+    for nombre in ("Split CP", "ACI", "LW-ACP"):
         covs = {mes: v["cov"] / v["n"] for mes, v in acumulado_mes[nombre].items()}
         vals = np.array(list(covs.values()))
         peor_mes = min(covs, key=covs.get)
@@ -129,6 +130,30 @@ def main():
         fig.savefig(ruta, bbox_inches="tight")
         plt.close(fig)
         print(f"Guardado: {ruta}")
+
+    # Cobertura y ancho por mes, en el orden real del conjunto de prueba
+    meses = [5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4]
+    nombres_mes = ["May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic", "Ene", "Feb", "Mar", "Abr"]
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+    for nombre in ("Split CP", "ACI", "LW-ACP"):
+        v = acumulado_mes[nombre]
+        cov_m = [v[m]["cov"] / v[m]["n"] for m in meses]
+        width_m = [v[m]["width"] / v[m]["n"] for m in meses]
+        ax1.plot(range(12), cov_m, marker="o", markersize=3, label=nombre, color=colores[nombre])
+        ax2.plot(range(12), width_m, marker="o", markersize=3, label=nombre, color=colores[nombre])
+
+    ax1.axhline(0.90, color="black", linestyle=":", linewidth=1)
+    ax1.set_ylabel("Cobertura empírica"); ax1.set_title("Cobertura por mes")
+    ax2.set_ylabel("Ancho medio del intervalo (USD/MWh)"); ax2.set_title("Ancho por mes")
+    for ax in (ax1, ax2):
+        ax.set_xlabel("Mes (mayo 2025 a abril 2026)")
+        ax.set_xticks(range(12)); ax.set_xticklabels(nombres_mes)
+    ax1.legend(fontsize=8)
+    fig.tight_layout()
+    ruta = os.path.join(CARPETA_SALIDA, "fig_cp_cobertura_ancho_mes.pdf")
+    fig.savefig(ruta, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Guardado: {ruta}")
 
 
 if __name__ == "__main__":
