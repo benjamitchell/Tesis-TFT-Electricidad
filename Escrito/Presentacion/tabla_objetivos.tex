@@ -1,0 +1,21 @@
+% Tabla de objetivos quitada de Conclusiones (Síntesis de resultados), guardada para la presentación.
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{p{4.2cm}p{2.6cm}p{7.2cm}}
+        \toprule
+        Objetivo específico & Secciones & Resultado principal \\
+        \midrule
+        1. Caracterizar el costo marginal del SEN & 3.1, \ref{sec:verificacion_heterocedasticidad} & Ciclo diario marcado por la generación solar, heterocedasticidad horaria y colas pesadas del error \\
+        2. Diseñar las estrategias P+C y S+C & 3.4.1 & Ambas implementadas y evaluadas en las ocho barras \\
+        3. Comparar LayerNorm y DyT & \ref{sec:ln_vs_dyt} & Sin preferencia: la diferencia es del orden de la variabilidad entre semillas \\
+        4. Stacking Optimization en P+C & 3.5, \ref{sec:stacking_resultados} & Supera a Prophet en las ocho barras, pero no a S+C \\
+        5. Comparar P+C y S+C & \ref{sec:pc_vs_sc}, \ref{sec:h24_conclusiones} & S+C es más preciso en 14 de 16 combinaciones a una hora (9 significativas tras Holm-Bonferroni); a 24 horas P+C es algo más preciso \\
+        6. Conformal Prediction y LW-ACP & \ref{sec:lwacp_comparativa}, \ref{sec:lwacp_robusto} & LW-ACP obtiene el menor Winkler al 90\%; su variante robusta supera a ACI en las ocho barras \\
+        7. Variables hídricas en Puerto Montt & \ref{sec:pmontt_desempeno} & No mejoran el desempeño respecto de P+C y S+C \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.2cm}
+    \caption{Objetivos específicos del trabajo, secciones donde se abordan y resultado principal de cada uno.}
+    \label{tab:objetivos}
+\end{table}
