@@ -45,9 +45,9 @@
 
 \begin{frame}{El SEN en transición}
     \begin{itemize}
-        \item El Sistema Eléctrico Nacional (SEN) chileno ha experimentado una transición acelerada hacia generación solar: la participación ERNC pasó de $\sim$20\% a $\sim$40\% de la generación total desde 2020.
-        \item Esto introduce \textbf{volatilidad estructural creciente} en el costo marginal horario: episodios de sobreoferta solar (\textit{curtailment}) y transiciones de precio abruptas al entrar/salir el bloque fotovoltaico.
-        \item En 2024 se perdieron \textbf{5\,908,71\,GWh} de energía renovable por \textit{curtailment}, un aumento del \textbf{149\%} respecto al año anterior.
+        \item El Sistema Eléctrico Nacional (SEN) chileno ha experimentado una transición acelerada hacia generación solar: la participación ERNC pasó de $\sim$20\% a $\sim$40\% de la generación total entre 2019 y 2024.
+        \item Esto introduce \textbf{volatilidad estructural creciente} en el costo marginal horario: episodios de sobreoferta solar (\textit{curtailment}) y transiciones de precio abruptas al entrar y salir el bloque fotovoltaico.
+        \item En 2024 se perdieron \textbf{5\,908.71\,GWh} de energía eólica y solar por \textit{curtailment}, un aumento del \textbf{149\%} respecto al año anterior.
         \item Los métodos estadísticos clásicos (ARIMA, modelos de descomposición) capturan mal esta dinámica no lineal y cambiante.
         \item \textbf{Pregunta}: ¿puede un modelo híbrido de \textit{deep learning}, con una señal exógena simple y determinista, mejorar el pronóstico horario y cuantificar honestamente su incertidumbre?
     \end{itemize}
@@ -56,16 +56,20 @@
 \begin{frame}{Objetivos}
     \textbf{Objetivo general}
     \begin{itemize}
-        \item Desarrollar y evaluar un modelo híbrido basado en Temporal Fusion Transformer (TFT) para el pronóstico horario del costo marginal en el SEN, con cuantificación de incertidumbre calibrada.
+        \item Desarrollar y comparar dos estrategias híbridas (P+C y S+C) para predecir el costo marginal del SEN con el Temporal Fusion Transformer (TFT), con cuantificación de incertidumbre mediante Conformal Prediction.
     \end{itemize}
     \vspace{0.5em}
     \textbf{Objetivos específicos}
-    \begin{itemize}
-        \item Comparar dos estrategias de \textit{features} exógenas: Prophet+Clima (P+C) vs.\ Sol+Clima (S+C).
-        \item Comparar dos mecanismos de normalización del Transformer: LayerNorm vs.\ Dynamic Tanh.
-        \item Proponer y evaluar LW-ACP, un método de Conformal Prediction que combina ponderación horaria con adaptación \textit{online}.
-        \item Caracterizar mecanísticamente los errores más extremos del modelo.
-    \end{itemize}
+    \begin{enumerate}
+        \small
+        \item Caracterizar el costo marginal del SEN (estacionalidad, tendencia, volatilidad).
+        \item Diseñar las estrategias de \textit{features} P+C (Prophet) y S+C (posición solar).
+        \item Comparar LayerNorm y Dynamic Tanh con pruebas estadísticas pareadas.
+        \item Combinar Prophet y el TFT mediante Stacking Optimization dentro de P+C.
+        \item Comparar P+C y S+C con Diebold-Mariano (varianza Newey-West).
+        \item Implementar Conformal Prediction (variantes clásicas y LW-ACP) y validar cobertura y eficiencia.
+        \item Evaluar variables hídricas propias de Puerto Montt.
+    \end{enumerate}
 \end{frame}
 
 % ============================================================
@@ -81,7 +85,7 @@
             \item Centro: Quillota
             \item Sur (hidroeléctrico): Charrúa, Puerto Montt
         \end{itemize}
-        \item División temporal estricta: 70\% entrenamiento / 15\% validación / 15\% prueba, respetando causalidad.
+        \item División temporal estricta: 70\% entrenamiento / 15\% validación / 15\% prueba (mayo 2025 -- abril 2026), respetando causalidad.
     \end{itemize}
 \end{frame}
 
@@ -167,9 +171,9 @@
     \vspace{1em}
     \begin{itemize}
         \item \textbf{Split CP} (clásico): un cuantil fijo $q$, calculado una vez sobre calibración.
-        \item \textbf{ACI} (Gibbs \& Candès, 2021): adapta el nivel de cobertura $\alpha_t$ \textit{online} según los aciertos/fallos recientes.
+        \item \textbf{ACI} (Gibbs \& Candès, 2021): adapta el nivel de cobertura $\alpha_t$ \textit{online} según los aciertos y fallos recientes.
         \item \textbf{LW Split CP}: normaliza el \textit{score} de no conformidad por la desviación estándar de cada hora del día $\hat\sigma_h$ (heterocedasticidad horaria).
-        \item \textbf{LW-ACP (contribución de este trabajo)}: combina ambos mecanismos (ponderación horaria \emph{y} adaptación \textit{online}) en un solo método.
+        \item \textbf{LW-ACP}: ACI aplicado sobre el \textit{score} ponderado por hora. No es un método nuevo; permite separar el aporte de cada mecanismo (ponderación horaria y adaptación \textit{online}).
     \end{itemize}
 \end{frame}
 
@@ -182,45 +186,44 @@
         \small
         \begin{tabular}{lcc}
             \toprule
-             & \textbf{S+C mejor} & \textbf{Significativo (DM)} \\
+             & \textbf{S+C mejor} & \textbf{Significativo (DM, Holm)} \\
             \midrule
-            De 16 combinaciones (8 barras $\times$ 2 arq.) & 14 & 13 \\
+            De 16 combinaciones (8 barras $\times$ 2 arq.) & 14 & 9 \\
             \bottomrule
         \end{tabular}
     \end{table}
     \vspace{1em}
     \begin{itemize}
-        \item S+C, la estrategia más simple, supera a P+C en 14 de 16 combinaciones (13 de ellas estadísticamente significativas, test de Diebold-Mariano con varianza Newey-West).
-        \item El análisis de interpretabilidad del TFT confirma que la posición solar domina el decoder en 6 de las 8 barras: el modelo efectivamente aprende a usar esa señal.
-        \item Conclusión: la señal física de posición solar es al menos tan informativa como la descomposición estadística de Prophet, con menor complejidad de pipeline.
+        \item S+C, la estrategia más simple, supera a P+C en 14 de 16 combinaciones; 9 son significativas tras la corrección de Holm-Bonferroni (Diebold-Mariano con varianza Newey-West), todas a favor de S+C.
+        \item La elección se repite en validación: S+C obtiene menor MAE en 15 de 16 combinaciones.
+        \item En el encoder del TFT, la posición solar recibe más peso que el clima en 7 de las 8 barras.
+        \item Conclusión: a una hora, la posición solar es al menos tan informativa como la descomposición de Prophet, con un pipeline mucho más simple.
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Interpretabilidad: importancia de variables en el decoder}
-    \begin{itemize}
-        \item El decoder de S+C-LN solo recibe las tres variables solares y el índice temporal relativo.
-    \end{itemize}
+\begin{frame}{Interpretabilidad: importancia de variables en el encoder}
     \begin{table}
         \centering
-        \tiny
+        \scriptsize
         \begin{tabular}{lrrrr}
             \toprule
-            Barra & \texttt{elevacion\_solar} & \texttt{relative\_time\_idx} & \texttt{cos\_elevacion} & \texttt{es\_horario\_verano} \\
+            Barra & \texttt{y\_real} & Posición solar & Clima & \texttt{relative\_time\_idx} \\
             \midrule
-            Atacama       & 26.33 & 31.59 & 23.82 & 18.27 \\
-            Cardones      & 27.72 & 41.78 & 21.02 &  9.47 \\
-            Charrúa       & 33.04 & 40.35 &  9.29 & 17.32 \\
-            Crucero       & 63.46 &  7.94 & 13.80 & 14.80 \\
-            Pan de Azúcar & 44.28 & 20.43 & 15.30 & 19.99 \\
-            Puerto Montt  & 16.86 & 44.77 & 30.04 &  8.33 \\
-            Quillota      & 46.88 & 12.25 & 24.68 & 16.19 \\
-            Tarapacá      & 39.25 & 29.94 &  9.84 & 20.97 \\
+            Atacama       & 66.50 & 17.16 & 13.48 & 2.87 \\
+            Cardones      & 70.88 & 16.08 & 10.47 & 2.58 \\
+            Charrúa       & 54.52 & 21.98 & 14.21 & 9.29 \\
+            Crucero       & 62.18 & 20.81 & 12.77 & 4.25 \\
+            Pan de Azúcar & 58.17 & 17.86 & 19.77 & 4.20 \\
+            Puerto Montt  & 84.09 &  9.00 &  5.16 & 1.76 \\
+            Quillota      & 59.64 & 25.14 & 14.15 & 1.06 \\
+            Tarapacá      & 72.07 & 14.42 & 10.89 & 2.63 \\
             \bottomrule
         \end{tabular}
     \end{table}
     \begin{itemize}
-        \item Sumando \texttt{elevacion\_solar} + \texttt{cos\_elevacion}: la posición solar domina el decoder (42.3\%--77.3\%) en \textbf{6 de las 8 barras}.
-        \item Puerto Montt es la excepción más clara: \texttt{relative\_time\_idx} lidera (44.8\%) por sobre la posición solar (16.9\%).
+        \item El precio observado domina el encoder (54.5\%--84.1\%); entre las variables exógenas, la posición solar pesa más que el clima en 7 de 8 barras (excepción: Pan de Azúcar).
+        \item En el decoder, \texttt{elevacion\_solar} y \texttt{cos\_elevacion} suman entre 70.1\% y 84.9\% del peso informativo.
+        \item Puerto Montt tiene el menor peso de la posición solar (9.0\%): dinámica menos regida por el ciclo solar.
     \end{itemize}
 \end{frame}
 
@@ -230,20 +233,20 @@
         \small
         \begin{tabular}{lccc}
             \toprule
-            & \textbf{Significativas (DM)} & \textbf{LN gana} & \textbf{Dif.\ típica} \\
+            & \textbf{Significativas (DM, Holm)} & \textbf{LN gana} & \textbf{Dif.\ típica} \\
             \midrule
-            De 16 combinaciones & 12 & 11 de 12 & $<0.5$\,USD/MWh \\
+            De 16 combinaciones & 6 & 6 de 6 & $<0.5$\,USD/MWh \\
             \bottomrule
         \end{tabular}
     \end{table}
     \vspace{0.5em}
     \begin{itemize}
-        \item A una hora LN gana en 11 de 12 combinaciones significativas, pero la ventaja \textbf{no supera la variabilidad entre semillas ni se mantiene a 24 horas}: en la práctica, ambas son equivalentes.
-        \item \textbf{Robustez a la semilla}: al repetir el entrenamiento con 5 semillas distintas, los intervalos de MAE de LN y DyT se solapan completamente en las 3 barras piloto.
+        \item A una hora LN gana las 6 combinaciones significativas tras Holm-Bonferroni, pero la ventaja \textbf{no supera la variabilidad entre semillas ni se mantiene a 24 horas}: en la práctica, ambas son equivalentes.
+        \item \textbf{Robustez a la semilla} (5 semillas, 3 barras piloto): la diferencia entre arquitecturas (0.13--0.21\,USD/MWh) es del orden de la desviación entre semillas (0.06--0.30), y ninguna es significativa tras Holm-Bonferroni (test $t$ de Welch).
         \begin{itemize}
-            \item La ventaja de LN es del mismo orden de magnitud que la variabilidad de inicialización.
-            \item No la contradice: el test DM compara errores pareados hora a hora dentro de una misma semilla, evidencia de un tipo distinto.
+            \item No contradice al test DM: ese compara dos modelos entrenados concretos hora a hora, no la variabilidad de volver a entrenar cada arquitectura.
         \end{itemize}
+        \item \textbf{Hipótesis de los \textit{spikes}}: DyT no es más preciso en horas de precio alto, pero sí en las de salto brusco (significativo en 3 barras).
     \end{itemize}
 \end{frame}
 
@@ -254,18 +257,19 @@
 
 \begin{frame}{Análisis de errores extremos: desfase de fase}
     \begin{itemize}
-        \item Fuera del apagón de febrero de 2025, entre 12 y 20 de los veinte mayores errores de validación de cada barra corresponden a un \textbf{desfase de fase}: el modelo predice correctamente la magnitud de la transición, pero con una a dos horas de retraso.
+        \item Fuera del apagón del 25 de febrero de 2025, la mayoría de los veinte mayores errores de validación de cada barra (entre 11 y 19) corresponden a un \textbf{desfase de fase}: el modelo predice correctamente la magnitud de la transición, pero con una a dos horas de retraso.
         \item Patrón consistente en todo el SEN, no un artefacto de una barra particular.
+        \item Control: el mismo criterio aplicado a la persistencia de 24 horas clasifica como desfase solo el 16\% de sus mayores errores, frente al 51\% del TFT.
         \item Errores de gran amplitud pero muy localizados en el tiempo $\Rightarrow$ motiva directamente el valor de Conformal Prediction adaptativo y ponderado por hora.
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Puerto Montt: un caso no resuelto}
     \begin{itemize}
-        \item Peor desempeño del sistema de forma consistente: MAE de prueba 13.68\,USD/MWh vs.\ 6.4--8.0\,USD/MWh del resto.
-        \item Media y desviación estándar de precio sustancialmente mayores: dependencia hidrológica de baja frecuencia (meses), más lenta que la ventana de contexto del TFT (168h).
+        \item Peor desempeño del sistema de forma consistente: MAE de prueba 13.68\,USD/MWh vs.\ 6.6--8.3\,USD/MWh del resto.
+        \item Media y desviación estándar de precio sustancialmente mayores: dependencia hidrológica de baja frecuencia (meses), más lenta que la ventana de contexto del TFT (168\,h).
         \item Se probaron \textit{features} hídricas propias (cota del embalse, agua caída) en variantes H+C y S+H+C: \textbf{no lograron mejorar} sobre S+C.
-        \item Puerto Montt también exhibe desfase de fase, pero no ligado al ciclo solar como el resto del SEN.
+        \item Puerto Montt también exhibe desfase de fase, pero casi nunca en las horas de transición solar (1 de 19 casos, frente a 21 de 63 en el resto del SEN).
         \item Queda documentado como un caso estructuralmente distinto, no resuelto por las extensiones exploradas.
     \end{itemize}
 \end{frame}
@@ -284,15 +288,15 @@
     \begin{table}
         \centering
         \small
-        \begin{tabular}{lrrrr}
+        \begin{tabular}{lrrrrr}
             \toprule
-            \textbf{Método} & \textbf{Ancho} & \textbf{$|$Cob$-$0.90$|$} & \textbf{Winkler} & \textbf{Pinball} \\
+            \textbf{Método} & \textbf{Ancho} & \textbf{$|$Cob$-$0.90$|$} & \textbf{Winkler} & \textbf{Pinball inf.} & \textbf{Pinball sup.} \\
             \midrule
-            Split CP               & 40.90 & 0.0112 & 76.65 & 1.916 \\
-            LW Split CP            & \textbf{40.69} & 0.0108 & 76.23 & 1.906 \\
-            ACI ($\gamma=0.05$)    & 42.21 & \textbf{0.0023} & 72.31 & 1.808 \\
-            LW-ACP ($\gamma=0.05$) & 41.98 & 0.0024 & \textbf{71.87} & \textbf{1.797} \\
-            CQR                    & 43.04 & 0.0142 & 72.53 & 1.813 \\
+            Split CP               & 40.90 & 0.0112 & 76.65 & 1.584 & 2.248 \\
+            LW Split CP            & \textbf{40.69} & 0.0108 & 76.23 & 1.593 & 2.218 \\
+            ACI ($\gamma=0.05$)    & 42.21 & \textbf{0.0023} & 72.31 & \textbf{1.515} & 2.100 \\
+            LW-ACP ($\gamma=0.05$) & 41.98 & 0.0024 & \textbf{71.87} & 1.527 & \textbf{2.066} \\
+            CQR                    & 43.04 & 0.0142 & 72.53 & 1.516 & 2.111 \\
             \bottomrule
         \end{tabular}
     \end{table}
@@ -300,9 +304,10 @@
     \footnotesize
     \begin{itemize}
         \item 90\% es el nivel principal en la literatura de CP para mercados eléctricos (Kath \& Ziel; Zaffran).
-        \item Ningún método domina las cuatro métricas, pero LW-ACP gana en Winkler y pinball, las que combinan ancho y calibración.
-        \item La adaptación \textit{online} aumenta el ancho 2.6--3.2\%, pero reduce la desviación de cobertura en 79\%.
-        \item Al 95\% LW-ACP sí domina todo: 58.25\,USD/MWh, 8.7\% más angosto que Split CP.
+        \item Ningún método domina las cinco métricas; LW-ACP gana en Winkler (que combina ancho y calibración) y en pinball superior.
+        \item La adaptación \textit{online} aumenta el ancho 2.6--3.2\%, pero reduce la desviación de cobertura en 79\%: explica casi toda la ganancia.
+        \item La ventaja de LW-ACP sobre ACI es pequeña (0.6\% en Winkler) y solo significativa en Puerto Montt.
+        \item Al 95\% LW-ACP es el más angosto (58.26\,USD/MWh, 8.7\% menos que Split CP), el mejor calibrado (empatado con ACI) y el de mejor Winkler.
         \item Sub-cobertura en horas de transición solar (0.799 vs.\ 0.90), el mismo mecanismo que el desfase de fase.
     \end{itemize}
 \end{frame}
@@ -310,9 +315,9 @@
 \begin{frame}{LW-ACP robusto a colas pesadas}
     \footnotesize
     \begin{itemize}
-        \item LW-ACP escala cada hora con la \textbf{desviación estándar} de su error, con un piso igual a la global. Las colas pesadas la inflan: en Atacama a las 15 h, P90 del error 0.05 USD/MWh, desviación 16.3.
+        \item LW-ACP escala cada hora con la \textbf{desviación estándar} de su error, con un piso igual a la global. Las colas pesadas la inflan: en Atacama a las 15\,h, P90 del error 0.05\,USD/MWh, desviación 16.3.
         \item Resultado: sobrecubre al mediodía y subcubre en las transiciones solares.
-        \item \textbf{Variante}: escalar cada hora por un \textbf{cuantil} de su error (P90, elegido en validación junto con el piso). Se acerca a calibrar cada hora por separado (Mondrian CP).
+        \item \textbf{Variante}: escalar cada hora por un \textbf{cuantil} de su error (P90, con piso de 15\,USD/MWh, ambos elegidos en validación). Se acerca a calibrar cada hora por separado (Mondrian CP).
     \end{itemize}
     \begin{table}
         \centering
@@ -327,6 +332,7 @@
     \end{table}
     \begin{itemize}
         \item Mejor Winkler en las 8 barras y el más angosto de todos los métodos; misma estabilidad mes a mes. Al 95\% también mejora (87.75 vs.\ 89.89).
+        \item A diferencia de la versión principal, supera significativamente a ACI en las 8 barras al 90\% (Diebold-Mariano, Holm-Bonferroni).
         \item A 24 horas no agrega: la adaptación por hora ya ajusta cada hora. Calibración móvil e intervalo asimétrico: sin mejora.
     \end{itemize}
 \end{frame}
@@ -359,7 +365,7 @@
 
 \begin{frame}{Comparación con la literatura}
     \begin{itemize}
-        \item León et al.\ (2026) comparan modelos de \textit{machine learning} clásico (RFR, SVR, etc.) para el SEN en Crucero, Alto Jahuel y Puerto Montt, con datos de 2024.
+        \item León et al.\ (2026) comparan modelos de \textit{machine learning} clásico (RFR, SVR, etc.) para el SEN en Crucero, Alto Jahuel y Puerto Montt, con datos de 2024 y el mismo horizonte de una hora.
         \item Se entrenan dos TFT S+C adicionales, restringidos a 2024, para Crucero y Puerto Montt (barras compartidas).
     \end{itemize}
     \begin{table}
@@ -375,7 +381,8 @@
         \end{tabular}
     \end{table}
     \begin{itemize}
-        \item Reducción de MAE de \textbf{20\% a 34\%}, pese a entrenar con menos de un año de datos y sin ajuste específico por barra.
+        \item Reducción de MAE de \textbf{20\% a 34\%}, pese a entrenar con menos de un año de datos.
+        \item Comparación aproximada: este trabajo evalúa en noviembre y diciembre de 2024 (división cronológica); León et al., en enero y julio.
     \end{itemize}
 \end{frame}
 
@@ -398,8 +405,8 @@
     \vspace{0.2em}
     \footnotesize
     \begin{itemize}
-        \item El MAE crece 52\% del primer al último paso; en promedio, el modelo no supera a la persistencia diaria (11 de 16 combinaciones).
-        \item La cobertura de Conformal Prediction se mantiene en 0.915--0.921 (90\% nominal) en los 24 pasos, y el ancho se estabiliza desde el paso $\sim$12.
+        \item El MAE crece 52\% del primer al último paso; en promedio, el modelo queda empatado o peor que la persistencia diaria en 11 de 16 combinaciones.
+        \item Con Split CP calibrado por paso, la cobertura se mantiene en 0.915--0.921 (90\% nominal) en los 24 pasos, y el ancho se estabiliza desde el paso $\sim$12.
     \end{itemize}
 \end{frame}
 
@@ -463,14 +470,15 @@
     \begin{itemize}
         \item A 1 hora mandan el precio reciente y la hora del día, que ambas estrategias tienen: S+C gana por simplicidad.
         \item A 24 horas el precio reciente pierde peso y P+C recurre al día de la semana, que solo él conoce.
-        \item Propuesta: un único TFT con posición solar + \texttt{weekly} + \texttt{trend}.
+        \item Propuesta: un único TFT con posición solar + \texttt{trend}, \texttt{weekly} y feriado.
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Extensiones exploradas}
     \begin{itemize}
-        \item \textbf{Piloto sin recorte de outliers}: a $h=1$, en las ocho barras, no perjudica el MAE general y reduce los errores más grandes (error máximo menor en las 8 barras, MAE en el percentil 99 menor en 7); significativo individualmente solo en 2 barras. Resultado mixto a $h=24$ (4 barras).
-        \item \textbf{Sensibilidad a pérdida asimétrica}: la ventaja de S+C-LN se sostiene en 7 de 8 barras independientemente de qué error sea más costoso.
+        \item \textbf{Piloto sin recorte de outliers} ($h=1$, ocho barras): no perjudica el MAE general (mejora significativa en Pan de Azúcar y Quillota tras Holm-Bonferroni, ninguna en contra) y reduce levemente los errores más grandes (MAE en el percentil 99: $-8\%$; Winkler de LW-ACP: $-1.3\%$).
+        \item \textbf{Modelo global} (un TFT para las ocho barras): no supera al modelo por barra, y el efecto del recorte no se replica en él.
+        \item \textbf{Sensibilidad a pérdida asimétrica}: la ventaja de S+C-LN sobre la persistencia se sostiene en 7 de 8 barras independientemente de qué error sea más costoso; en Puerto Montt depende de la asimetría.
     \end{itemize}
 \end{frame}
 
@@ -478,22 +486,45 @@
 \section{Conclusiones}
 
 \begin{frame}{Conclusiones principales}
+    \small
     \begin{enumerate}
-        \item \textbf{La estrategia más simple es la más precisa a una hora}: S+C supera a P+C, con la posición solar dominando el decoder del TFT; a 24 horas P+C es algo más preciso (4.5\%), y S+C queda cerca con un solo modelo.
-        \item \textbf{LW-ACP} combina ponderación horaria y adaptación \textit{online}, logrando el mejor Winkler y pinball al 90\% con cobertura calibrada, y los intervalos más angostos al 95\%.
-        \item Los errores más extremos siguen un patrón mecanístico común (desfase de fase de $\sim$1h), no ruido aleatorio disperso.
-        \item A una hora supera a la literatura reciente de ML clásico al mismo horizonte; a 24 horas la calibración de los intervalos se mantiene, pero la predicción puntual no supera a la persistencia.
+        \item \textbf{La estrategia más simple es la más precisa a una hora}: S+C supera a P+C (9 de 16 diferencias significativas tras Holm-Bonferroni, ninguna a favor de P+C); a 24 horas P+C es algo más preciso (4.5\%), y S+C queda cerca con un solo modelo.
+        \item \textbf{LayerNorm y DyT son equivalentes}: la ventaja de LN a una hora no supera la variabilidad entre semillas ni se mantiene a 24 horas.
+        \item \textbf{En LW-ACP domina la adaptación \textit{online}}: explica casi toda la ganancia sobre Split CP; la ponderación horaria aporta poco con la desviación estándar, pero con una escala robusta supera a ACI en las 8 barras.
+        \item Los errores más extremos siguen un patrón mecanístico común (desfase de fase de una a dos horas), no ruido aleatorio disperso.
+        \item A una hora supera a la literatura reciente de ML clásico (comparación aproximada); a 24 horas la calibración de los intervalos se mantiene, pero la predicción puntual no supera a la persistencia.
         \item Puerto Montt permanece como un caso no resuelto, estructuralmente distinto al resto del SEN.
     \end{enumerate}
+\end{frame}
+
+\begin{frame}{Objetivos y resultados}
+    \begin{table}
+        \centering
+        \scriptsize
+        \begin{tabular}{p{4.2cm}p{9.2cm}}
+            \toprule
+            Objetivo específico & Resultado principal \\
+            \midrule
+            1. Caracterizar el costo marginal del SEN & Ciclo diario marcado por la generación solar, heterocedasticidad horaria y colas pesadas del error \\
+            2. Diseñar las estrategias P+C y S+C & Ambas implementadas y evaluadas en las ocho barras \\
+            3. Comparar LayerNorm y DyT & Sin preferencia: la diferencia es del orden de la variabilidad entre semillas \\
+            4. Stacking Optimization en P+C & Supera a Prophet en las ocho barras, pero no a S+C \\
+            5. Comparar P+C y S+C & S+C es más preciso en 14 de 16 combinaciones a una hora (9 significativas tras Holm-Bonferroni); a 24 horas P+C es algo más preciso \\
+            6. Conformal Prediction y LW-ACP & LW-ACP obtiene el menor Winkler al 90\%; su variante robusta supera a ACI en las ocho barras \\
+            7. Variables hídricas en Puerto Montt & No mejoran el desempeño respecto de P+C y S+C \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
 \end{frame}
 
 \begin{frame}{Limitaciones}
     \begin{itemize}
         \item \textbf{Horizonte}: los resultados principales son a una hora; a 24 horas la predicción puntual no supera a la persistencia diaria.
         \item Un único split cronológico entrenamiento/validación/prueba (no \textit{walk-forward validation}) por costo computacional.
+        \item El conjunto de prueba no ajustó parámetros, pero sí motivó qué extensiones explorar (LW-ACP robusto, $\alpha_t$ por hora, variables hídricas).
+        \item 30 de los 48 entrenamientos a una hora alcanzaron el tope de 100 épocas, más en P+C que en S+C.
         \item Sin semilla fija para los modelos principales del Capítulo 4 (sí para el estudio de robustez).
         \item Esfuerzo de ajuste de hiperparámetros asimétrico entre Prophet (optimizado por barra) y TFT (fijo).
-        \item Reproducibilidad parcial del entorno de entrenamiento en GPU (versiones de librerías del cluster no registradas).
         \item Pipeline no directamente desplegable en operación real: ERA5 se publica con rezago.
     \end{itemize}
 \end{frame}
@@ -501,12 +532,13 @@
 \begin{frame}{Trabajo futuro}
     \begin{itemize}
         \item Mejorar el \textit{day-ahead} con información conocida de antemano, por ejemplo el costo marginal programado del CEN como variable de entrada.
+        \item Incorporar factores técnicos, de seguridad y propios de la operación del sistema.
+        \item Un TFT con posición solar más \texttt{trend}, \texttt{weekly} y feriado, sin Stacking.
         \item Comparar LW-ACP contra AgACI (agregación de múltiples $\gamma$ vía expertos \textit{online}).
-        \item Extender la comparación contra el CEN a Atacama y Tarapacá.
+        \item Adoptar la escala robusta como versión principal de LW-ACP y combinarla con niveles $\alpha_t$ por hora que compartan información entre horas.
         \item \textit{Walk-forward validation} sobre múltiples ventanas rodantes.
-        \item Investigar directamente el mecanismo del desfase de fase (pérdida que penalice error de temporización).
-        \item Extender el piloto de outliers a las ocho barras a $h=24$.
-        \item LW-ACP con adaptación \textit{online} indexada por hora del día.
+        \item Investigar directamente el mecanismo del desfase de fase (pérdida que penalice el error de temporización).
+        \item Evaluar en Puerto Montt indicadores de congestión del corredor Charrúa--Puerto Montt.
     \end{itemize}
 \end{frame}
 
